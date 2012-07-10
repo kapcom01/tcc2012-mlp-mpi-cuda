@@ -68,7 +68,7 @@ date|DATE              { return token::TYPE_DATE; }
     /**
      * Regras para produções de números inteiros
      */
-{D}+   {
+-?{D}+   {
     yylval->ival = atoi(yytext);
     return token::INTEGER;
 }
@@ -76,7 +76,7 @@ date|DATE              { return token::TYPE_DATE; }
     /**
      * Regras para produções de números reais
      */
-({D}*"."{D}+)|({D}+"."{D}*)   {
+(-?{D}*"."{D}+)|(-?{D}+"."{D}*)   {
     yylval->fval = atof(yytext);
     return token::REAL;
 }
