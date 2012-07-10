@@ -63,13 +63,18 @@ void DataSet::addInstance(const DataList* dlist, bool isSparse)
         row = InstancePtr(new Instance());
 
         // Para cada valor da lista
-        for(ValuePtr value : *dlist)
+        auto it = dlist->begin();
+        for(uint i = 0; i < attributes.size(); i++)
         {
-            // Adicona valores vazios
-            for(uint i = row->size(); i < value->index; i++)
+            if(it != dlist->end() && (*it)->index == i)
+                row->push_back(*it), it++;
+            else
                 row->push_back(ValuePtr(new Value(EMPTY)));
-            row->push_back(value);
         }
+
+        // Caso os índices da lista esparsa estivem errados
+        if(it != dlist->end())
+            throwError(SEM_INVALID_TYPE);
     }
 
     // Verifica a quantidade de valores
