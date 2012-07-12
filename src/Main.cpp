@@ -1,8 +1,10 @@
 #include "arff/Driver.h"
 #include "arff/DataSet.h"
+#include "database/Inserter.h"
 #include <cstdlib>
 
 using namespace ARFF;
+using namespace Database;
 
 int main(int argc, char* argv[])
 {
@@ -19,33 +21,35 @@ int main(int argc, char* argv[])
     {
         DataSet* dataset = driver.parse();
 
-        cout << "Relation: " << dataset->relation << endl;
+//        cout << "Relation: " << dataset->relation << endl;
+//
+//        for(AttributePtr attr : dataset->attributes)
+//        {
+//            cout << "Attribute " << attr->name << ": type/" << attr->type;
+//            if(attr->type == NOMINAL)
+//            {
+//                cout << " values: ";
+//                for(string &str : *(attr->nominal))
+//                    cout << str << " ";
+//            }
+//            cout << endl;
+//        }
+//
+//        cout << "Data" << endl;
+//        for(InstancePtr row : dataset->data)
+//        {
+//            for(ValuePtr value : *row)
+//            {
+//                if(value->type == NUMERIC)
+//                    cout << value->number;
+//                else if(value->type == NOMINAL)
+//                    cout << *(value->str);
+//                cout << "/" << value->type << " ";
+//            }
+//            cout << endl;
+//        }
 
-        for(AttributePtr attr : dataset->attributes)
-        {
-            cout << "Attribute " << attr->name << ": type/" << attr->type;
-            if(attr->type == NOMINAL)
-            {
-                cout << " values: ";
-                for(string &str : *(attr->nominal))
-                    cout << str << " ";
-            }
-            cout << endl;
-        }
-
-        cout << "Data" << endl;
-        for(InstancePtr row : dataset->data)
-        {
-            for(ValuePtr value : *row)
-            {
-                if(value->type == NUMERIC)
-                    cout << value->number;
-                else if(value->type == NOMINAL)
-                    cout << *(value->str);
-                cout << "/" << value->type << " ";
-            }
-            cout << endl;
-        }
+        Inserter::insert(*dataset);
     }
     catch(exception &ex)
     {

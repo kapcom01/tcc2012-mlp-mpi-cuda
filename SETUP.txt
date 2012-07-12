@@ -1,0 +1,60 @@
+#################################################
+## Configurando base de dados PostgreSQL
+#################################################
+
+## Instalação
+sudo apt-get install postgresql
+sudo /etc/init.d/postgresql start
+
+## Criação de usuário
+sudo su - postgres
+createuser -P mlpuser # Coloque NO para todas as opções que aparecerão e senha 'mlpuser'
+createdb mlpdb
+
+## Criação das tabelas
+psql mlpdb -h localhost
+
+CREATE TABLE Relation (
+    RelationID SERIAL PRIMARY KEY, 
+    Name VARCHAR(30) NOT NULL UNIQUE, 
+    NAttributes INTEGER NOT NULL, 
+    NInstances INTEGER NOT NULL
+);
+
+CREATE TABLE Attribute (
+    RelationID INTEGER, 
+    AttrIndex INTEGER,
+    Name VARCHAR(30),
+    Type SMALLINT NOT NULL, 
+    NominalCard SMALLINT,
+    CHECK (Type IN (1,2)),
+    PRIMARY KEY (RelationID, AttrIndex),
+    UNIQUE (RelationID, Name),
+    FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
+);
+
+CREATE TABLE Nominal (
+    RelationID INTEGER,
+    AttrIndex INTEGER,
+    Name VARCHAR(30),
+    PRIMARY KEY (RelationID, AttrIndex, Name),
+    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
+);
+
+CREATE TABLE Data (
+    RelationID INTEGER,
+    InstanceIndex INTEGER,
+    AttrIndex INTEGER,
+    NumericValue NUMERIC,
+    NominalValue VARCHAR(30),
+    PRIMARY KEY (RelationID, InstanceIndex, AttrIndex),
+    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
+);
+
+## Doação de privilégios
+GRANT SELECT, INSERT, UPDATE, DELETE ON Relation TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Attribute TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Nominal TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Data TO mlpuser;
+GRANT SELECT, UPDATE, USAGE ON relation_relationid_seq TO mlpuser;
+

@@ -18,21 +18,26 @@ unordered_map<int, string> ParseException::messages =
         { SIN_INVALID_INSTANCE,     "invalid instance, the correct format is: <value>,<value>,...,<value>" },
 
         { SEM_TYPE_NOT_ALLOWED,     "attribute type not allowed, it should be numeric or nominal" },
-        { SEM_INVALID_TYPE,         "types of this instance do not correspond to the types of the declared attributes" }
+        { SEM_WRONG_INSTANCE_TYPE,  "types of this instance do not correspond to the types of the declared attributes" },
+        { SEM_SAME_ATTRIBUTE_NAME,  "attribute name has previously declared" },
+        { SEM_SAME_NOMINAL_VALUE,   "nominal value has previously declared" }
 };
 
 /**
  * Constrói uma nova exceção
+ * @param error Tipo do erro
+ * @param driver Driver
  */
 ParseException::ParseException(int error, Driver &driver)
 {
     char out[500];
     sprintf(out, messages[error].c_str(), driver.scanner->getToken().c_str());
-    msg = "Line " + to_string(driver.scanner->getLineno()) + ": " + out;
+    msg = "ERROR:  line " + to_string(driver.scanner->getLineno()) + ": " + out;
 }
 
 /**
  * Retorna a mensagem do erro
+ * @return Mensagem de erro
  */
 const char* ParseException::what() const throw ()
 {

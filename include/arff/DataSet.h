@@ -4,6 +4,7 @@
 #include "arff/DataTypes.h"
 #include "arff/Driver.h"
 #include "arff/ParseException.h"
+#include <map>
 
 namespace ARFF
 {
@@ -66,6 +67,11 @@ private:
      * Driver
      */
     Driver &driver;
+
+    /**
+     * Mapeamento dos nomes dos atributos
+     */
+    map<string, bool> attrMap;
 
 };
 
