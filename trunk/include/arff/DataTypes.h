@@ -170,7 +170,7 @@ typedef shared_ptr<Instance> InstancePtr;
 /**
  * Vários dados
  */
-typedef list<InstancePtr> Data;
+typedef vector<InstancePtr> Data;
 
 }
 

@@ -41,6 +41,24 @@ void DataSet::addAttribute(Attribute *attr)
     if(ptr->type != NUMERIC && ptr->type != NOMINAL)
         throwError(SEM_TYPE_NOT_ALLOWED);
 
+    // Verifica se o nome do atributo já não foi utilizado anteriormente
+    if(attrMap.find(attr->name) != attrMap.end())
+        throwError(SEM_SAME_ATTRIBUTE_NAME);
+
+    // Se o tipo for nominal
+    if(attr->type == NOMINAL)
+    {
+        // Verifica se existem valores nominais repetidos
+        map<string, bool> nominalMap;
+        for(string &str : *(attr->nominal))
+        {
+            if(nominalMap.find(str) != nominalMap.end())
+                throwError(SEM_SAME_NOMINAL_VALUE);
+            nominalMap[str] = true;
+        }
+    }
+
+    attrMap[attr->name] = true;
     attributes.push_back(ptr);
 }
 
@@ -74,19 +92,19 @@ void DataSet::addInstance(const DataList* dlist, bool isSparse)
 
         // Caso os índices da lista esparsa estivem errados
         if(it != dlist->end())
-            throwError(SEM_INVALID_TYPE);
+            throwError(SEM_WRONG_INSTANCE_TYPE);
     }
 
     // Verifica a quantidade de valores
     if(row->size() != attributes.size())
-        throwError(SEM_INVALID_TYPE);
+        throwError(SEM_WRONG_INSTANCE_TYPE);
 
     // Verifica os tipos de cada valor
     for(uint i = 0; i < row->size(); i++)
     {
         ValuePtr &value = row->at(i);
         if(value->type != EMPTY && value->type != attributes[i]->type)
-            throwError(SEM_INVALID_TYPE);
+            throwError(SEM_WRONG_INSTANCE_TYPE);
     }
 
     data.push_back(row);
