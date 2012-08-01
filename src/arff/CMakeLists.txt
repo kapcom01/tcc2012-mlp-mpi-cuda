@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 find_package(FLEX)
 find_package(BISON)
 
@@ -13,4 +14,4 @@ ADD_FLEX_BISON_DEPENDENCY(SCANNER PARSER)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 
-add_library(arff Driver.cpp ParseException.cpp DataSet.cpp ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})
+add_library(arff DataSet.cpp DataTypes.cpp Driver.cpp ParseException.cpp ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})

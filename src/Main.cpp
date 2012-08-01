@@ -1,60 +1,30 @@
-#include "arff/Driver.h"
-#include "arff/DataSet.h"
-#include "database/Inserter.h"
-#include <cstdlib>
+#include "mlp/MLPerceptron.h"
 
-using namespace ARFF;
-using namespace Database;
+using namespace MLP;
 
 int main(int argc, char* argv[])
 {
-    if(argc != 2)
+    if(argc != 1)
     {
-        cerr << "Usage mode: " << argv[0] << " <input file>" << endl;
+        cerr << "Usage mode: " << argv[0] << endl;
         return EXIT_FAILURE;
     }
 
-    string input(argv[1]);
-    Driver driver(input);
+    Settings settings(2);
+    settings.activationType = LOGISTIC;
+    settings.initialLR = 0.5, settings.minLR = 0.01, settings.maxLR = 0.9;
+    settings.maxTolerance = 0.01;
+    settings.minSuccessRate = 0.95;
+    settings.units[0] = 2, settings.units[1] = 2, settings.units[2] = 1;
 
-    try
-    {
-        DataSet* dataset = driver.parse();
+    InputSet inputSet(4, 2, 1);
+    inputSet.input[0][0] = 0, inputSet.input[0][1] = 0, inputSet.expectedOutput[0][0] = 0;
+    inputSet.input[1][0] = 0, inputSet.input[1][1] = 1, inputSet.expectedOutput[1][0] = 1;
+    inputSet.input[2][0] = 1, inputSet.input[2][1] = 0, inputSet.expectedOutput[2][0] = 1;
+    inputSet.input[3][0] = 1, inputSet.input[3][1] = 1, inputSet.expectedOutput[3][0] = 1;
 
-//        cout << "Relation: " << dataset->relation << endl;
-//
-//        for(AttributePtr attr : dataset->attributes)
-//        {
-//            cout << "Attribute " << attr->name << ": type/" << attr->type;
-//            if(attr->type == NOMINAL)
-//            {
-//                cout << " values: ";
-//                for(string &str : *(attr->nominal))
-//                    cout << str << " ";
-//            }
-//            cout << endl;
-//        }
-//
-//        cout << "Data" << endl;
-//        for(InstancePtr row : dataset->data)
-//        {
-//            for(ValuePtr value : *row)
-//            {
-//                if(value->type == NUMERIC)
-//                    cout << value->number;
-//                else if(value->type == NOMINAL)
-//                    cout << *(value->str);
-//                cout << "/" << value->type << " ";
-//            }
-//            cout << endl;
-//        }
-
-        Inserter::insert(*dataset);
-    }
-    catch(exception &ex)
-    {
-        cerr << ex.what() << endl;
-    }
+    MLPerceptron mlp(&settings);
+    mlp.train(&inputSet);
 
     return EXIT_SUCCESS;
 }
