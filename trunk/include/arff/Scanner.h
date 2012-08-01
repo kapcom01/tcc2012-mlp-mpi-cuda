@@ -19,48 +19,60 @@ class Scanner: public yyFlexLexer
 
 public:
 
-    /**
-     * Contrói um scanner passando um driver
-     * @param cDriver Driver
-     */
-    Scanner(Driver &cDriver) : yyFlexLexer(&(cDriver.istream)), driver(cDriver) { }
+	/**
+	 * Contrói um scanner passando um driver
+	 * @param cDriver Driver
+	 */
+	Scanner(Driver &cDriver)
+			: yyFlexLexer(&(cDriver.istream)), driver(cDriver)
+	{
+	}
 
-    /**
-     * Função de escaneamento com valor semântico
-     * @param yylval Valor semântico
-     * @param yylloc Localização no arquivo
-     * @return Token
-     */
-    int yylex(Parser::semantic_type* yylval, Parser::location_type* yylloc);
+	/**
+	 * Função de escaneamento com valor semântico
+	 * @param yylval Valor semântico
+	 * @param yylloc Localização no arquivo
+	 * @return Token
+	 */
+	int yylex(Parser::semantic_type* yylval, Parser::location_type* yylloc);
 
-    /**
-     * Marca a linha atual
-     */
-    void markLine() { markedLine = yylineno; }
+	/**
+	 * Marca a linha atual
+	 */
+	void markLine()
+	{
+		markedLine = yylineno;
+	}
 
-    /**
-     * Retorna a linha atual
-     * @return Linha atual
-     */
-    int getLineno() { return markedLine; }
+	/**
+	 * Retorna a linha atual
+	 * @return Linha atual
+	 */
+	int getLineno() const
+	{
+		return markedLine;
+	}
 
-    /**
-     * Retorna o token atual
-     * @return Token atual
-     */
-    string getToken() { return yytext; }
+	/**
+	 * Retorna o token atual
+	 * @return Token atual
+	 */
+	string getToken() const
+	{
+		return yytext;
+	}
 
 private:
 
-    /**
-     * Driver
-     */
-    Driver &driver;
+	/**
+	 * Driver
+	 */
+	Driver &driver;
 
-    /**
-     * Linha marcada
-     */
-    int markedLine;
+	/**
+	 * Linha marcada
+	 */
+	int markedLine;
 
 };
 

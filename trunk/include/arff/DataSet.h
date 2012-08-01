@@ -3,7 +3,6 @@
 
 #include "arff/DataTypes.h"
 #include "arff/Driver.h"
-#include "arff/ParseException.h"
 #include <map>
 
 namespace ARFF
@@ -17,61 +16,61 @@ class DataSet
 
 public:
 
-    /**
-     * Constrói um conjunto de dados vazio
-     */
-    DataSet(Driver &driver);
+	/**
+	 * Constrói um conjunto de dados vazio
+	 */
+	DataSet(Driver &driver);
 
-    /**
-     * Destrói o conjunto de dados
-     */
-    ~DataSet();
+	/**
+	 * Destrói o conjunto de dados
+	 */
+	~DataSet();
 
-    /**
-     * Seta o nome da relação
-     * @param name Nome da relação
-     */
-    void setRelation(const string *name);
+	/**
+	 * Seta o nome da relação
+	 * @param name Nome da relação
+	 */
+	void setRelation(const string *name);
 
-    /**
-     * Adiciona um atributo
-     * @param attr Atributo
-     */
-    void addAttribute(Attribute *attr);
+	/**
+	 * Adiciona um atributo
+	 * @param attr Atributo
+	 */
+	void addAttribute(Attribute *attr);
 
-    /**
-     * Adiciona uma instância de dados
-     * @param dlist Lista de valores da instância
-     * @param isSparse Verdadeiro se a lista for esparsa ou falso caso contrário
-     */
-    void addInstance(const DataList* dlist, bool isSparse);
+	/**
+	 * Adiciona uma instância de dados
+	 * @param dlist Lista de valores da instância
+	 * @param isSparse Verdadeiro se a lista for esparsa ou falso caso contrário
+	 */
+	void addInstance(const DataList* dlist, bool isSparse);
 
-    /**
-     * Nome da relação
-     */
-    string relation;
+	/**
+	 * Nome da relação
+	 */
+	string relation;
 
-    /**
-     * Informações sobre os atributos
-     */
-    Attributes attributes;
+	/**
+	 * Informações sobre os atributos
+	 */
+	Attributes attributes;
 
-    /**
-     * Informações sobre os dados
-     */
-    Data data;
+	/**
+	 * Informações sobre os dados
+	 */
+	Data data;
 
 private:
 
-    /**
-     * Driver
-     */
-    Driver &driver;
+	/**
+	 * Driver
+	 */
+	Driver &driver;
 
-    /**
-     * Mapeamento dos nomes dos atributos
-     */
-    map<string, bool> attrMap;
+	/**
+	 * Mapeamento dos nomes dos atributos
+	 */
+	map<string, bool> attrMap;
 
 };
 

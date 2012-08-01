@@ -1,7 +1,10 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
 
-#include "database/DatabaseException.h"
+#include "Common.h"
+#include <pqxx/pqxx>
+
+using namespace pqxx;
 
 /**
  * Ponteiro para work
@@ -19,28 +22,28 @@ class Connection
 
 public:
 
-    /**
-     * Constrói uma nova conexão com a base de dados
-     */
-    Connection();
+	/**
+	 * Constrói uma nova conexão com a base de dados
+	 */
+	Connection();
 
-    /**
-     * Destrói a conexão
-     */
-    virtual ~Connection();
+	/**
+	 * Destrói a conexão
+	 */
+	virtual ~Connection();
 
-    /**
-     * Retorna um trabalho
-     * @return Trabalho
-     */
-    WorkPtr getWork();
+	/**
+	 * Retorna um trabalho
+	 * @return Trabalho
+	 */
+	WorkPtr getWork() const;
 
 private:
 
-    /**
-     * Conexão com a base de dados
-     */
-    connection* conn;
+	/**
+	 * Conexão com a base de dados
+	 */
+	connection* conn;
 
 };
 
