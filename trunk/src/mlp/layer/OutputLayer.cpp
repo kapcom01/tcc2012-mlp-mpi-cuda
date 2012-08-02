@@ -7,7 +7,7 @@ namespace MLP
 
 OutputLayer::OutputLayer(uint inUnits, uint outUnits,
 		const ActivationFunction* activation, LearningRate* learningRate)
-		: Layer(outUnits, inUnits, activation, learningRate)
+		: Layer(inUnits, outUnits, activation, learningRate)
 {
 	this->learningRate = learningRate;
 }

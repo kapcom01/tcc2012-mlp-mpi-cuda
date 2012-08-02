@@ -7,7 +7,7 @@ namespace MLP
 
 HiddenLayer::HiddenLayer(uint inUnits, uint outUnits,
 		const ActivationFunction* activation, const LearningRate* learningRate)
-		: Layer(outUnits, inUnits, activation, learningRate)
+		: Layer(inUnits, outUnits, activation, learningRate)
 {
 
 }

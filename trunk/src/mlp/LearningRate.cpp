@@ -37,17 +37,17 @@ double LearningRate::operator *() const
 
 void LearningRate::adjust(const double* error, const double* expectedOutput, uint size)
 {
-	double sum = 0;
+//	double sum = 0;
 
 	// Calcula a soma dos erros percentuais em relação à saída esperada
-	for (uint i = 0; i < size; i++)
-		sum += fabs(error[i]) / expectedOutput[i];
+//	for (uint i = 0; i < size; i++)
+//		sum += fabs(error[i]);
 
 	// Calcula o erro médio
-	double avg = sum / (double) size;
+//	double avg = sum / (double) size;
 
 	// Altera a taxa de aprendizado
-	learningRate = (max - min) * (1 - exp(-avg)) + min;
+//	learningRate = (max - min) * (1 - exp(-avg)) + min;
 }
 
 //===========================================================================//

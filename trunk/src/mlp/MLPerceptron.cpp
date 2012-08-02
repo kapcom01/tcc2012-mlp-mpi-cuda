@@ -28,12 +28,12 @@ MLPerceptron::MLPerceptron(Settings* settings)
 
 	// Adiciona as demais camadas escondidas
 	uint i;
-	for (i = 2; i < settings->nLayers - 1; i++)
-		layers[i] = new HiddenLayer(units[i - 1], units[i], activation,
+	for (i = 1; i < settings->nLayers - 1; i++)
+		layers[i] = new HiddenLayer(units[i], units[i + 1], activation,
 				learningRate);
 
 	// Adiciona a camada de saída
-	outputLayer = new OutputLayer(units[i - 1], units[i], activation,
+	outputLayer = new OutputLayer(units[i], units[i + 1], activation,
 			learningRate);
 	layers[i] = outputLayer;
 }
@@ -70,7 +70,7 @@ double* MLPerceptron::feedforward(const double* input)
 	for (uint i = 1; i < settings->nLayers; i++)
 		layers[i]->feedforward(layers[i - 1]->getOutput());
 
-	return layers[settings->nLayers - 1]->getOutput();
+	return outputLayer->getOutput();
 }
 
 //===========================================================================//
@@ -78,10 +78,10 @@ double* MLPerceptron::feedforward(const double* input)
 void MLPerceptron::feedback(const double* expectedOutput)
 {
 	// Propaga a saída esperada na camada de saída
-	layers[settings->nLayers - 1]->feedback(expectedOutput);
+	outputLayer->feedback(expectedOutput);
 
 	// Propaga o sinal de feedback para o restante das camadas
-	for (uint i = settings->nLayers - 2; i >= 0; i--)
+	for (int i = settings->nLayers - 2; i >= 0; i--)
 		layers[i]->feedback(layers[i + 1]->getFeedback());
 }
 
@@ -113,10 +113,10 @@ void MLPerceptron::train(InputSet* inputSet)
 	{
 		uint hits = 0;
 
-		// Embaralha os pindices
+		// Embaralha os índices
 		shuffleIndexes(indexes, inputSet->size);
 
-		// Para cada entrada
+		// Para cada instância
 		for (uint i = 0; i < inputSet->size; i++)
 		{
 			uint r = indexes[i];
@@ -140,7 +140,7 @@ void MLPerceptron::train(InputSet* inputSet)
 		}
 
 		// Calcula a taxa de sucesso
-		inputSet->successRate = inputSet->size / (double) hits;
+		inputSet->successRate = hits / (double) inputSet->size;
 
 		// Se for atingido a taxa de sucesso mínima, para
 		if(inputSet->successRate >= settings->minSuccessRate)

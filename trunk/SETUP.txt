@@ -51,6 +51,41 @@ CREATE TABLE Data (
     FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
 );
 
+CREATE TABLE MLP (
+	MLPID SERIAL PRIMARY KEY,
+	RelationID INTEGER NOT NULL,
+	Name VARCHAR(30) NOT NULL UNIQUE,
+	MaxTolerance NUMERIC NOT NULL,
+	InitialLearningRate NUMERIC NOT NULL,
+	MinLearningRate NUMERIC NOT NULL,
+	MaxLearningRate NUMERIC NOT NULL,
+	ActivationType SMALLINT NOT NULL,
+	TrainingType SMALLINT NOT NULL,
+	NLayers INTEGER NOT NULL,
+	CHECK (ActivationType IN (1,2)),
+	CHECK (TrainingType IN (1,2)),
+	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
+);
+
+CREATE TABLE Layer (
+	MLPIP INTEGER,
+	LayerIndex INTEGER,
+	NInputs INTEGER NOT NULL,
+	NNeurons INTEGER NOT NULL,
+	PRIMARY KEY (MLPID, LayerIndex),
+	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID)
+);
+
+CREATE TABLE Neuron (
+	MLPIP INTEGER,
+	LayerIndex INTEGER,
+	NeuronIndex INTEGER,
+	InputIndex INTEGER,
+	Weight NUMERIC NOT NULL,
+	PRIMARY KEY (MLPID, LayerIndex, NeuronIndex, InputIndex),
+	FOREIGN KEY (MLPID, LayerIndex) REFERENCES Layer (MLPID, LayerIndex)
+);
+
 ## Doação de privilégios
 GRANT SELECT, INSERT, UPDATE, DELETE ON Relation TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Attribute TO mlpuser;
