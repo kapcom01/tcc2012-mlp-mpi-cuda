@@ -10,7 +10,8 @@ Layer::Layer(uint inUnits, uint outUnits, const ActivationFunction *activation,
 {
 	this->activation = activation;
 	this->learningRate = learningRate;
-	this->inUnits = inUnits, this->outUnits = outUnits;
+	this->inUnits = inUnits;
+	this->outUnits = outUnits;
 
 	// Aloca a matriz de pesos
 	weights = new double*[outUnits];
@@ -25,7 +26,7 @@ Layer::Layer(uint inUnits, uint outUnits, const ActivationFunction *activation,
 
 	// Inicializa os pesos das entradas
 	for (uint i = 0; i < outUnits; i++)
-		for (uint j = 0; j <= inUnits; i++)
+		for (uint j = 0; j <= inUnits; j++)
 			weights[i][j] = activation->initialValue(inUnits, outUnits);
 }
 
@@ -76,7 +77,7 @@ void Layer::feedforward(const double* input)
 			sum += row[j] * input[j];
 		sum += row[inUnits];
 
-		// Seta as saídas não ativadas e ativadas
+		// Seta as saídas não ativada e ativada
 		nonActivatedOutput[i] = sum;
 		activatedOutput[i] = activation->activate(sum);
 	}
@@ -97,6 +98,7 @@ void Layer::feedback(const double* signal)
 		// Atualiza os pesos desse neurônio
 		for (uint j = 0; j < inUnits; j++)
 			row[j] += learningRate->get() * error[i] * input[j];
+		row[inUnits] += learningRate->get() * error[i];
 	}
 
 	// Calcula o sinal de retorno para a camada anterior
