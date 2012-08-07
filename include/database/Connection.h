@@ -33,6 +33,12 @@ public:
 	virtual ~Connection();
 
 	/**
+	 * Retorna a conexão
+	 * @return Conexão
+	 */
+	connection* get();
+
+	/**
 	 * Retorna um trabalho
 	 * @return Trabalho
 	 */

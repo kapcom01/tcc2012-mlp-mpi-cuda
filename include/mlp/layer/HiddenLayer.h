@@ -19,11 +19,9 @@ public:
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnit Número de neurônios na camada atual
 	 * @param activation Função de ativação
-	 * @param learningRate Taxa de aprendizado
 	 */
 	HiddenLayer(uint inUnits, uint outUnits,
-			const ActivationFunction* activation,
-			const LearningRate* learningRate);
+			const ActivationFunc* activation);
 
 	/**
 	 * Destrói a camada

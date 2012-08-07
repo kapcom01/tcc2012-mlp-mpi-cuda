@@ -1,28 +1,28 @@
-#ifndef HYPERBOLICFUNCTION_H_
-#define HYPERBOLICFUNCTION_H_
+#ifndef STEPFUNC_H_
+#define STEPFUNC_H_
 
-#include "mlp/activation/ActivationFunction.h"
+#include "mlp/activation/ActivationFunc.h"
 
 namespace MLP
 {
 
 /**
- * Classe que representa uma função de ativação hiperbólica
+ * Classe que representa uma função de ativação degrau
  */
-class HyperbolicFunction: public ActivationFunction
+class StepFunc : public ActivationFunc
 {
 
 public:
 
 	/**
-	 * Contrói uma função de ativação hiperbólica
+	 * Contrói uma função de ativação degrau
 	 */
-	HyperbolicFunction();
+	StepFunc();
 
 	/**
 	 * Destrói a função de ativação
 	 */
-	virtual ~HyperbolicFunction();
+	virtual ~StepFunc();
 
 	/**
 	 * Calcula o valor da função de ativação para o valor passado

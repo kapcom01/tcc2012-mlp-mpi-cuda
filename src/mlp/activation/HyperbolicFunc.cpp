@@ -1,32 +1,32 @@
-#include "mlp/activation/HyperbolicFunction.h"
+#include "mlp/activation/HyperbolicFunc.h"
 
 namespace MLP
 {
 
 //===========================================================================//
 
-HyperbolicFunction::HyperbolicFunction()
+HyperbolicFunc::HyperbolicFunc()
 {
 
 }
 
 //===========================================================================//
 
-HyperbolicFunction::~HyperbolicFunction()
+HyperbolicFunc::~HyperbolicFunc()
 {
 
 }
 
 //===========================================================================//
 
-double HyperbolicFunction::activate(double x) const
+double HyperbolicFunc::activate(double x) const
 {
 	return tanh(x);
 }
 
 //===========================================================================//
 
-double HyperbolicFunction::derivate(double x) const
+double HyperbolicFunc::derivate(double x) const
 {
 	double aux = 2 * cosh(x) / (cosh(2 * x) + 1);
 	return aux * aux;
@@ -34,9 +34,10 @@ double HyperbolicFunction::derivate(double x) const
 
 //===========================================================================//
 
-double HyperbolicFunction::initialValue(uint inUnits, uint outUnits) const
+double HyperbolicFunc::initialValue(uint inUnits, uint outUnits) const
 {
-	double max = sqrt(6 / (double) (inUnits + outUnits));
+//	double max = sqrt(6 / (double) (inUnits + outUnits));
+	double max = 1 / sqrt(inUnits);
 	return randomBetween(-max, max);
 }
 

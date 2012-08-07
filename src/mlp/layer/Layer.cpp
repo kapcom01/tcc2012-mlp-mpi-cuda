@@ -5,11 +5,9 @@ namespace MLP
 
 //===========================================================================//
 
-Layer::Layer(uint inUnits, uint outUnits, const ActivationFunction *activation,
-		const LearningRate* learningRate)
+Layer::Layer(uint inUnits, uint outUnits, const ActivationFunc *activation)
 {
 	this->activation = activation;
-	this->learningRate = learningRate;
 	this->inUnits = inUnits;
 	this->outUnits = outUnits;
 
@@ -19,15 +17,10 @@ Layer::Layer(uint inUnits, uint outUnits, const ActivationFunction *activation,
 		weights[i] = new double[inUnits + 1];
 
 	// Aloca os vetores de saída, de feedback e de erro
-	nonActivatedOutput = new double[outUnits];
-	activatedOutput = new double[outUnits];
+	weightedSum = new double[outUnits];
+	output = new double[outUnits];
 	feedbackSignal = new double[inUnits];
 	error = new double[outUnits];
-
-	// Inicializa os pesos das entradas
-	for (uint i = 0; i < outUnits; i++)
-		for (uint j = 0; j <= inUnits; j++)
-			weights[i][j] = activation->initialValue(inUnits, outUnits);
 }
 
 //===========================================================================//
@@ -40,24 +33,20 @@ Layer::~Layer()
 	delete[] weights;
 
 	// Deleta os vetores de saída, de feedback e de erro
-	delete[] nonActivatedOutput;
-	delete[] activatedOutput;
+	delete[] weightedSum;
+	delete[] output;
 	delete[] feedbackSignal;
 	delete[] error;
 }
 
 //===========================================================================//
 
-double* Layer::getOutput()
+void Layer::randomizeWeights()
 {
-	return activatedOutput;
-}
-
-//===========================================================================//
-
-double* Layer::getFeedback()
-{
-	return feedbackSignal;
+	// Inicializa os pesos das entradas
+	for (uint i = 0; i < outUnits; i++)
+		for (uint j = 0; j <= inUnits; j++)
+			weights[i][j] = activation->initialValue(inUnits, outUnits);
 }
 
 //===========================================================================//
@@ -78,14 +67,14 @@ void Layer::feedforward(const double* input)
 		sum += row[inUnits];
 
 		// Seta as saídas não ativada e ativada
-		nonActivatedOutput[i] = sum;
-		activatedOutput[i] = activation->activate(sum);
+		weightedSum[i] = sum;
+		output[i] = activation->activate(sum);
 	}
 }
 
 //===========================================================================//
 
-void Layer::feedback(const double* signal)
+void Layer::feedback(const double* signal, double learningRate)
 {
 	// Atualiza os pesos dos neurônios
 	for (uint i = 0; i < outUnits; i++)
@@ -97,8 +86,8 @@ void Layer::feedback(const double* signal)
 
 		// Atualiza os pesos desse neurônio
 		for (uint j = 0; j < inUnits; j++)
-			row[j] += learningRate->get() * error[i] * input[j];
-		row[inUnits] += learningRate->get() * error[i];
+			row[j] += learningRate * error[i] * input[j];
+		row[inUnits] += learningRate * error[i];
 	}
 
 	// Calcula o sinal de retorno para a camada anterior
@@ -114,7 +103,7 @@ void Layer::feedback(const double* signal)
 	}
 }
 
-//=============================================================================//
+//===========================================================================//
 
 }
 

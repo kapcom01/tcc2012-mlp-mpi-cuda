@@ -1,25 +1,25 @@
-#include "mlp/activation/ActivationFunction.h"
+#include "mlp/activation/ActivationFunc.h"
 
 namespace MLP
 {
 
 //===========================================================================//
 
-ActivationFunction::ActivationFunction()
+ActivationFunc::ActivationFunc()
 {
 
 }
 
 //===========================================================================//
 
-ActivationFunction::~ActivationFunction()
+ActivationFunc::~ActivationFunc()
 {
 
 }
 
 //===========================================================================//
 
-double ActivationFunction::randomBetween(double min, double max) const
+double ActivationFunc::randomBetween(double min, double max) const
 {
 	double r = rand() / (double) RAND_MAX;
 	return r * (max - min) + min;

@@ -18,7 +18,7 @@
 
 %code requires
 {
-#include "arff/DataSet.h"
+#include "arff/Relation.h"
 #include "arff/Driver.h"
 #include "arff/ParseException.h"
 #define saveLine markLine(driver);

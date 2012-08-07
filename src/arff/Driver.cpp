@@ -1,7 +1,7 @@
 #include "arff/Driver.h"
 #include "arff/Scanner.h"
 #include "arff/Parser.hh"
-#include "arff/DataSet.h"
+#include "arff/Relation.h"
 
 namespace ARFF
 {
@@ -19,7 +19,7 @@ Driver::Driver(const string &filename)
 		exit(EXIT_FAILURE);
 	}
 
-	dataset = new DataSet(*this);
+	dataset = new Relation(*this);
 	scanner = new Scanner(*this);
 	parser = new Parser(*this);
 }
@@ -35,7 +35,7 @@ Driver::~Driver()
 
 //===========================================================================//
 
-DataSet* Driver::parse()
+Relation* Driver::parse()
 {
 	parser->parse();
 	return dataset;

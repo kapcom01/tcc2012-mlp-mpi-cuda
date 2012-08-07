@@ -5,10 +5,10 @@ namespace MLP
 
 //===========================================================================//
 
-LearningRate::LearningRate(double initialValue, double min, double max)
+LearningRate::LearningRate(double initialValue, uint searchTime)
 {
-	this->min = min;
-	this->max = max;
+	this->initial = initialValue;
+	this->searchTime = searchTime;
 	this->learningRate = initialValue;
 }
 
@@ -35,19 +35,9 @@ double LearningRate::operator *() const
 
 //===========================================================================//
 
-void LearningRate::adjust(const double* error, const double* expectedOutput, uint size)
+void LearningRate::adjust(uint iteration)
 {
-//	double sum = 0;
-
-	// Calcula a soma dos erros percentuais em relação à saída esperada
-//	for (uint i = 0; i < size; i++)
-//		sum += fabs(error[i]);
-
-	// Calcula o erro médio
-//	double avg = sum / (double) size;
-
-	// Altera a taxa de aprendizado
-//	learningRate = (max - min) * (1 - exp(-avg)) + min;
+	learningRate = initial / (double) (1 + iteration / (double) searchTime);
 }
 
 //===========================================================================//

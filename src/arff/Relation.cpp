@@ -1,4 +1,4 @@
-#include "arff/DataSet.h"
+#include "arff/Relation.h"
 #include "arff/ParseException.h"
 
 namespace ARFF
@@ -6,7 +6,7 @@ namespace ARFF
 
 //===========================================================================//
 
-DataSet::DataSet(Driver &cDriver)
+Relation::Relation(Driver &cDriver)
 		: driver(cDriver)
 {
 
@@ -14,21 +14,21 @@ DataSet::DataSet(Driver &cDriver)
 
 //===========================================================================//
 
-DataSet::~DataSet()
+Relation::~Relation()
 {
 
 }
 
 //===========================================================================//
 
-void DataSet::setRelation(const string *name)
+void Relation::setRelation(const string *name)
 {
-	relation = *name;
+	this->name = *name;
 }
 
 //===========================================================================//
 
-void DataSet::addAttribute(Attribute *attr)
+void Relation::addAttribute(Attribute *attr)
 {
 	AttributePtr ptr(attr);
 
@@ -59,7 +59,7 @@ void DataSet::addAttribute(Attribute *attr)
 
 //===========================================================================//
 
-void DataSet::addInstance(const DataList* dlist, bool isSparse)
+void Relation::addInstance(const DataList* dlist, bool isSparse)
 {
 	InstancePtr row;
 
