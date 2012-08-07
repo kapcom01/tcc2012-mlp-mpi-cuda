@@ -19,10 +19,9 @@ public:
 	/**
 	 * Constrói uma taxa de aprendizado
 	 * @param initialValue Valor inicial
-	 * @param min Valor mínimo
-	 * @param max Valor máximo
+	 * @param searchTime Número de iterações para busca
 	 */
-	LearningRate(double initialValue, double min, double max);
+	LearningRate(double initialValue, uint searchTime);
 
 	/**
 	 * Destrói a taxa de aprendizado
@@ -42,24 +41,22 @@ public:
 	double operator *() const;
 
 	/**
-	 * Ajusta a taxa de aprendizado em função do erro
-	 * @param error Erros cometidos na camada de saída
-	 * @param expectedOutput Saída esperada
-	 * @param size Tamanho dos vetores
+	 * Ajusta a taxa de aprendizado em função da quantidade de iterações
+	 * @param k Quantidade de iterações
 	 */
-	void adjust(const double* error, const double* expectedOutput, uint size);
+	void adjust(uint iteration);
 
 private:
 
 	/**
-	 * Valor mínimo
+	 * Taxa de aprendizado inicial
 	 */
-	double min;
+	double initial;
 
 	/**
-	 * Valor máximo
+	 * Número de iterações para busca
 	 */
-	double max;
+	uint searchTime;
 
 	/**
 	 * Taxa de aprendizado

@@ -14,4 +14,4 @@ ADD_FLEX_BISON_DEPENDENCY(SCANNER PARSER)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 
-add_library(arff DataSet.cpp DataTypes.cpp Driver.cpp ParseException.cpp ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})
+add_library(arff Attribute.cpp Driver.cpp ParseException.cpp Relation.cpp Value.cpp ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})

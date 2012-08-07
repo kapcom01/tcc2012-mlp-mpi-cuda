@@ -1,42 +1,42 @@
-#include "mlp/activation/LogisticFunction.h"
+#include "mlp/activation/LinearFunc.h"
 
 namespace MLP
 {
 
 //===========================================================================//
 
-LogisticFunction::LogisticFunction()
+LinearFunc::LinearFunc()
 {
 
 }
 
 //===========================================================================//
 
-LogisticFunction::~LogisticFunction()
+LinearFunc::~LinearFunc()
 {
 
 }
 
 //===========================================================================//
 
-double LogisticFunction::activate(double x) const
+double LinearFunc::activate(double x) const
 {
-	return 1 / (1 + exp(-x));
+	return x;
 }
 
 //===========================================================================//
 
-double LogisticFunction::derivate(double x) const
+double LinearFunc::derivate(double x) const
 {
-	double aux = exp(x);
-	return aux / ((aux + 1) * (aux + 1));
+	return 1;
 }
 
 //===========================================================================//
 
-double LogisticFunction::initialValue(uint inUnits, uint outUnits) const
+double LinearFunc::initialValue(uint inUnits, uint outUnits) const
 {
-	double max = 4 * sqrt(6 / (double) (inUnits + outUnits));
+//	double max = 1 / (double) (inUnits + outUnits);
+	double max = 1 / sqrt(inUnits);
 	return randomBetween(-max, max);
 }
 

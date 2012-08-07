@@ -6,7 +6,7 @@
 namespace ARFF
 {
 
-class DataSet;
+class Relation;
 class Scanner;
 class Parser;
 
@@ -33,7 +33,7 @@ public:
 	 * Realiza o parseamento
 	 * @return Retorna o conjunto de dados contido no arquivo
 	 */
-	DataSet* parse();
+	Relation* parse();
 
 	/**
 	 * Analisador léxico
@@ -43,7 +43,7 @@ public:
 	/**
 	 * Conjunto de dados
 	 */
-	DataSet* dataset;
+	Relation* dataset;
 
 	friend class Scanner;
 	friend class Parser;

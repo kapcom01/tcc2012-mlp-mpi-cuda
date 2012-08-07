@@ -1,7 +1,7 @@
-#ifndef INSERTER_H_
-#define INSERTER_H_
+#ifndef RELATIONHELPER_H_
+#define RELATIONHELPER_H_
 
-#include "arff/DataSet.h"
+#include "arff/Relation.h"
 #include "database/Connection.h"
 
 using namespace ARFF;
@@ -10,20 +10,26 @@ namespace Database
 {
 
 /**
- * Classe responsável por inserir um conjunto de dados na base
+ * Classe responsável por realizar operações sobre um conjunto de dados na base
  */
-class Inserter
+class RelationHelper
 {
 
 public:
 
 	/**
 	 * Insere um conjunto de dados
-	 * @param dataset Conjunto de dados
+	 * @param relation Conjunto de dados
 	 */
-	static void insert(const DataSet &dataset);
+	static void insert(const Relation &relation);
 
 private:
+
+	/**
+	 * Prepara a conexão para algumas operações
+	 * @param conn Conexão
+	 */
+	static void prepare(connection* conn);
 
 	/**
 	 * Verifica se o nome da relação já existe anteriormente
@@ -35,11 +41,11 @@ private:
 
 	/**
 	 * Insere as informações da relação
-	 * @param dataset Conjunto de dados
+	 * @param relation Conjunto de dados
 	 * @param work Trabalho
 	 * @return ID gerado
 	 */
-	static int insertRelation(const DataSet &dataset, WorkPtr &work);
+	static int insertRelation(const Relation &relation, WorkPtr &work);
 
 	/**
 	 * Insere um atributo

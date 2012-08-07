@@ -2,8 +2,10 @@
 #define LAYER_H_
 
 #include "Common.h"
-#include "mlp/activation/ActivationFunction.h"
+#include "mlp/activation/ActivationFunc.h"
 #include "mlp/LearningRate.h"
+
+namespace Database { class MLPHelper; }
 
 namespace MLP
 {
@@ -21,10 +23,8 @@ public:
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnits Número de neurônios na camada atual
 	 * @param activation Função de ativação
-	 * @param learningRate Taxa de aprendizado
 	 */
-	Layer(uint inUnits, uint outUnits, const ActivationFunction* activation,
-			const LearningRate* learningRate);
+	Layer(uint inUnits, uint outUnits, const ActivationFunc* activation);
 
 	/**
 	 * Destrói a camada
@@ -32,16 +32,9 @@ public:
 	virtual ~Layer();
 
 	/**
-	 * Retorna a saída ativada
-	 * @return Saída ativada
+	 * Randomiza os pesos
 	 */
-	double* getOutput();
-
-	/**
-	 * Retorna o sinal de feedback
-	 * @return Sinal de feedback
-	 */
-	double* getFeedback();
+	void randomizeWeights();
 
 	/**
 	 * Realiza o feedforward dos neurônios
@@ -52,9 +45,9 @@ public:
 	/**
 	 * Realiza o feedforward dos neurônios
 	 * @param signal Sinal vindo da camada posterior
-	 * @param output Vetor de valores reversamente ativados dos neurônios
+	 * @param learningRate Taxa de aprendizado
 	 */
-	void feedback(const double* signal);
+	void feedback(const double* signal, double learningRate);
 
 	/**
 	 * Calcula o i-ésimo erro
@@ -63,6 +56,9 @@ public:
 	 * @return i-ésimo error
 	 */
 	virtual double calculateError(uint i, const double* signal) = 0;
+
+	friend class Database::MLPHelper;
+	friend class MLP_BP;
 
 protected:
 
@@ -79,7 +75,7 @@ protected:
 	/**
 	 * Função de ativação
 	 */
-	const ActivationFunction* activation;
+	const ActivationFunc* activation;
 
 	/**
 	 * Matriz contendo os pesos de cada neurônio para cada entrada
@@ -92,14 +88,14 @@ protected:
 	const double* input;
 
 	/**
-	 * Saída não ativada dos neurônios
+	 * Soma ponderada das entradas
 	 */
-	double* nonActivatedOutput;
+	double* weightedSum;
 
 	/**
 	 * Saída ativada dos neurônios
 	 */
-	double* activatedOutput;
+	double* output;
 
 	/**
 	 * Sinal de feedback
@@ -110,13 +106,6 @@ protected:
 	 * Erros cometidos por cada neurônio
 	 */
 	double* error;
-
-private:
-
-	/**
-	 * Taxa de aprendizado
-	 */
-	const LearningRate* learningRate;
 
 };
 

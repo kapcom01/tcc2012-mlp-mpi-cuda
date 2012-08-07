@@ -43,6 +43,31 @@ public:
 	uint size;
 
 	/**
+	 * Taxa de aprendizado initial
+	 */
+	double learningRate;
+
+	/**
+	 * Número de iterações para busca
+	 */
+	uint searchTime;
+
+	/**
+	 * Número máximo de iterações
+	 */
+	uint maxIterations;
+
+	/**
+	 * Tolerância máxima
+	 */
+	double maxTolerance;
+
+	/**
+	 * Taxa de sucesso mínima
+	 */
+	double minSuccessRate;
+
+	/**
 	 * Dados de entrada do treinamento
 	 */
 	double** input;

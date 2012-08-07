@@ -1,5 +1,5 @@
-#ifndef ACTIVATIONFUNCTION_H_
-#define ACTIVATIONFUNCTION_H_
+#ifndef ACTIVATIONFUNC_H_
+#define ACTIVATIONFUNC_H_
 
 #include "Common.h"
 #include <cmath>
@@ -11,7 +11,7 @@ namespace MLP
 /**
  * Classe que representa uma função de ativação
  */
-class ActivationFunction
+class ActivationFunc
 {
 
 public:
@@ -19,12 +19,12 @@ public:
 	/**
 	 * Contrói uma função de ativação
 	 */
-	ActivationFunction();
+	ActivationFunc();
 
 	/**
 	 * Destrói a função de ativação
 	 */
-	virtual ~ActivationFunction();
+	virtual ~ActivationFunc();
 
 	/**
 	 * Calcula o valor da função de ativação para o valor passado
@@ -63,7 +63,7 @@ protected:
 /**
  * Ponteiro para ActivationFunction
  */
-typedef shared_ptr<ActivationFunction> ActivationPtr;
+typedef shared_ptr<ActivationFunc> ActivationPtr;
 
 }
 

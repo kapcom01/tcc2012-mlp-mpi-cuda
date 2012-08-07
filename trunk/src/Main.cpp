@@ -1,4 +1,4 @@
-#include "mlp/MLPerceptron.h"
+#include "mlp/MLP_BP.h"
 #include <ctime>
 
 using namespace MLP;
@@ -13,20 +13,18 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    Settings settings(2);
-    settings.activationType = LOGISTIC;
-    settings.initialLR = 0.9, settings.minLR = 0.01, settings.maxLR = 0.9;
-    settings.maxTolerance = 0.01;
-    settings.minSuccessRate = 0.95;
-    settings.units[0] = 2, settings.units[1] = 3, settings.units[2] = 1;
-
     InputSet inputSet(4, 2, 1);
     inputSet.input[0][0] = 0, inputSet.input[0][1] = 0, inputSet.expectedOutput[0][0] = 0;
     inputSet.input[1][0] = 0, inputSet.input[1][1] = 1, inputSet.expectedOutput[1][0] = 1;
     inputSet.input[2][0] = 1, inputSet.input[2][1] = 0, inputSet.expectedOutput[2][0] = 1;
     inputSet.input[3][0] = 1, inputSet.input[3][1] = 1, inputSet.expectedOutput[3][0] = 0;
+    inputSet.learningRate = 0.5, inputSet.searchTime = 200;
+    inputSet.maxIterations = 10000;
+    inputSet.maxTolerance = 0.01;
+    inputSet.minSuccessRate = 0.95;
 
-    MLPerceptron mlp(&settings);
+    uint units[] = {2, 3, 1};
+    MLP_BP mlp(2, units, LOGISTIC, CLASSIFICATION);
     mlp.train(&inputSet);
 
     return EXIT_SUCCESS;

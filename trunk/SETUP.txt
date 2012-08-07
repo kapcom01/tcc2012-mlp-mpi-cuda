@@ -6,6 +6,10 @@
 sudo apt-get install postgresql
 sudo /etc/init.d/postgresql start
 
+## Criação da senha para postgres
+sudo -u postgres psql postgres
+\password postgres # Digite a nova senha para postgres
+
 ## Criação de usuário
 sudo su - postgres
 createuser -P mlpuser # Coloque NO para todas as opções que aparecerão e senha 'mlpuser'
@@ -15,10 +19,13 @@ createdb mlpdb
 psql mlpdb -h localhost
 
 CREATE TABLE Relation (
-    RelationID SERIAL PRIMARY KEY, 
-    Name VARCHAR(30) NOT NULL UNIQUE, 
+    RelationID SERIAL, 
+    Name VARCHAR(30) NOT NULL, 
     NAttributes INTEGER NOT NULL, 
-    NInstances INTEGER NOT NULL
+    NInstances INTEGER NOT NULL,
+    
+    PRIMARY KEY (RelationID),
+    UNIQUE (Name)
 );
 
 CREATE TABLE Attribute (
@@ -27,6 +34,7 @@ CREATE TABLE Attribute (
     Name VARCHAR(30),
     Type SMALLINT NOT NULL, 
     NominalCard SMALLINT,
+    
     CHECK (Type IN (1,2)),
     PRIMARY KEY (RelationID, AttrIndex),
     UNIQUE (RelationID, Name),
@@ -37,6 +45,7 @@ CREATE TABLE Nominal (
     RelationID INTEGER,
     AttrIndex INTEGER,
     Name VARCHAR(30),
+    
     PRIMARY KEY (RelationID, AttrIndex, Name),
     FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
 );
@@ -47,43 +56,104 @@ CREATE TABLE Data (
     AttrIndex INTEGER,
     NumericValue NUMERIC,
     NominalValue VARCHAR(30),
+    
     PRIMARY KEY (RelationID, InstanceIndex, AttrIndex),
     FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
 );
 
 CREATE TABLE MLP (
-	MLPID SERIAL PRIMARY KEY,
-	RelationID INTEGER NOT NULL,
-	Name VARCHAR(30) NOT NULL UNIQUE,
-	MaxTolerance NUMERIC NOT NULL,
-	InitialLearningRate NUMERIC NOT NULL,
-	MinLearningRate NUMERIC NOT NULL,
-	MaxLearningRate NUMERIC NOT NULL,
+	MLPID SERIAL,
+	Name VARCHAR(30),
 	ActivationType SMALLINT NOT NULL,
-	TrainingType SMALLINT NOT NULL,
+	ProblemType SMALLINT NOT NULL,
 	NLayers INTEGER NOT NULL,
+	Status SMALLINT NOT NULL,
+	
 	CHECK (ActivationType IN (1,2)),
-	CHECK (TrainingType IN (1,2)),
-	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
+	CHECK (ProblemType IN (1,2)),
+	CHECK (Status IN (1,2)),
+	PRIMARY KEY (MLPID),
+	UNIQUE (Name)
 );
 
 CREATE TABLE Layer (
-	MLPIP INTEGER,
+	MLPID INTEGER,
 	LayerIndex INTEGER,
 	NInputs INTEGER NOT NULL,
 	NNeurons INTEGER NOT NULL,
+	
 	PRIMARY KEY (MLPID, LayerIndex),
 	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID)
 );
 
 CREATE TABLE Neuron (
-	MLPIP INTEGER,
+	MLPID INTEGER,
 	LayerIndex INTEGER,
 	NeuronIndex INTEGER,
 	InputIndex INTEGER,
 	Weight NUMERIC NOT NULL,
+	
 	PRIMARY KEY (MLPID, LayerIndex, NeuronIndex, InputIndex),
 	FOREIGN KEY (MLPID, LayerIndex) REFERENCES Layer (MLPID, LayerIndex)
+);
+
+CREATE TABLE Training (
+	TrainingID SERIAL,
+	MLPID INTEGER,
+	RelationID INTEGER NOT NULL,
+	LearningRate NUMERIC NOT NULL,
+	SearchPercent INTEGER NOT NULL,
+	MaxTolerance NUMERIC NOT NULL,
+	MaxIterations INTEGER NOT NULL,
+	MinSuccessRate NUMERIC NOT NULL,
+	SucessRate NUMERIC NOT NULL,
+	Time NUMERIC NOT NULL,
+	
+	PRIMARY KEY (TrainingID),
+	UNIQUE (MLPID),
+	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID),
+	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
+);
+
+CREATE TABLE TrainingResults (
+	TrainingID INTEGER,
+	RelationID INTEGER,
+    InstanceIndex INTEGER,
+    AttrIndex INTEGER,
+    NumericValue NUMERIC,
+    NominalValue VARCHAR(30),
+    
+    PRIMARY KEY (TrainingID, InstanceIndex, AttrIndex),
+    FOREIGN KEY (TrainingID) REFERENCES Training (TrainingID),
+    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
+);
+
+CREATE TABLE Testing (
+	TestingID SERIAL,
+	MLPID INTEGER,
+	RelationID INTEGER NOT NULL,
+	MaxTolerance NUMERIC NOT NULL,
+	MaxIterations INTEGER NOT NULL,
+	MinSuccessRate NUMERIC NOT NULL,
+	SucessRate NUMERIC NOT NULL,
+	Time NUMERIC NOT NULL,
+	
+	PRIMARY KEY (TestingID),
+	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID),
+	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
+);
+
+CREATE TABLE TestingResults (
+	TestingID INTEGER,
+	RelationID INTEGER,
+    InstanceIndex INTEGER,
+    AttrIndex INTEGER,
+    NumericValue NUMERIC,
+    NominalValue VARCHAR(30),
+    
+    PRIMARY KEY (TestingID, InstanceIndex, AttrIndex),
+    FOREIGN KEY (TestingID) REFERENCES Testing (TestingID),
+    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
 );
 
 ## Doação de privilégios
@@ -91,5 +161,17 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON Relation TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Attribute TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Nominal TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Data TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON MLP TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Layer TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Neuron TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Training TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TrainingResults TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Testing TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TestingResults TO mlpuser;
+
+
 GRANT SELECT, UPDATE, USAGE ON relation_relationid_seq TO mlpuser;
+GRANT SELECT, UPDATE, USAGE ON mlp_mlpid_seq TO mlpuser;
+GRANT SELECT, UPDATE, USAGE ON training_trainingid_seq TO mlpuser;
+GRANT SELECT, UPDATE, USAGE ON testing_testingid_seq TO mlpuser;
 

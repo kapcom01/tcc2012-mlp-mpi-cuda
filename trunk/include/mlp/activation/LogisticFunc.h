@@ -1,7 +1,7 @@
-#ifndef LOGISTICFUNCTION_H_
-#define LOGISTICFUNCTION_H_
+#ifndef LOGISTICFUNC_H_
+#define LOGISTICFUNC_H_
 
-#include "mlp/activation/ActivationFunction.h"
+#include "mlp/activation/ActivationFunc.h"
 
 namespace MLP
 {
@@ -9,7 +9,7 @@ namespace MLP
 /**
  * Classe que representa uma função de ativação logística
  */
-class LogisticFunction : public ActivationFunction
+class LogisticFunc : public ActivationFunc
 {
 
 public:
@@ -17,12 +17,12 @@ public:
 	/**
 	 * Contrói uma função de ativação logística
 	 */
-	LogisticFunction();
+	LogisticFunc();
 
 	/**
 	 * Destrói a função de ativação
 	 */
-	virtual ~LogisticFunction();
+	virtual ~LogisticFunc();
 
 	/**
 	 * Calcula o valor da função de ativação para o valor passado

@@ -19,10 +19,9 @@ public:
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnit Número de neurônios na camada atual
 	 * @param activation Função de ativação
-	 * @param learningRate Taxa de aprendizado
 	 */
 	OutputLayer(uint inUnits, uint outUnits,
-			const ActivationFunction* activation, LearningRate* learningRate);
+			const ActivationFunc* activation);
 
 	/**
 	 * Destrói a camada
@@ -36,19 +35,6 @@ public:
 	 * @return i-ésimo error
 	 */
 	double calculateError(uint i, const double* signal);
-
-	/**
-	 * Atualiza a taxa de aprendizado
-	 * @param expectedOutput Saída esperada
-	 */
-	void updateLearningRate(const double* expectedOutput);
-
-private:
-
-	/**
-	 * Taxa de aprendizado
-	 */
-	LearningRate* learningRate;
 
 };
 

@@ -6,8 +6,8 @@ namespace MLP
 //===========================================================================//
 
 HiddenLayer::HiddenLayer(uint inUnits, uint outUnits,
-		const ActivationFunction* activation, const LearningRate* learningRate)
-		: Layer(inUnits, outUnits, activation, learningRate)
+		const ActivationFunc* activation)
+		: Layer(inUnits, outUnits, activation)
 {
 
 }
@@ -23,7 +23,7 @@ HiddenLayer::~HiddenLayer()
 
 double HiddenLayer::calculateError(uint i, const double* signal)
 {
-	return activation->derivate(nonActivatedOutput[i]) * signal[i];
+	return activation->derivate(weightedSum[i]) * signal[i];
 }
 
 //===========================================================================//

@@ -1,9 +1,11 @@
-#ifndef DATASET_H_
-#define DATASET_H_
+#ifndef RELATION_H_
+#define RELATION_H_
 
-#include "arff/DataTypes.h"
+#include "arff/Value.h"
 #include "arff/Driver.h"
 #include <map>
+
+namespace Database { class RelationHelper; }
 
 namespace ARFF
 {
@@ -11,7 +13,7 @@ namespace ARFF
 /**
  * Conjunto de dados extraídos do arquivo ARFF
  */
-class DataSet
+class Relation
 {
 
 public:
@@ -19,12 +21,12 @@ public:
 	/**
 	 * Constrói um conjunto de dados vazio
 	 */
-	DataSet(Driver &driver);
+	Relation(Driver &driver);
 
 	/**
 	 * Destrói o conjunto de dados
 	 */
-	~DataSet();
+	~Relation();
 
 	/**
 	 * Seta o nome da relação
@@ -45,10 +47,14 @@ public:
 	 */
 	void addInstance(const DataList* dlist, bool isSparse);
 
+	friend class Database::RelationHelper;
+
+private:
+
 	/**
 	 * Nome da relação
 	 */
-	string relation;
+	string name;
 
 	/**
 	 * Informações sobre os atributos
@@ -59,8 +65,6 @@ public:
 	 * Informações sobre os dados
 	 */
 	Data data;
-
-private:
 
 	/**
 	 * Driver
@@ -77,7 +81,7 @@ private:
 /**
  * Ponteiro inteligente para Dataset
  */
-typedef shared_ptr<DataSet> DataSetPtr;
+typedef shared_ptr<Relation> DataSetPtr;
 
 }
 
