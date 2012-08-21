@@ -3,6 +3,8 @@
 
 #include "Common.h"
 
+namespace Database { class RelationAdapter; }
+
 namespace MLP
 {
 
@@ -15,12 +17,9 @@ class InputSet
 public:
 
 	/**
-	 * Constrói um conjunto de entrada
-	 * @param size Quantidade de instâncias
-	 * @param inVars Quantiadade de variáveis de entrada
-	 * @param outVars Quantiadade de variáveis de saída
+	 * Constrói um conjunto de entrada vazio
 	 */
-	InputSet(uint size, uint inVars, uint outVars);
+	InputSet();
 
 	/**
 	 * Destrói o conjunto de entradas
@@ -28,34 +27,61 @@ public:
 	virtual ~InputSet();
 
 	/**
-	 * Quantidade de variáveis de entrada
+	 * Retorna a quantidade de variáveis de entrada
+	 * @return Quantidade de variáveis de entrada
 	 */
-	uint inVars;
+	uint inVars();
 
 	/**
-	 * Quantidade de variáveis de saída
+	 * Retorna a quantidade de variáveis de saída
+	 * @return Quantidade de variáveis de saída
 	 */
-	uint outVars;
+	uint outVars();
 
 	/**
-	 * Quantidade de instâncias
+	 * Retorna o tamanho do conjunto de entrada
+	 * @return Tamanho do conjunto de entrada
 	 */
-	uint size;
+	uint size();
+
+	friend class Database::RelationAdapter;
+
+private:
 
 	/**
-	 * Taxa de aprendizado initial
+	 * Adiciona uma nova instância
+	 */
+	void pushInstance();
+
+	/**
+	 * Adiciona um valor númerico de entrada ou saída
+	 * @param value Valor numérico de entrada ou saída
+	 * @param isTarget Indica se o valor é de saída
+	 */
+	void addValue(const double &value, bool isTarget);
+
+	/**
+	 * Adiciona um valor nominal de entrada ou saída
+	 * @param value Valor nominal de entrada ou saída
+	 * @param card Cardinalidade do atributo nominal
+	 * @param isTarget Indica se o valor é de saída
+	 */
+	void addValue(const int &value, const uint &card, bool isTarget);
+
+	/**
+	 * Taxa de aprendizado
 	 */
 	double learningRate;
 
 	/**
-	 * Número de iterações para busca
+	 * Momento
 	 */
-	uint searchTime;
+	double momentum;
 
 	/**
-	 * Número máximo de iterações
+	 * Número máximo de épocas
 	 */
-	uint maxIterations;
+	uint maxEpochs;
 
 	/**
 	 * Tolerância máxima
@@ -70,17 +96,17 @@ public:
 	/**
 	 * Dados de entrada do treinamento
 	 */
-	double** input;
+	vector<vector<double>> input;
 
 	/**
-	 * Dados de saída esperada para o treinamento
+	 * Dados de saída alvo para o treinamento
 	 */
-	double** expectedOutput;
+	vector<vector<double>> target;
 
 	/**
 	 * Dados de saída da rede neural
 	 */
-	double **output;
+	vector<vector<double>> output;
 
 	/**
 	 * Taxa de sucesso
@@ -88,6 +114,11 @@ public:
 	double successRate;
 
 };
+
+/**
+ * Ponteiro para InputSet
+ */
+typedef shared_ptr<InputSet> InputSetPtr;
 
 }
 

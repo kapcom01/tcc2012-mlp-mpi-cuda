@@ -28,7 +28,9 @@ unordered_map<int, string> ParseException::messages =
 	{ SEM_SAME_ATTRIBUTE_NAME,
 			"attribute name has previously declared" },
 	{ SEM_SAME_NOMINAL_VALUE,
-			"nominal value has previously declared" }
+			"nominal value has previously declared" },
+	{ SEM_NOMINAL_NOT_DECLARED,
+			"nominal value not declared before"	}
 };
 
 //===========================================================================//

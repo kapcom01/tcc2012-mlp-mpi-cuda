@@ -5,42 +5,73 @@ namespace MLP
 
 //===========================================================================//
 
-InputSet::InputSet(uint size, uint inVars, uint outVars)
+InputSet::InputSet()
 {
-	this->size = size;
-	this->inVars = inVars;
-	this->outVars = outVars;
 
-	// Constrói as linhas dos valores
-	input = new double*[size];
-	expectedOutput = new double*[size];
-	output = new double*[size];
-
-	// Constrói as colunas dos valores
-	for (uint i = 0; i < size; i++)
-	{
-		input[i] = new double[inVars];
-		expectedOutput[i] = new double[outVars];
-		output[i] = new double[outVars];
-	}
 }
 
 //===========================================================================//
 
 InputSet::~InputSet()
 {
-	// Destrói as colunas dos valores
-	for (uint i = 0; i < size; i++)
-	{
-		delete[] input[i];
-		delete[] expectedOutput[i];
-		delete[] output[i];
-	}
 
-	// Destrói as linhas dos valores
-	delete[] input;
-	delete[] expectedOutput;
-	delete[] output;
 }
+
+//===========================================================================//
+
+uint InputSet::inVars()
+{
+	return input[0].size();
+}
+
+//===========================================================================//
+
+uint InputSet::outVars()
+{
+	return target[0].size();
+}
+
+//===========================================================================//
+
+uint InputSet::size()
+{
+	return input.size();
+}
+
+//===========================================================================//
+
+void InputSet::pushInstance()
+{
+	input.push_back(vector<double>());
+	target.push_back(vector<double>());
+}
+
+//===========================================================================//
+
+void InputSet::addValue(const double &value, bool isTarget)
+{
+	// Seleciona o vetor correto
+	vector<double> &values = (isTarget) ? target.back() : input.back();
+
+	// Adiciona o valor numérico
+	values.push_back(value);
+}
+
+//===========================================================================//
+
+void InputSet::addValue(const int &value, const uint &card, bool isTarget)
+{
+	// Seleciona o vetor correto
+	vector<double> &values = (isTarget) ? target.back() : input.back();
+
+	// Adiciona uma variável para cada possível valor
+	for (uint i = 0; i < card; i++)
+		if (i + 1 == value)
+			values.push_back(1);
+		else
+			values.push_back(0);
+}
+
+//===========================================================================//
 
 }

@@ -44,9 +44,10 @@ CREATE TABLE Attribute (
 CREATE TABLE Nominal (
     RelationID INTEGER,
     AttrIndex INTEGER,
-    Name VARCHAR(30),
+    NominalIndex SMALLINT,
+    Name VARCHAR(30) NOT NULL,
     
-    PRIMARY KEY (RelationID, AttrIndex, Name),
+    PRIMARY KEY (RelationID, AttrIndex, NominalIndex),
     FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
 );
 
@@ -55,7 +56,7 @@ CREATE TABLE Data (
     InstanceIndex INTEGER,
     AttrIndex INTEGER,
     NumericValue NUMERIC,
-    NominalValue VARCHAR(30),
+    NominalValue SMALLINT,
     
     PRIMARY KEY (RelationID, InstanceIndex, AttrIndex),
     FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)

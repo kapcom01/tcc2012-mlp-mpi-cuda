@@ -1,43 +1,37 @@
-#include "mlp/activation/LinearFunc.h"
+#include "arff/Scanner.h"
 
-namespace MLP
+namespace ARFF
 {
 
 //===========================================================================//
 
-LinearFunc::LinearFunc()
+Scanner::Scanner(Driver &cDriver)
+		: yyFlexLexer(&(cDriver.istream)), driver(cDriver)
 {
 
 }
 
 //===========================================================================//
 
-LinearFunc::~LinearFunc()
+void Scanner::markLine()
 {
-
+	markedLine = yylineno;
 }
 
 //===========================================================================//
 
-double LinearFunc::activate(double x) const
+int Scanner::getLineno() const
 {
-	return x;
+	return markedLine;
 }
 
 //===========================================================================//
 
-double LinearFunc::derivate(double x) const
+string Scanner::getToken() const
 {
-	return 1;
+	return yytext;
 }
 
 //===========================================================================//
-
-double LinearFunc::initialValue(uint inUnits, uint outUnits) const
-{
-//	double max = 1 / (double) (inUnits + outUnits);
-	double max = 1 / sqrt(inUnits);
-	return randomBetween(-max, max);
-}
 
 }

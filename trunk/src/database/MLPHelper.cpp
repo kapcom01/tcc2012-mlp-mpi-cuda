@@ -48,7 +48,7 @@ void MLPHelper::prepare(connection* conn)
 
 //===========================================================================//
 
-void MLPHelper::insert(MLP_BP &mlp, const string &name)
+void MLPHelper::insert(BackpropMLP &mlp, const string &name)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -82,7 +82,7 @@ void MLPHelper::insert(MLP_BP &mlp, const string &name)
 
 //===========================================================================//
 
-void MLPHelper::update(const MLP_BP &mlp)
+void MLPHelper::update(const BackpropMLP &mlp)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -124,7 +124,7 @@ bool MLPHelper::checkUnique(const string &name, WorkPtr &work)
 
 //===========================================================================//
 
-int MLPHelper::insertMLP(const MLP_BP &mlp, const string &name,
+int MLPHelper::insertMLP(const BackpropMLP &mlp, const string &name,
 		WorkPtr &work)
 {
 	// Insere informações do MLP

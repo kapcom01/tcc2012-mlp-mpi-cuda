@@ -1,11 +1,11 @@
-#include "mlp/MLP_BP.h"
+#include "mlp/BackpropMLP.h"
 
 namespace MLP
 {
 
 //===========================================================================//
 
-MLP_BP::MLP_BP(uint nLayers, uint* units,
+BackpropMLP::BackpropMLP(uint nLayers, uint* units,
 		ActivationType activationType, ProblemType problemType)
 {
 	this->nLayers = nLayers;
@@ -45,7 +45,7 @@ MLP_BP::MLP_BP(uint nLayers, uint* units,
 
 //===========================================================================//
 
-MLP_BP::~MLP_BP()
+BackpropMLP::~BackpropMLP()
 {
 	delete activation;
 	delete outputActivation;
@@ -54,7 +54,7 @@ MLP_BP::~MLP_BP()
 
 //===========================================================================//
 
-void MLP_BP::randomizeWeights()
+void BackpropMLP::randomizeWeights()
 {
 	for (uint i = 0; i < nLayers; i++)
 		layers[i]->randomizeWeights();
@@ -62,7 +62,7 @@ void MLP_BP::randomizeWeights()
 
 //===========================================================================//
 
-void MLP_BP::train(InputSet* inputSet)
+void BackpropMLP::train(InputSet* inputSet)
 {
 	// Cria a taxa de aprendizado
 	LearningRate* learningRate = new LearningRate(inputSet->learningRate,
@@ -129,7 +129,7 @@ void MLP_BP::train(InputSet* inputSet)
 
 //===========================================================================//
 
-void MLP_BP::test(InputSet* inputSet)
+void BackpropMLP::test(InputSet* inputSet)
 {
 	uint hits = 0;
 
@@ -153,7 +153,7 @@ void MLP_BP::test(InputSet* inputSet)
 
 //===========================================================================//
 
-const double* MLP_BP::feedforward(const double* input)
+const double* BackpropMLP::feedforward(const double* input)
 {
 	// Propaga a entrada para a primeira camada escondida
 	layers[0]->feedforward(input);
@@ -167,7 +167,7 @@ const double* MLP_BP::feedforward(const double* input)
 
 //===========================================================================//
 
-void MLP_BP::feedback(const double* expectedOutput, double learningRate)
+void BackpropMLP::feedback(const double* expectedOutput, double learningRate)
 {
 	// Propaga a saída esperada na camada de saída
 	outputLayer->feedback(expectedOutput, learningRate);
@@ -179,7 +179,7 @@ void MLP_BP::feedback(const double* expectedOutput, double learningRate)
 
 //===========================================================================//
 
-bool MLP_BP::compareOutput(const double* output,
+bool BackpropMLP::compareOutput(const double* output,
 		const InputSet* inputSet, uint index) const
 {
 	const double* expectedOutput = inputSet->expectedOutput[index];
@@ -195,7 +195,7 @@ bool MLP_BP::compareOutput(const double* output,
 
 //===========================================================================//
 
-void MLP_BP::shuffleIndexes(uint* indexes, uint size) const
+void BackpropMLP::shuffleIndexes(uint* indexes, uint size) const
 {
 	for (uint i = size - 1; i > 0; i--)
 	{

@@ -5,7 +5,7 @@
 #include "arff/Driver.h"
 #include <map>
 
-namespace Database { class RelationHelper; }
+namespace Database { class RelationAdapter; }
 
 namespace ARFF
 {
@@ -47,9 +47,17 @@ public:
 	 */
 	void addInstance(const DataList* dlist, bool isSparse);
 
-	friend class Database::RelationHelper;
+	friend class Database::RelationAdapter;
 
 private:
+
+	/**
+	 * Verifica se um valor nominal foi declarado
+	 * @param attrIndex Índice do atributo
+	 * @param name Valor nominal
+	 * @return Índice do valor nominal
+	 */
+	int checkNominal(uint attrIndex, const string &name);
 
 	/**
 	 * Nome da relação
