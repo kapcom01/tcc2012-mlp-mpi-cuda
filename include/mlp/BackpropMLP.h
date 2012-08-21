@@ -2,9 +2,7 @@
 #define MULTILAYERPERCEPTRON_H_
 
 #include "mlp/activation/HyperbolicFunc.h"
-#include "mlp/activation/LinearFunc.h"
 #include "mlp/activation/LogisticFunc.h"
-#include "mlp/activation/StepFunc.h"
 #include "mlp/layer/HiddenLayer.h"
 #include "mlp/layer/OutputLayer.h"
 #include "mlp/InputSet.h"
@@ -33,7 +31,7 @@ enum ProblemType
 /**
  * Classe que representa um Multi-Layer Perceptron
  */
-class MLP_BP
+class BackpropMLP
 {
 
 public:
@@ -45,13 +43,13 @@ public:
 	 * @param activationType Tipo da função de ativação
 	 * @param problemType Tipo do problema
 	 */
-	MLP_BP(uint nLayers, uint* units, ActivationType activationType,
+	BackpropMLP(uint nLayers, uint* units, ActivationType activationType,
 			ProblemType problemType);
 
 	/**
 	 * Destrói o MLP
 	 */
-	~MLP_BP();
+	~BackpropMLP();
 
 	/**
 	 * Randomiza os pesos

@@ -58,7 +58,7 @@ public:
 	virtual double calculateError(uint i, const double* signal) = 0;
 
 	friend class Database::MLPHelper;
-	friend class MLP_BP;
+	friend class BackpropMLP;
 
 protected:
 

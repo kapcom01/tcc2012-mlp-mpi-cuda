@@ -59,10 +59,18 @@ public:
 		 */
 		double number;
 
-		/**
-		 * Valor string
-		 */
-		string* str;
+		struct
+		{
+			/**
+			 * Valor string
+			 */
+			string* str;
+
+			/**
+			 * Valor nominal
+			 */
+			int nominal;
+		};
 	};
 };
 

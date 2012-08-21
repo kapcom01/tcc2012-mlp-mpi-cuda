@@ -22,13 +22,13 @@ public:
 	 * @param mlp Multi-Layer Perceptron
 	 * @param name Nome da rede
 	 */
-	static void insert(MLP_BP &mlp, const string &name);
+	static void insert(BackpropMLP &mlp, const string &name);
 
 	/**
 	 * Atualiza um MLP
 	 * @param mlp Multi-Layer Perceptron
 	 */
-	static void update(const MLP_BP &mlp);
+	static void update(const BackpropMLP &mlp);
 
 private:
 
@@ -53,7 +53,7 @@ private:
 	 * @param work Trabalho
 	 * @return ID gerado
 	 */
-	static int insertMLP(const MLP_BP &mlp, const string &name,
+	static int insertMLP(const BackpropMLP &mlp, const string &name,
 			WorkPtr &work);
 
 	/**

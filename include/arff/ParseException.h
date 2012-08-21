@@ -26,7 +26,8 @@ enum
 	SEM_TYPE_NOT_ALLOWED, // Tipo de atributo não permitido
 	SEM_WRONG_INSTANCE_TYPE, // Tipo de instância inválido
 	SEM_SAME_ATTRIBUTE_NAME, // Nome de atributo já declarado
-	SEM_SAME_NOMINAL_VALUE // Valor nominal já declarado
+	SEM_SAME_NOMINAL_VALUE, // Valor nominal já declarado
+	SEM_NOMINAL_NOT_DECLARED // Valor nominal não declarado
 
 };
 

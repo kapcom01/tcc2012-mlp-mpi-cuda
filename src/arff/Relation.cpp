@@ -95,11 +95,41 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 	for (uint i = 0; i < row->size(); i++)
 	{
 		ValuePtr &value = row->at(i);
+
 		if (value->type != EMPTY && value->type != attributes[i]->type)
 			throwError(SEM_WRONG_INSTANCE_TYPE);
+
+		// Se for nominal, checa se o valor foi declarado
+		if (value->type == NOMINAL)
+		{
+			int nominalIndex = checkNominal(i, *(value->str));
+
+			// Se foi, seta o índice do valor nominal
+			if (nominalIndex != -1)
+				value->nominal = nominalIndex;
+			else
+				throwError(SEM_NOMINAL_NOT_DECLARED);
+		}
 	}
 
 	data.push_back(row);
+}
+
+//===========================================================================//
+
+int Relation::checkNominal(uint attrIndex, const string &name)
+{
+	Nominal* nominal = attributes[attrIndex]->nominal;
+	uint i = 1;
+
+	// Para cada valor nominal do atributo
+	for (auto it = nominal->begin(); it != nominal->end(); it++, i++)
+		// Se for igual, retorna o índice
+		if (!name.compare(*it))
+			return i;
+
+	// Se não encontrar, retorna -1
+	return -1;
 }
 
 //===========================================================================//

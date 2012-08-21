@@ -21,12 +21,9 @@ public:
 
 	/**
 	 * Contrói um scanner passando um driver
-	 * @param cDriver Driver
+	 * @param driver Driver
 	 */
-	Scanner(Driver &cDriver)
-			: yyFlexLexer(&(cDriver.istream)), driver(cDriver)
-	{
-	}
+	Scanner(Driver &driver);
 
 	/**
 	 * Função de escaneamento com valor semântico
@@ -39,28 +36,19 @@ public:
 	/**
 	 * Marca a linha atual
 	 */
-	void markLine()
-	{
-		markedLine = yylineno;
-	}
+	void markLine();
 
 	/**
 	 * Retorna a linha atual
 	 * @return Linha atual
 	 */
-	int getLineno() const
-	{
-		return markedLine;
-	}
+	int getLineno() const;
 
 	/**
 	 * Retorna o token atual
 	 * @return Token atual
 	 */
-	string getToken() const
-	{
-		return yytext;
-	}
+	string getToken() const;
 
 private:
 
