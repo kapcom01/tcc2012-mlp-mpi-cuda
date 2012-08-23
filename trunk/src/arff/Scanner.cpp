@@ -8,7 +8,7 @@ namespace ARFF
 Scanner::Scanner(Driver &cDriver)
 		: yyFlexLexer(&(cDriver.istream)), driver(cDriver)
 {
-
+	markedLine = 0;
 }
 
 //===========================================================================//

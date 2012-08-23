@@ -5,9 +5,9 @@ namespace MLP
 
 //===========================================================================//
 
-ActivationFunc::ActivationFunc()
+ActivationFunc::ActivationFunc(int type)
 {
-
+	this->type = type;
 }
 
 //===========================================================================//
@@ -19,10 +19,9 @@ ActivationFunc::~ActivationFunc()
 
 //===========================================================================//
 
-double ActivationFunc::randomBetween(double min, double max) const
+int ActivationFunc::getType()
 {
-	double r = rand() / (double) RAND_MAX;
-	return r * (max - min) + min;
+	return type;
 }
 
 //===========================================================================//

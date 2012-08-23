@@ -1,34 +1,32 @@
-#include "arff/Driver.h"
-#include "arff/Relation.h"
-#include "database/RelationAdapter.h"
-#include "mlp/InputSet.h"
+#include "mlp/BackpropMLP.h"
+#include "database/ExampleSetAdapter.h"
+#include <ctime>
 
-using namespace ARFF;
+using namespace MLP;
 using namespace Database;
 
 int main(int argc, char* argv[])
 {
-    if(argc != 2)
+    if(argc != 1)
     {
-        cerr << "Usage mode: " << argv[0] << " <input file>" << endl;
+        cerr << "Usage mode: " << argv[0] << endl;
         return EXIT_FAILURE;
     }
 
-    string input(argv[1]);
-    Driver driver(input);
+    srand(time(NULL));
 
-    try
-    {
-//        Relation* relation = driver.parse();
-//        RelationAdapter::insert(*relation);
+    ExampleSet exampleSet;
+    ExampleSetAdapter::select(2, exampleSet);
+    exampleSet.learningRate = 0.1;
+    exampleSet.momentum = 0.9;
+    exampleSet.maxEpochs = 100000;
+    exampleSet.maxTolerance = 0.01;
+    exampleSet.minSuccessRate = 0.95;
 
-        InputSet inputSet;
-        RelationAdapter::select(1, inputSet);
-    }
-    catch(exception &ex)
-    {
-        cerr << ex.what() << endl;
-    }
+    vector<uint> units = {2, 3, 1};
+    BackpropMLP mlp(units, LOGISTIC);
+
+    mlp.train(exampleSet);
 
     return EXIT_SUCCESS;
 }

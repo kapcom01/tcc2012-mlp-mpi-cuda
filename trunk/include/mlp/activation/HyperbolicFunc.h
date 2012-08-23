@@ -33,18 +33,16 @@ public:
 
 	/**
 	 * Calcula o valor da derivada da função de ativação para o valor passado
-	 * @param x Valor que será ativado
-	 * @return Valor ativado
+	 * @param y Valor ativado
+	 * @return Valor "desativado"
 	 */
-	double derivate(double x) const;
+	double derivate(double y) const;
 
 	/**
-	 * Retorna o valor inicial de um neurônio
-	 * @param inUnits Número de unidades de entrada
-	 * @param outUnits Número de unidades de saída
-	 * @return Valor inicial de um neurônio
+	 * Retorna o intervalo de valores que a função pode retornar
+	 * @return Intervalo de valores que a função pode retornar
 	 */
-	double initialValue(uint inUnits, uint outUnits) const;
+	Range getRange() const;
 
 };
 

@@ -3,7 +3,8 @@
 
 #include "Common.h"
 #include "mlp/activation/ActivationFunc.h"
-#include "mlp/LearningRate.h"
+
+#define MAX_INIT_WEIGHT 0.02
 
 namespace Database { class MLPHelper; }
 
@@ -24,7 +25,7 @@ public:
 	 * @param outUnits Número de neurônios na camada atual
 	 * @param activation Função de ativação
 	 */
-	Layer(uint inUnits, uint outUnits, const ActivationFunc* activation);
+	Layer(uint inUnits, uint outUnits, const ActivationFunc &activation);
 
 	/**
 	 * Destrói a camada
@@ -40,25 +41,27 @@ public:
 	 * Realiza o feedforward dos neurônios
 	 * @param input Entrada vindo da camada anterior
 	 */
-	void feedforward(const double* input);
+	void feedforward(const vector<double> &input);
 
 	/**
 	 * Realiza o feedforward dos neurônios
 	 * @param signal Sinal vindo da camada posterior
 	 * @param learningRate Taxa de aprendizado
+	 * @param momentum Momento
 	 */
-	void feedback(const double* signal, double learningRate);
-
-	/**
-	 * Calcula o i-ésimo erro
-	 * @param i Índice do erro a ser calculado
-	 * @param signal Sinal vindo da camada posterior
-	 * @return i-ésimo error
-	 */
-	virtual double calculateError(uint i, const double* signal) = 0;
+	void feedback(const vector<double> &signal, double learningRate,
+			double momentum);
 
 	friend class Database::MLPHelper;
 	friend class BackpropMLP;
+
+private:
+
+	/**
+	 * Retorna um valor aleatório para um peso inicial
+	 * @return Valor aleatório para um peso inicial
+	 */
+	double randomWeight() const;
 
 protected:
 
@@ -75,37 +78,37 @@ protected:
 	/**
 	 * Função de ativação
 	 */
-	const ActivationFunc* activation;
+	const ActivationFunc &activation;
 
 	/**
 	 * Matriz contendo os pesos de cada neurônio para cada entrada
 	 */
-	double** weights;
+	vector<vector<double>> weights;
+
+	/**
+	 * Matriz contendo as variações dos pesos
+	 */
+	vector<vector<double>> delta;
 
 	/**
 	 * Entrada vinda da camada anterior
 	 */
-	const double* input;
+	const vector<double>* input;
 
 	/**
-	 * Soma ponderada das entradas
+	 * Saída ativada dos neurônios (sinal funcional)
 	 */
-	double* weightedSum;
+	vector<double> funcSignal;
 
 	/**
-	 * Saída ativada dos neurônios
+	 * Sinal de erro
 	 */
-	double* output;
+	vector<double> errorSignal;
 
 	/**
-	 * Sinal de feedback
+	 * Vetor de gradiente
 	 */
-	double* feedbackSignal;
-
-	/**
-	 * Erros cometidos por cada neurônio
-	 */
-	double* error;
+	vector<double> gradient;
 
 };
 

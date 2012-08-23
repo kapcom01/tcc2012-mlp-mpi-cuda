@@ -1,17 +1,17 @@
-#ifndef INPUTSET_H_
-#define INPUTSET_H_
+#ifndef EXAMPLESET_H_
+#define EXAMPLESET_H_
 
 #include "Common.h"
 
-namespace Database { class RelationAdapter; }
+namespace Database { class ExampleSetAdapter; }
 
 namespace MLP
 {
 
 /**
- * Classe que contém os dados de treinamento
+ * Classe que contém os dados de entrada
  */
-class InputSet
+class ExampleSet
 {
 
 public:
@@ -19,34 +19,49 @@ public:
 	/**
 	 * Constrói um conjunto de entrada vazio
 	 */
-	InputSet();
+	ExampleSet();
 
 	/**
 	 * Destrói o conjunto de entradas
 	 */
-	virtual ~InputSet();
+	virtual ~ExampleSet();
 
 	/**
 	 * Retorna a quantidade de variáveis de entrada
 	 * @return Quantidade de variáveis de entrada
 	 */
-	uint inVars();
+	uint inVars() const;
 
 	/**
 	 * Retorna a quantidade de variáveis de saída
 	 * @return Quantidade de variáveis de saída
 	 */
-	uint outVars();
+	uint outVars() const;
 
 	/**
 	 * Retorna o tamanho do conjunto de entrada
 	 * @return Tamanho do conjunto de entrada
 	 */
-	uint size();
+	uint size() const;
 
-	friend class Database::RelationAdapter;
+	/**
+	 * Retorna a i-ésima entrada do conjunto
+	 * @param i Índice da entrada
+	 * @return Entrada de índice i
+	 */
+	const vector<double>& getInput(uint i) const;
 
-private:
+	/**
+	 * Retorna a i-ésima saída alvo do conjunto
+	 * @param i Índice da saída alvo
+	 * @return Saída alvo de índice i
+	 */
+	const vector<double>& getTarget(uint i) const;
+
+	friend class Database::ExampleSetAdapter;
+	friend class BackpropMLP;
+
+//private:
 
 	/**
 	 * Adiciona uma nova instância
@@ -118,7 +133,7 @@ private:
 /**
  * Ponteiro para InputSet
  */
-typedef shared_ptr<InputSet> InputSetPtr;
+typedef shared_ptr<ExampleSet> InputSetPtr;
 
 }
 

@@ -6,4 +6,5 @@ set(CMAKE_CXX_FLAGS "-O2 -std=c++0x")
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-add_library(mlp InputSet.cpp)
+add_library(mlp activation/ActivationFunc.cpp activation/HyperbolicFunc.cpp 
+	activation/LogisticFunc.cpp BackpropMLP.cpp ExampleSet.cpp Layer.cpp)

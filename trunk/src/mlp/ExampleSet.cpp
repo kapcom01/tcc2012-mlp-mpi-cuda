@@ -1,46 +1,65 @@
-#include "mlp/InputSet.h"
+#include "mlp/ExampleSet.h"
 
 namespace MLP
 {
 
 //===========================================================================//
 
-InputSet::InputSet()
+ExampleSet::ExampleSet()
+{
+	momentum = 0.9;
+	learningRate = 0.1;
+	minSuccessRate = 0.95;
+	maxTolerance = 0.01;
+	successRate = 0;
+	maxEpochs = 100000;
+}
+
+//===========================================================================//
+
+ExampleSet::~ExampleSet()
 {
 
 }
 
 //===========================================================================//
 
-InputSet::~InputSet()
-{
-
-}
-
-//===========================================================================//
-
-uint InputSet::inVars()
+uint ExampleSet::inVars() const
 {
 	return input[0].size();
 }
 
 //===========================================================================//
 
-uint InputSet::outVars()
+uint ExampleSet::outVars() const
 {
 	return target[0].size();
 }
 
 //===========================================================================//
 
-uint InputSet::size()
+uint ExampleSet::size() const
 {
 	return input.size();
 }
 
 //===========================================================================//
 
-void InputSet::pushInstance()
+const vector<double>& ExampleSet::getInput(uint i) const
+{
+	return input[i];
+}
+
+//===========================================================================//
+
+const vector<double>& ExampleSet::getTarget(uint i) const
+{
+	return target[i];
+}
+
+//===========================================================================//
+
+void ExampleSet::pushInstance()
 {
 	input.push_back(vector<double>());
 	target.push_back(vector<double>());
@@ -48,7 +67,7 @@ void InputSet::pushInstance()
 
 //===========================================================================//
 
-void InputSet::addValue(const double &value, bool isTarget)
+void ExampleSet::addValue(const double &value, bool isTarget)
 {
 	// Seleciona o vetor correto
 	vector<double> &values = (isTarget) ? target.back() : input.back();
@@ -59,7 +78,7 @@ void InputSet::addValue(const double &value, bool isTarget)
 
 //===========================================================================//
 
-void InputSet::addValue(const int &value, const uint &card, bool isTarget)
+void ExampleSet::addValue(const int &value, const uint &card, bool isTarget)
 {
 	// Seleciona o vetor correto
 	vector<double> &values = (isTarget) ? target.back() : input.back();
