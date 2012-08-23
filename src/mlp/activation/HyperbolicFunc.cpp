@@ -6,6 +6,7 @@ namespace MLP
 //===========================================================================//
 
 HyperbolicFunc::HyperbolicFunc()
+		: ActivationFunc(HYPERBOLIC)
 {
 
 }
@@ -26,19 +27,16 @@ double HyperbolicFunc::activate(double x) const
 
 //===========================================================================//
 
-double HyperbolicFunc::derivate(double x) const
+double HyperbolicFunc::derivate(double y) const
 {
-	double aux = 2 * cosh(x) / (cosh(2 * x) + 1);
-	return aux * aux;
+	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//
 
-double HyperbolicFunc::initialValue(uint inUnits, uint outUnits) const
+Range HyperbolicFunc::getRange() const
 {
-//	double max = sqrt(6 / (double) (inUnits + outUnits));
-	double max = 1 / sqrt(inUnits);
-	return randomBetween(-max, max);
+	return {-1, 1};
 }
 
 //===========================================================================//

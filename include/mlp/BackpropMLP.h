@@ -1,32 +1,15 @@
-#ifndef MULTILAYERPERCEPTRON_H_
-#define MULTILAYERPERCEPTRON_H_
+#ifndef BACKPROPMLP_H_
+#define BACKPROPMLP_H_
 
 #include "mlp/activation/HyperbolicFunc.h"
 #include "mlp/activation/LogisticFunc.h"
-#include "mlp/layer/HiddenLayer.h"
-#include "mlp/layer/OutputLayer.h"
-#include "mlp/InputSet.h"
+#include "mlp/Layer.h"
+#include "mlp/ExampleSet.h"
 
 namespace Database { class MLPHelper; }
 
 namespace MLP
 {
-
-/**
- * Tipos de função de ativação
- */
-enum ActivationType
-{
-	HYPERBOLIC = 1, LOGISTIC = 2
-};
-
-/**
- * Tipos de problemas
- */
-enum ProblemType
-{
-	CLASSIFICATION = 1, APROXIMATION = 2
-};
 
 /**
  * Classe que representa um Multi-Layer Perceptron
@@ -37,14 +20,11 @@ class BackpropMLP
 public:
 
 	/**
-	 * Constrói um MLP a partir de um conjunto de entrada
-	 * @param nLayers Quantidade de camadas
-	 * @param units Quantidade de neurônios por camada
+	 * Constrói um MLP não treinado
+	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 * @param activationType Tipo da função de ativação
-	 * @param problemType Tipo do problema
 	 */
-	BackpropMLP(uint nLayers, uint* units, ActivationType activationType,
-			ProblemType problemType);
+	BackpropMLP(vector<uint> &units, ActivationType activationType);
 
 	/**
 	 * Destrói o MLP
@@ -52,21 +32,21 @@ public:
 	~BackpropMLP();
 
 	/**
-	 * Randomiza os pesos
+	 * Randomiza os pesos das conexões
 	 */
 	void randomizeWeights();
 
 	/**
 	 * Treina a rede neural
-	 * @param inputSet Conjunto de entradas
+	 * @param trainingSet Conjunto de treinamento
 	 */
-	void train(InputSet* inputSet);
+	void train(ExampleSet &trainingSet);
 
 	/**
 	 * Testa a rede neural
-	 * @param inputSet Conjunto de entradas
+	 * @param testSet Conjunto de testes
 	 */
-	void test(InputSet* inputSet);
+	void test(ExampleSet &testSet);
 
 	friend class Database::MLPHelper;
 
@@ -77,30 +57,30 @@ private:
 	 * @param input Dados de entrada
 	 * @return Saída da rede
 	 */
-	const double* feedforward(const double* input);
+	const vector<double>& feedforward(const vector<double> &input);
 
 	/**
 	 * Realiza o feedback
-	 * @param expectedOutput Saída esperada
+	 * @param target Saída alvo esperada
 	 * @param learningRate Taxa de aprendizado
+	 * @param momentum Momento
 	 */
-	void feedback(const double* expectedOutput, double learningRate);
+	void feedback(const vector<double> &target, double learningRate,
+			double momentum);
 
 	/**
 	 * Compara a saída gerada pela rede com a saída esperada
 	 * @param output Saída gerada
-	 * @param inputSet Conjunto de entradas
-	 * @param index Índice da instância
+	 * @param target Saída alvo esperada
 	 */
-	bool compareOutput(const double* output, const InputSet* inputSet,
-			uint index) const;
+	bool compareOutput(const vector<double> output,
+			const vector<double> &target, double maxTolerance) const;
 
 	/**
 	 * Embaralha os índices utilizando o algoritmo de Fisher-Yates
 	 * @param index Vetor contendo os índices
-	 * @param size Tamanho do vetor
 	 */
-	void shuffleIndexes(uint* indexes, uint size) const;
+	void shuffleIndexes(vector<uint> &indexes) const;
 
 	/**
 	 * ID da rede
@@ -108,39 +88,19 @@ private:
 	int mlpID;
 
 	/**
-	 * Quantidade de camadas
-	 */
-	uint nLayers;
-
-	/**
-	 * Tipo da função de ativação
-	 */
-	ActivationType activationType;
-
-	/**
-	 * Tipo do problema
-	 */
-	ProblemType problemType;
-
-	/**
 	 * Função de ativação
 	 */
-	ActivationFunc* activation;
-
-	/**
-	 * Função de ativação na camada de saída
-	 */
-	ActivationFunc* outputActivation;
+	ActivationFuncPtr activation;
 
 	/**
 	 * Camadas
 	 */
-	Layer** layers;
+	vector<LayerPtr> layers;
 
 	/**
-	 * Camada de saída
+	 * Erro cometido pela rede
 	 */
-	OutputLayer* outputLayer;
+	vector<double> error;
 
 };
 

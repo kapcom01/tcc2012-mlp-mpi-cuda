@@ -1,31 +1,34 @@
-#include "mlp/MLP_BP.h"
-#include <ctime>
+#include "arff/Driver.h"
+#include "arff/Relation.h"
+#include "database/RelationAdapter.h"
+#include "database/ExampleSetAdapter.h"
 
-using namespace MLP;
+using namespace ARFF;
+using namespace Database;
 
 int main(int argc, char* argv[])
 {
-    if(argc != 1)
+    if(argc != 2)
     {
-        cerr << "Usage mode: " << argv[0] << endl;
+        cerr << "Usage mode: " << argv[0] << " <input file>" << endl;
         return EXIT_FAILURE;
     }
 
-    srand(time(NULL));
+    string input(argv[1]);
+    Driver driver(input);
 
-    InputSet inputSet(4, 2, 1);
-    inputSet.input[0][0] = 0, inputSet.input[0][1] = 0, inputSet.expectedOutput[0][0] = 0;
-    inputSet.input[1][0] = 0, inputSet.input[1][1] = 1, inputSet.expectedOutput[1][0] = 1;
-    inputSet.input[2][0] = 1, inputSet.input[2][1] = 0, inputSet.expectedOutput[2][0] = 1;
-    inputSet.input[3][0] = 1, inputSet.input[3][1] = 1, inputSet.expectedOutput[3][0] = 0;
-    inputSet.learningRate = 0.5, inputSet.searchTime = 200;
-    inputSet.maxIterations = 10000;
-    inputSet.maxTolerance = 0.01;
-    inputSet.minSuccessRate = 0.95;
+    try
+    {
+        Relation* relation = driver.parse();
+        RelationAdapter::insert(*relation);
 
-    uint units[] = {2, 3, 1};
-    BackpropMLP mlp(2, units, LOGISTIC, CLASSIFICATION);
-    mlp.train(&inputSet);
+        ExampleSet inputSet;
+        ExampleSetAdapter::select(1, inputSet);
+    }
+    catch(exception &ex)
+    {
+        cerr << ex.what() << endl;
+    }
 
     return EXIT_SUCCESS;
 }

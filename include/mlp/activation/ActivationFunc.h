@@ -3,10 +3,34 @@
 
 #include "Common.h"
 #include <cmath>
-#include <ctime>
 
 namespace MLP
 {
+
+/**
+ * Tipos de função de ativação
+ */
+enum ActivationType
+{
+	HYPERBOLIC = 1, LOGISTIC = 2
+};
+
+/**
+ * Estrutura que armazena um intervalo
+ */
+struct Range
+{
+	/**
+	 * Valor mínimo
+	 */
+	double min;
+
+	/**
+	 * Valor máximo
+	 */
+	double max;
+};
+
 
 /**
  * Classe que representa uma função de ativação
@@ -19,12 +43,18 @@ public:
 	/**
 	 * Contrói uma função de ativação
 	 */
-	ActivationFunc();
+	ActivationFunc(int type);
 
 	/**
 	 * Destrói a função de ativação
 	 */
 	virtual ~ActivationFunc();
+
+	/**
+	 * Retorna o tipo da função de ativação
+	 * @return Tipo da função de ativação
+	 */
+	int getType();
 
 	/**
 	 * Calcula o valor da função de ativação para o valor passado
@@ -35,35 +65,30 @@ public:
 
 	/**
 	 * Calcula o valor da derivada da função de ativação para o valor passado
-	 * @param x Valor que será ativado
-	 * @return Valor ativado
+	 * @param y Valor ativado
+	 * @return Valor "desativado"
 	 */
-	virtual double derivate(double x) const = 0;
+	virtual double derivate(double y) const = 0;
 
 	/**
-	 * Retorna o valor inicial de um neurônio
-	 * @param inUnits Número de unidades de entrada
-	 * @param outUnits Número de unidades de saída
-	 * @return Valor inicial de um neurônio
+	 * Retorna o intervalo de valores que a função pode retornar
+	 * @return Intervalo de valores que a função pode retornar
 	 */
-	virtual double initialValue(uint inUnits, uint outUnits) const = 0;
+	virtual Range getRange() const = 0;
 
 protected:
 
 	/**
-	 * Retorna um valor aleatório entre min e max
-	 * @param min Valor mínimo
-	 * @param max Valor máximo
-	 * @return Valor aleatório entre min e max
+	 * Tipo da função de ativação
 	 */
-	double randomBetween(double min, double max) const;
+	int type;
 
 };
 
 /**
  * Ponteiro para ActivationFunction
  */
-typedef shared_ptr<ActivationFunc> ActivationPtr;
+typedef shared_ptr<ActivationFunc> ActivationFuncPtr;
 
 }
 
