@@ -54,6 +54,7 @@ ND	[!-~]{-}[,{}? ]
 @attribute|@ATTRIBUTE	{ return token::ATTRIBUTE; }
 @data|@DATA				{ return token::DATA; }
 numeric|NUMERIC			{ return token::TYPE_NUMERIC; }
+real|REAL				{ return token::TYPE_NUMERIC; }
 string|STRING			{ return token::TYPE_STRING; }
 date|DATE				{ return token::TYPE_DATE; }
 

@@ -34,6 +34,8 @@ CREATE TABLE Attribute (
     Name VARCHAR(30),
     Type SMALLINT NOT NULL, 
     NominalCard SMALLINT,
+    Minimum NUMERIC,
+    Maximum NUMERIC,
     
     CHECK (Type IN (1,2)),
     PRIMARY KEY (RelationID, AttrIndex),
@@ -65,15 +67,13 @@ CREATE TABLE Data (
 CREATE TABLE MLP (
 	MLPID SERIAL,
 	Name VARCHAR(30),
-	ActivationType SMALLINT NOT NULL,
-	ProblemType SMALLINT NOT NULL,
+	LowerValue NUMERIC NOT NULL,
+	UpperValue NUMERIC NOT NULL,
 	NLayers INTEGER NOT NULL,
-	Status SMALLINT NOT NULL,
+	TrainedRelation INTEGER,
 	
-	CHECK (ActivationType IN (1,2)),
-	CHECK (ProblemType IN (1,2)),
-	CHECK (Status IN (1,2)),
 	PRIMARY KEY (MLPID),
+	FOREIGN KEY (TrainedRelation) REFERENCES Relation (RelationID),
 	UNIQUE (Name)
 );
 

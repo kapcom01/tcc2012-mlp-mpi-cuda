@@ -70,6 +70,16 @@ private:
 	static void insertInstance(int relationID, uint instIndex,
 			const Instance &inst, WorkPtr &work);
 
+	/**
+	 * Adiciona estatísticas sobre um atributo
+	 * @param relationID Identificador da relação
+	 * @param attrIndex Índice do atributo
+	 * @param attr Atributo
+	 * @param work Trabalho
+	 */
+	static void addStatistics(int relationID, uint attrIndex,
+			const Attribute &attr, WorkPtr &work);
+
 };
 
 }

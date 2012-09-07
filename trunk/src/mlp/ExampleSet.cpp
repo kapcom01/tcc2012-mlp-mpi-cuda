@@ -5,14 +5,17 @@ namespace MLP
 
 //===========================================================================//
 
-ExampleSet::ExampleSet()
+ExampleSet::ExampleSet(int relationID, SetType type)
 {
-	momentum = 0.9;
-	learningRate = 0.1;
-	minSuccessRate = 0.95;
-	maxTolerance = 0.01;
-	successRate = 0;
+	this->relationID = relationID;
+	this->type = type;
+
+	isNormalized = false;
+	learning = 0.1;
+	tolerance = 0.01;
 	maxEpochs = 100000;
+	error = 0;
+	successRate = 0;
 }
 
 //===========================================================================//
@@ -20,6 +23,65 @@ ExampleSet::ExampleSet()
 ExampleSet::~ExampleSet()
 {
 
+}
+
+//===========================================================================//
+
+void ExampleSet::normalize()
+{
+	if (isNormalized)
+		return;
+
+	// Para cada instância
+	for (uint k = 0; k < size(); k++)
+	{
+		// Normaliza cada coluna de entrada
+		for (uint i = 0; i < inVars(); i++)
+			adjust(input[k][i], stat[i].from, stat[i].to);
+
+		// Normaliza cada coluna de saída
+		for (uint t = 0; t < outVars(); t++)
+		{
+			uint i = inVars() + t;
+			adjust(target[k][t], stat[i].from, stat[i].to);
+		}
+	}
+
+	isNormalized = true;
+}
+
+//===========================================================================//
+
+void ExampleSet::unnormalize()
+{
+	if (!isNormalized)
+		return;
+
+	// Para cada instância
+	for (uint k = 0; k < size(); k++)
+	{
+		// Para cada coluna de entrada
+		for (uint i = 0; i < inVars(); i++)
+			adjust(input[k][i], stat[i].to, stat[i].from);
+
+		// Para cada coluna de saída
+		for (uint t = 0; t < outVars(); t++)
+		{
+			uint i = inVars() + t;
+			adjust(target[k][t], stat[i].to, stat[i].from);
+			adjust(output[k][t], stat[i].to, stat[i].from);
+		}
+	}
+
+	isNormalized = false;
+}
+
+//===========================================================================//
+
+void ExampleSet::adjust(double &x, const Range &from, const Range &to)
+{
+	x = (to.upper - to.lower) / (from.upper - from.lower)
+			* (x - from.lower) + to.lower;
 }
 
 //===========================================================================//
@@ -45,50 +107,16 @@ uint ExampleSet::size() const
 
 //===========================================================================//
 
-const vector<double>& ExampleSet::getInput(uint i) const
+const vdouble& ExampleSet::getInput(uint i) const
 {
 	return input[i];
 }
 
 //===========================================================================//
 
-const vector<double>& ExampleSet::getTarget(uint i) const
+const vdouble& ExampleSet::getTarget(uint i) const
 {
 	return target[i];
-}
-
-//===========================================================================//
-
-void ExampleSet::pushInstance()
-{
-	input.push_back(vector<double>());
-	target.push_back(vector<double>());
-}
-
-//===========================================================================//
-
-void ExampleSet::addValue(const double &value, bool isTarget)
-{
-	// Seleciona o vetor correto
-	vector<double> &values = (isTarget) ? target.back() : input.back();
-
-	// Adiciona o valor numérico
-	values.push_back(value);
-}
-
-//===========================================================================//
-
-void ExampleSet::addValue(const int &value, const uint &card, bool isTarget)
-{
-	// Seleciona o vetor correto
-	vector<double> &values = (isTarget) ? target.back() : input.back();
-
-	// Adiciona uma variável para cada possível valor
-	for (uint i = 0; i < card; i++)
-		if (i + 1 == value)
-			values.push_back(1);
-		else
-			values.push_back(0);
 }
 
 //===========================================================================//

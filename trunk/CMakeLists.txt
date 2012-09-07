@@ -1,17 +1,19 @@
-cmake_minimum_required(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-add_subdirectory(src/arff)
-add_subdirectory(src/database)
-add_subdirectory(src/mlp)
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+SET(CMAKE_CXX_FLAGS "-O2 -std=c++0x ${OpenMP_CXX_FLAGS}")
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+ADD_SUBDIRECTORY(src/arff)
+ADD_SUBDIRECTORY(src/database)
+ADD_SUBDIRECTORY(src/mlp)
 
-set(CMAKE_CXX_FLAGS "-O2 -std=c++0x")
+LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/arff)
+LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/database)
+LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
-link_directories(${CMAKE_BINARY_DIR}/src/arff)
-link_directories(${CMAKE_BINARY_DIR}/src/database)
-link_directories(${CMAKE_BINARY_DIR}/src/mlp)
+ADD_EXECUTABLE(pmlp ${CMAKE_SOURCE_DIR}/src/MLPMain.cpp)
+TARGET_LINK_LIBRARIES(pmlp arff database mlp)
 
-add_executable(parallel_mlp ${CMAKE_SOURCE_DIR}/src/Main.cpp)
-target_link_libraries(parallel_mlp arff database mlp)
+ADD_EXECUTABLE(data ${CMAKE_SOURCE_DIR}/src/DataMain.cpp)
+TARGET_LINK_LIBRARIES(data arff database mlp)

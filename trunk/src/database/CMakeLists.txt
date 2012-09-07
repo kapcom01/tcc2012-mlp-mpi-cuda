@@ -1,12 +1,7 @@
-cmake_minimum_required(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-find_package(Pqxx)
+FIND_PACKAGE(Pqxx)
 
-set(CMAKE_CXX_FLAGS "-O2 -std=c++0x")
-
-include_directories(${CMAKE_SOURCE_DIR}/include ${Pqxx_INCLUDE_DIRS})
-
-add_library(database Connection.cpp DatabaseException.cpp ExampleSetAdapter.cpp
-	RelationAdapter.cpp)
-target_link_libraries(database ${Pqxx_LIBRARIES})
+ADD_LIBRARY(database BackpropMLPAdapter.cpp Connection.cpp DatabaseException.cpp 
+	ExampleSetAdapter.cpp RelationAdapter.cpp)
+TARGET_LINK_LIBRARIES(database ${Pqxx_LIBRARIES})

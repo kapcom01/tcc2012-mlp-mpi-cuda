@@ -9,7 +9,47 @@ namespace MLP
 {
 
 /**
- * Classe que contém os dados de entrada
+ * Tipos de conjunto de dados
+ */
+enum SetType
+{
+	TRAINING = 1, VALIDATION = 2, TEST = 3
+};
+
+/**
+ * Estrutura que armazena um intervalo
+ */
+struct Range
+{
+	/**
+	 * Valor mínimo
+	 */
+	double lower;
+
+	/**
+	 * Valor máximo
+	 */
+	double upper;
+};
+
+/**
+ * Estrutura contendo estatísticas sobre o conjunto de entrada
+ */
+struct Statistics
+{
+	/**
+	 * Intervalo de valores de um dado
+	 */
+	Range from;
+
+	/**
+	 * Intervalo de valores de um dado normalizado
+	 */
+	Range to;
+};
+
+/**
+ * Classe que contém um conjunto de dados experimentais
  */
 class ExampleSet
 {
@@ -17,14 +57,27 @@ class ExampleSet
 public:
 
 	/**
-	 * Constrói um conjunto de entrada vazio
+	 * Constrói um conjunto de dados vazio
+	 * @param relationID ID da relação
+	 * @param type Tipo do conjunto de dados
 	 */
-	ExampleSet();
+	ExampleSet(int relationID, SetType type);
 
 	/**
-	 * Destrói o conjunto de entradas
+	 * Destrói o conjunto de dados
 	 */
 	virtual ~ExampleSet();
+
+	/**
+	 * Normaliza as entradas e saídas alvo do conjunto de dados
+	 * @param range Intervalo de valores para a nova saída alvo
+	 */
+	void normalize();
+
+	/**
+	 * Desnormaliza as entradas, saídas alvo e saídas do conjunto de dados
+	 */
+	void unnormalize();
 
 	/**
 	 * Retorna a quantidade de variáveis de entrada
@@ -49,14 +102,14 @@ public:
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	const vector<double>& getInput(uint i) const;
+	const vdouble& getInput(uint i) const;
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	const vector<double>& getTarget(uint i) const;
+	const vdouble& getTarget(uint i) const;
 
 	friend class Database::ExampleSetAdapter;
 	friend class BackpropMLP;
@@ -64,34 +117,27 @@ public:
 //private:
 
 	/**
-	 * Adiciona uma nova instância
+	 * Ajusta o valor de x para um novo intervalo
+	 * @param x Valor a ser ajustado
+	 * @param from Intervalo de valores para x
+	 * @param to Intervalo de valores para a saída
 	 */
-	void pushInstance();
+	void adjust(double &x, const Range &from, const Range &to);
 
 	/**
-	 * Adiciona um valor númerico de entrada ou saída
-	 * @param value Valor numérico de entrada ou saída
-	 * @param isTarget Indica se o valor é de saída
+	 * ID da relação
 	 */
-	void addValue(const double &value, bool isTarget);
+	int relationID;
 
 	/**
-	 * Adiciona um valor nominal de entrada ou saída
-	 * @param value Valor nominal de entrada ou saída
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
+	 * Tipo do conjunto de dados
 	 */
-	void addValue(const int &value, const uint &card, bool isTarget);
+	SetType type;
 
 	/**
 	 * Taxa de aprendizado
 	 */
-	double learningRate;
-
-	/**
-	 * Momento
-	 */
-	double momentum;
+	double learning;
 
 	/**
 	 * Número máximo de épocas
@@ -101,32 +147,42 @@ public:
 	/**
 	 * Tolerância máxima
 	 */
-	double maxTolerance;
-
-	/**
-	 * Taxa de sucesso mínima
-	 */
-	double minSuccessRate;
+	double tolerance;
 
 	/**
 	 * Dados de entrada do treinamento
 	 */
-	vector<vector<double>> input;
+	vector<vdouble> input;
 
 	/**
 	 * Dados de saída alvo para o treinamento
 	 */
-	vector<vector<double>> target;
+	vector<vdouble> target;
 
 	/**
 	 * Dados de saída da rede neural
 	 */
-	vector<vector<double>> output;
+	vector<vdouble> output;
+
+	/**
+	 * Estatísticas para cada coluna de dados
+	 */
+	vector<Statistics> stat;
+
+	/**
+	 * Erro cometido pela rede
+	 */
+	double error;
 
 	/**
 	 * Taxa de sucesso
 	 */
 	double successRate;
+
+	/**
+	 * Indica se o conjunto de dados está normalizado
+	 */
+	bool isNormalized;
 
 };
 
