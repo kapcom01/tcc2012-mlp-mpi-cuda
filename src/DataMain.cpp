@@ -21,9 +21,6 @@ int main(int argc, char* argv[])
     {
         Relation* relation = driver.parse();
         RelationAdapter::insert(*relation);
-
-        ExampleSet inputSet;
-        ExampleSetAdapter::select(1, inputSet);
     }
     catch(exception &ex)
     {

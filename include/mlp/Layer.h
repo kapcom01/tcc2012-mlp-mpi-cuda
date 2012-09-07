@@ -1,12 +1,9 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "Common.h"
-#include "mlp/activation/ActivationFunc.h"
+#include "mlp/Neuron.h"
 
-#define MAX_INIT_WEIGHT 0.02
-
-namespace Database { class MLPHelper; }
+namespace Database { class BackpropMLPAdapter; }
 
 namespace MLP
 {
@@ -23,9 +20,8 @@ public:
 	 * Constrói uma camada
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnits Número de neurônios na camada atual
-	 * @param activation Função de ativação
 	 */
-	Layer(uint inUnits, uint outUnits, const ActivationFunc &activation);
+	Layer(uint inUnits, uint outUnits);
 
 	/**
 	 * Destrói a camada
@@ -33,37 +29,27 @@ public:
 	virtual ~Layer();
 
 	/**
-	 * Randomiza os pesos
+	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	void randomizeWeights();
+	void randomize();
 
 	/**
-	 * Realiza o feedforward dos neurônios
-	 * @param input Entrada vindo da camada anterior
+	 * Realiza a operação de feedforward
+	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	void feedforward(const vector<double> &input);
+	void feedforward(const vdouble &input);
 
 	/**
-	 * Realiza o feedforward dos neurônios
-	 * @param signal Sinal vindo da camada posterior
-	 * @param learningRate Taxa de aprendizado
-	 * @param momentum Momento
+	 * Realiza a operação de feedforward
+	 * @param signal Sinal de erro vindo da camada posterior
+	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vector<double> &signal, double learningRate,
-			double momentum);
+	void feedback(const vdouble &signal, double learning);
 
-	friend class Database::MLPHelper;
+	friend class Database::BackpropMLPAdapter;
 	friend class BackpropMLP;
 
 private:
-
-	/**
-	 * Retorna um valor aleatório para um peso inicial
-	 * @return Valor aleatório para um peso inicial
-	 */
-	double randomWeight() const;
-
-protected:
 
 	/**
 	 * Número de neurônios na camada anterior
@@ -76,39 +62,24 @@ protected:
 	uint outUnits;
 
 	/**
-	 * Função de ativação
+	 * Neurônios da camada
 	 */
-	const ActivationFunc &activation;
-
-	/**
-	 * Matriz contendo os pesos de cada neurônio para cada entrada
-	 */
-	vector<vector<double>> weights;
-
-	/**
-	 * Matriz contendo as variações dos pesos
-	 */
-	vector<vector<double>> delta;
+	vector<NeuronPtr> neurons;
 
 	/**
 	 * Entrada vinda da camada anterior
 	 */
-	const vector<double>* input;
+	const vdouble* input;
 
 	/**
-	 * Saída ativada dos neurônios (sinal funcional)
+	 * Sinal funcional dos neurônios
 	 */
-	vector<double> funcSignal;
+	vdouble funcSignal;
 
 	/**
 	 * Sinal de erro
 	 */
-	vector<double> errorSignal;
-
-	/**
-	 * Vetor de gradiente
-	 */
-	vector<double> gradient;
+	vdouble errorSignal;
 
 };
 

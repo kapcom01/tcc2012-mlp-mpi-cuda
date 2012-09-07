@@ -41,6 +41,18 @@ void RelationAdapter::prepareForInsert(connection* conn)
 				"NumericValue, NominalValue) VALUES ($1, $2, $3, $4, $5)")
 				("INTEGER")("INTEGER")("INTEGER")("NUMERIC")("SMALLINT");
 
+		// Seleção das estatísticas dos dados
+		conn->prepare("selectStatistics",
+				"SELECT MIN(NumericValue), MAX(NumericValue) FROM Data "
+				"WHERE RelationID = $1 AND AttrIndex = $2")
+				("INTEGER")("INTEGER");
+
+		// Adição estatísticas para atributos numéricos
+		conn->prepare("addStatistics",
+				"UPDATE Attribute SET Minimum = $3, Maximum = $4 "
+				"WHERE RelationID = $1 AND AttrIndex = $2")
+				("INTEGER")("INTEGER")("NUMERIC")("NUMERIC");
+
 		// Seleção do último ID de Relation gerado
 		conn->prepare("selectLastID",
 				"SELECT currval(pg_get_serial_sequence('Relation', "
@@ -79,6 +91,10 @@ void RelationAdapter::insert(const Relation &relation)
 		for (uint i = 0; i < relation.data.size(); i++)
 			insertInstance(relationID, i + 1, *(relation.data[i]), work);
 
+		// Insere as estatísticas dos atributos
+		for (uint i = 0; i < relation.attributes.size(); i++)
+			addStatistics(relationID, i + 1, *(relation.attributes[i]), work);
+
 		// Salva as alterações
 		work->commit();
 	}
@@ -107,7 +123,7 @@ int RelationAdapter::insertRelation(const Relation &relation, WorkPtr &work)
 			(relation.attributes.size())(relation.data.size()).exec();
 
 	// Recupera o ID gerado
-	result res = work->prepared("selectLastID").exec();
+	const result &res = work->prepared("selectLastID").exec();
 	return res[0][0].as<int>();
 }
 
@@ -160,6 +176,30 @@ void RelationAdapter::insertInstance(int relationID, uint instIndex,
 			work->prepared("insertInstance")(relationID)(instIndex)(i + 1)()()
 					.exec();
 	}
+}
+
+//===========================================================================//
+
+void RelationAdapter::addStatistics(int relationID, uint attrIndex,
+		const Attribute &attr, WorkPtr &work)
+{
+	double min, max;
+
+	// Se for numérico
+	if (attr.type == NUMERIC)
+	{
+		// Coleta estatísticas
+		const result &res = work->prepared("selectStatistics")(relationID)
+				(attrIndex).exec();
+		min = res[0][0].as<double>(), max = res[0][1].as<double>();
+	}
+
+	// Se for nominal
+	else if (attr.type == NOMINAL)
+		min = 0, max = 1;
+
+	// Adiciona as estatísticas
+	work->prepared("addStatistics")(relationID)(attrIndex)(min)(max).exec();
 }
 
 //===========================================================================//

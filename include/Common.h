@@ -21,4 +21,14 @@ typedef unsigned int uint;
  */
 typedef unsigned long ulong;
 
+/**
+ * Vetor de double
+ */
+typedef vector<double> vdouble;
+
+/**
+ * Vetor de uint
+ */
+typedef vector<uint> vuint;
+
 #endif

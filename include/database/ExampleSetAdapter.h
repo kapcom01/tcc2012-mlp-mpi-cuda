@@ -19,10 +19,10 @@ public:
 
 	/**
 	 * Recupera um conjunto de entrada
-	 * @param relationID ID da relação
-	 * @param inputSet Conjunto de entrada a ser selecionado
+	 * @param set Conjunto de entrada a ser selecionado
+	 * @param mlpID ID da rede
 	 */
-	static void select(int relationID, ExampleSet &inputSet);
+	static void select(ExampleSet &set, int mlpID);
 
 private:
 
@@ -42,13 +42,54 @@ private:
 
 	/**
 	 * Seleciona os dados de uma relação
-	 * @param relationID Identificador da relação
-	 * @param inputSet Conjunto de dados a serem preenchidos
+	 * @param set Conjunto de dados a serem preenchidos
 	 * @param nattr Quantidade de atributos da relação
 	 * @param work Trabalho
 	 */
-	static void selectData(int relationID, ExampleSet &inputSet, int nattr,
+	static void selectData(ExampleSet &set, int nattr, WorkPtr &work);
+
+	/**
+	 * Seleciona a relação de treinamento
+	 * @param mlpID ID da rede
+	 * @param set Conjunto de dados
+	 * @return ID da relação de treinamento
+	 */
+	static int selectTrainedRelation(int mlpID, ExampleSet &set,
 			WorkPtr &work);
+
+	/**
+	 * Seleciona o intervalo de valores do MLP
+	 * @param mlpID ID da rede
+	 * @param work Trabalho
+	 * @return Intervalo de valores do MLP
+	 */
+	static Range selectRange(int mlpID, WorkPtr &work);
+
+	/**
+	 * Seleciona as estatísticas de uma relação
+	 * @param mlpID ID da rede
+	 * @param set Conjunto de dados a serem preenchidos
+	 * @param nattr Quantidade de atributos da relação
+	 * @param work Trabalho
+	 */
+	static void selectStatistics(int mlpID, ExampleSet &set, WorkPtr &work);
+
+	/**
+	 * Adiciona um valor númerico de entrada ou saída
+	 * @param set Conjunto de dados
+	 * @param value Valor numérico de entrada ou saída
+	 * @param isTarget Indica se o valor é de saída
+	 */
+	static void addValue(ExampleSet &set, double value, bool isTarget);
+
+	/**
+	 * Adiciona um valor nominal de entrada ou saída
+	 * @param set Conjunto de dados
+	 * @param value Valor nominal de entrada ou saída
+	 * @param card Cardinalidade do atributo nominal
+	 * @param isTarget Indica se o valor é de saída
+	 */
+	static void addValue(ExampleSet &set, int value, uint card, bool isTarget);
 
 };
 

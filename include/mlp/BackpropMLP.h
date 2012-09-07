@@ -1,12 +1,10 @@
 #ifndef BACKPROPMLP_H_
 #define BACKPROPMLP_H_
 
-#include "mlp/activation/HyperbolicFunc.h"
-#include "mlp/activation/LogisticFunc.h"
 #include "mlp/Layer.h"
 #include "mlp/ExampleSet.h"
 
-namespace Database { class MLPHelper; }
+namespace Database { class BackpropMLPAdapter; }
 
 namespace MLP
 {
@@ -20,11 +18,17 @@ class BackpropMLP
 public:
 
 	/**
-	 * Constrói um MLP não treinado
-	 * @param units Vetor contendo a quantidade de neurônios por camada
-	 * @param activationType Tipo da função de ativação
+	 * Constrói um MLP que será recuperado
+	 * @param mlpID ID da rede
 	 */
-	BackpropMLP(vector<uint> &units, ActivationType activationType);
+	BackpropMLP(int mlpID);
+
+	/**
+	 * Constrói um MLP não treinado
+	 * @param name Nome da rede
+	 * @param units Vetor contendo a quantidade de neurônios por camada
+	 */
+	BackpropMLP(string name, vuint &units);
 
 	/**
 	 * Destrói o MLP
@@ -34,47 +38,60 @@ public:
 	/**
 	 * Randomiza os pesos das conexões
 	 */
-	void randomizeWeights();
+	void randomize();
+
+	/**
+	 * Retorna o intervalo de valores de saída
+	 * @return Intervalo de valores de saída
+	 */
+	Range getRange() const;
 
 	/**
 	 * Treina a rede neural
-	 * @param trainingSet Conjunto de treinamento
+	 * @param training Conjunto de treinamento
 	 */
-	void train(ExampleSet &trainingSet);
+	void train(ExampleSet &training);
+
+	/**
+	 * Valida a rede neural
+	 * @param validation Conjunto de validação
+	 */
+	void validate(ExampleSet &validation);
 
 	/**
 	 * Testa a rede neural
-	 * @param testSet Conjunto de testes
+	 * @param test Conjunto de testes
 	 */
-	void test(ExampleSet &testSet);
+	void test(ExampleSet &test);
 
-	friend class Database::MLPHelper;
+	friend class Database::BackpropMLPAdapter;
 
 private:
 
 	/**
+	 * Copia a saída atual para o conjunto de dados
+	 * @param set Conjunto de dados
+	 * @param i Índice da entrada
+	 */
+	void copyOutput(ExampleSet &set, uint i);
+
+	/**
+	 * Calcula o erro cometido pela rede
+	 * @param target Saída alvo
+	 */
+	void calculateError(const vdouble &target);
+
+	/**
 	 * Realiza o feedforward
 	 * @param input Dados de entrada
-	 * @return Saída da rede
 	 */
-	const vector<double>& feedforward(const vector<double> &input);
+	void feedforward(const vdouble &input);
 
 	/**
 	 * Realiza o feedback
-	 * @param target Saída alvo esperada
-	 * @param learningRate Taxa de aprendizado
-	 * @param momentum Momento
+	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vector<double> &target, double learningRate,
-			double momentum);
-
-	/**
-	 * Compara a saída gerada pela rede com a saída esperada
-	 * @param output Saída gerada
-	 * @param target Saída alvo esperada
-	 */
-	bool compareOutput(const vector<double> output,
-			const vector<double> &target, double maxTolerance) const;
+	void feedback(double learning);
 
 	/**
 	 * Embaralha os índices utilizando o algoritmo de Fisher-Yates
@@ -88,9 +105,14 @@ private:
 	int mlpID;
 
 	/**
-	 * Função de ativação
+	 * Nome da rede
 	 */
-	ActivationFuncPtr activation;
+	string name;
+
+	/**
+	 * Intervalo de valores para a saída
+	 */
+	Range range;
 
 	/**
 	 * Camadas
@@ -98,9 +120,19 @@ private:
 	vector<LayerPtr> layers;
 
 	/**
+	 * Saída da rede
+	 */
+	const vdouble* output;
+
+	/**
 	 * Erro cometido pela rede
 	 */
-	vector<double> error;
+	vdouble error;
+
+	/**
+	 * Erro total
+	 */
+	double totalError;
 
 };
 

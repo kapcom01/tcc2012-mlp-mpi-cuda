@@ -5,36 +5,36 @@ namespace MLP
 
 //===========================================================================//
 
-BackpropMLP::BackpropMLP(vector<uint> &units, ActivationType activationType)
+BackpropMLP::BackpropMLP(int mlpID)
 {
-	// Constrói a função de ativação
-	if (activationType == LOGISTIC)
-		activation = ActivationFuncPtr(new LogisticFunc);
-	else
-		activation = ActivationFuncPtr(new HyperbolicFunc);
+	this->mlpID = mlpID;
+
+	totalError = 0;
+	output = NULL;
+}
+
+//===========================================================================//
+
+BackpropMLP::BackpropMLP(string name, vuint &units)
+{
+	this->name = name;
+
+	// Intervalo da função de ativação hiperbólica
+	range = {-1, 1};
 
 	// Adiciona as camadas escondidas e a camada de saída
 	for (uint i = 0; i < units.size() - 1; i++)
-		layers.push_back(LayerPtr(
-				new Layer(units[i], units[i + 1], *activation)));
+	{
+		LayerPtr layer(new Layer(units[i], units[i + 1]));
+		layers.push_back(layer);
+	}
+	output = &(layers.back()->funcSignal);
 
 	// Aloca espaço para o erro
-	error.resize(units[layers.size()]);
+	error.resize(units.back());
 
 	// Randomiza os pesos
-	randomizeWeights();
-
-	for (uint i = 0; i < layers.size(); i++)
-	{
-		cout << "Layer: " << (i + 1) << endl;
-		for (uint j = 0; j < layers[i]->outUnits; j++)
-		{
-			cout << "Neuron: " << (j + 1) << " |";
-			for (uint k = 0; k <= layers[i]->inUnits; k++)
-				cout << " " << layers[i]->weights[j][k];
-			cout << endl;
-		}
-	}
+	randomize();
 }
 
 //===========================================================================//
@@ -46,99 +46,131 @@ BackpropMLP::~BackpropMLP()
 
 //===========================================================================//
 
-void BackpropMLP::randomizeWeights()
+void BackpropMLP::randomize()
 {
 	for (uint i = 0; i < layers.size(); i++)
-		layers[i]->randomizeWeights();
+		layers[i]->randomize();
 }
 
 //===========================================================================//
 
-void BackpropMLP::train(ExampleSet &trainingSet)
+Range BackpropMLP::getRange() const
 {
+	return range;
+}
+
+//===========================================================================//
+
+void BackpropMLP::train(ExampleSet &training)
+{
+	// Normaliza o conjunto de treinamento
+	training.normalize();
+
 	// Inicializa os índices
 	vector<uint> indexes;
-	for (uint i = 0; i < trainingSet.size(); i++)
+	for (uint i = 0; i < training.size(); i++)
 		indexes.push_back(i);
 
-	// Ciclos de treinamento
-	for (uint k = 0; k < trainingSet.maxEpochs; k++)
+	// Épocas
+	uint k;
+	for (k = 0; k < training.maxEpochs; k++)
 	{
-		cout << "Epoch: " << (k+1) << endl;
+		cout << "Epochs: " << k << endl;
 
-		uint hits = 0;
-
-		// Embaralha os índices
 		shuffleIndexes(indexes);
+		totalError = 0;
 
-		// Para cada instância
-		for (uint i = 0; i < trainingSet.size(); i++)
+		// Para cada entrada
+		for (uint i = 0; i < training.size(); i++)
 		{
 			uint r = indexes[i];
 
-			cout << " |-> Instance: " << (r+1) << " ";
+			// Realiza o feedforward e salva os valores no conjunto
+			feedforward(training.input[r]);
+			copyOutput(training, i);
 
-			// Realiza o feedforward
-			const vector<double> &output = feedforward(trainingSet.input[r]);
-
-			cout << "Input: " << trainingSet.input[r][0] << " "
-					<< trainingSet.input[r][1] << " ";
-			cout << "Target: " << trainingSet.target[r][0] << " ";
-			cout << "Output: " << output[0] << " ";
-
-			// Verifica se acertou
-			bool hit = compareOutput(output, trainingSet.target[r],
-					trainingSet.maxTolerance);
-
-			// Se não acertou, realiza o feedback
-			if (!hit)
-				feedback(trainingSet.target[r], trainingSet.learningRate,
-						trainingSet.momentum);
-			// Se acertou, incrementa os acertos
-			else
-				hits++;
-
-			cout << endl;
+			// Calcula o erro e realiza o feedback
+			calculateError(training.target[r]);
+			feedback(training.learning);
 		}
 
-		// Calcula a taxa de sucesso
-		trainingSet.successRate = hits / (double) trainingSet.size();
-
-		cout << " |-> Sucess rate: " << trainingSet.successRate << endl;
-
-		// Se for atingido a taxa de sucesso mínima, para
-		if(trainingSet.successRate >= trainingSet.minSuccessRate)
+		// Condição de parada: erro menor do que um valor tolerado
+		if (totalError < training.tolerance)
 			break;
 	}
+
+	training.error = totalError;
+
+	// Desnormaliza o conjunto de treinamento
+	training.unnormalize();
 }
 
 //===========================================================================//
 
-void BackpropMLP::test(ExampleSet &testSet)
+void BackpropMLP::validate(ExampleSet &validation)
 {
-	uint hits = 0;
+	// Normaliza o conjunto de testes
+	validation.normalize();
+
+	totalError = 0;
 
 	// Para cada entrada
-	for (uint i = 0; i < testSet.size(); i++)
+	for (uint i = 0; i < validation.size(); i++)
 	{
-		// Realiza o feedforward
-		const vector<double> &output = feedforward(testSet.input[i]);
+		// Realiza o feedforward e salva os valores no conjunto
+		feedforward(validation.input[i]);
+		copyOutput(validation, i);
 
-		// Salva os valores da saída da rede neural
-		for (uint j = 0; j < testSet.outVars(); j++)
-			testSet.output[i][j] = output[j];
-
-		// Incrementa a quantidade de acertos se acertou
-		hits += compareOutput(output, testSet.output[i], testSet.maxTolerance);
+		// Calcula o erro
+		calculateError(validation.target[i]);
 	}
 
-	// Calcula a taxa de sucesso
-	testSet.successRate = testSet.size() / (double) hits;
+	validation.error = totalError;
+
+	// Desnormaliza o conjunto de testes
+	validation.unnormalize();
 }
 
 //===========================================================================//
 
-const vector<double>& BackpropMLP::feedforward(const vector<double> &input)
+void BackpropMLP::test(ExampleSet &test)
+{
+	// Normaliza o conjunto de testes
+	test.normalize();
+
+	// Para cada entrada
+	for (uint i = 0; i < test.size(); i++)
+	{
+		// Realiza o feedforward e salva os valores no conjunto
+		feedforward(test.input[i]);
+		copyOutput(test, i);
+	}
+
+	// Desnormaliza o conjunto de testes
+	test.unnormalize();
+}
+
+//===========================================================================//
+
+void BackpropMLP::copyOutput(ExampleSet &set, uint i)
+{
+	copy(output->begin(), output->end(), set.output[i].begin());
+}
+
+//===========================================================================//
+
+void BackpropMLP::calculateError(const vdouble &target)
+{
+	for (uint i = 0; i < error.size(); i++)
+	{
+		error[i] = target[i] - output->at(i);
+		totalError += error[i] * error[i];
+	}
+}
+
+//===========================================================================//
+
+void BackpropMLP::feedforward(const vdouble &input)
 {
 	// Propaga a entrada para a primeira camada escondida
 	layers.front()->feedforward(input);
@@ -146,42 +178,18 @@ const vector<double>& BackpropMLP::feedforward(const vector<double> &input)
 	// Propaga a saída da primeira camada para o restante das camadas
 	for (uint i = 1; i < layers.size(); i++)
 		layers[i]->feedforward(layers[i - 1]->funcSignal);
-
-	return layers.back()->funcSignal;
 }
 
 //===========================================================================//
 
-void BackpropMLP::feedback(const vector<double> &target, double learningRate,
-		double momentum)
+void BackpropMLP::feedback(double learning)
 {
-	const vector<double> &output = layers.back()->funcSignal;
-
-	// Calcula o erro cometido pela rede
-	for (uint i = 0; i < error.size(); i++)
-		error[i] = target[i] - output[i];
-
-	// Propaga o erro na camada de saída
-	layers.back()->feedback(error, learningRate, momentum);
+	// Propaga os erros na camada de saída
+	layers.back()->feedback(error, learning);
 
 	// Propaga o sinal de erro para o restante das camadas
 	for (int i = layers.size() - 2; i >= 0; i--)
-		layers[i]->feedback(layers[i + 1]->errorSignal, learningRate,
-				momentum);
-}
-
-//===========================================================================//
-
-bool BackpropMLP::compareOutput(const vector<double> output,
-		const vector<double> &target, double maxTolerance) const
-{
-	// Para cada saída
-	for (uint i = 0; i < output.size(); i++)
-		// Verifica se a diferença é maior que a tolerância máxima
-		if (fabs(output[i] - target[i]) > maxTolerance)
-			return false;
-
-	return true;
+		layers[i]->feedback(layers[i + 1]->errorSignal, learning);
 }
 
 //===========================================================================//
