@@ -5,9 +5,10 @@ namespace MLP
 
 //===========================================================================//
 
-ExampleSet::ExampleSet(int relationID, SetType type)
+ExampleSet::ExampleSet(int relationID, int mlpID, SetType type)
 {
 	this->relationID = relationID;
+	this->mlpID = mlpID;
 	this->type = type;
 
 	isNormalized = false;
@@ -15,7 +16,7 @@ ExampleSet::ExampleSet(int relationID, SetType type)
 	tolerance = 0.01;
 	maxEpochs = 100000;
 	error = 0;
-	successRate = 0;
+	time = 0;
 }
 
 //===========================================================================//

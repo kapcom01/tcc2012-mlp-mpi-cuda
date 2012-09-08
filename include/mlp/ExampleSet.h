@@ -59,9 +59,10 @@ public:
 	/**
 	 * Constrói um conjunto de dados vazio
 	 * @param relationID ID da relação
+	 * @param mlpID ID da rede
 	 * @param type Tipo do conjunto de dados
 	 */
-	ExampleSet(int relationID, SetType type);
+	ExampleSet(int relationID, int mlpID, SetType type);
 
 	/**
 	 * Destrói o conjunto de dados
@@ -130,6 +131,11 @@ public:
 	int relationID;
 
 	/**
+	 * ID da rede
+	 */
+	int mlpID;
+
+	/**
 	 * Tipo do conjunto de dados
 	 */
 	SetType type;
@@ -175,9 +181,9 @@ public:
 	double error;
 
 	/**
-	 * Taxa de sucesso
+	 * Tempo de execução da operação
 	 */
-	double successRate;
+	double time;
 
 	/**
 	 * Indica se o conjunto de dados está normalizado

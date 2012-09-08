@@ -48,7 +48,7 @@ void ExampleSetAdapter::prepareForSelect(connection* conn)
 
 //===========================================================================//
 
-void ExampleSetAdapter::select(ExampleSet &set, int mlpID)
+void ExampleSetAdapter::select(ExampleSet &set)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -65,7 +65,10 @@ void ExampleSetAdapter::select(ExampleSet &set, int mlpID)
 		selectData(set, nattr, work);
 
 		// Seleciona as estatísticas
-		selectStatistics(mlpID, set, work);
+		selectStatistics(set, work);
+
+		// Salva as alterações
+		work->commit();
 	}
 	catch (pqxx_exception &e)
 	{
@@ -121,6 +124,66 @@ void ExampleSetAdapter::selectData(ExampleSet &set, int nattr, WorkPtr &work)
 
 //===========================================================================//
 
+int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
+		WorkPtr &work)
+{
+	// Se for conjunto de treinamento, retorna próprio ID
+	if (set.type == TRAINING)
+		return set.relationID;
+	// Se for outro tipo, retorna a relação de treinamento do MLP
+	else
+	{
+		const result &res = work->prepared("selectTrainedRelation")
+				(set.mlpID).exec();
+		return res[0][0].as<int>();
+	}
+}
+
+//===========================================================================//
+
+Range ExampleSetAdapter::selectRange(int mlpID, WorkPtr &work)
+{
+	const result &res = work->prepared("selectRange")(mlpID).exec();
+	return {res[0][0].as<double>(), res[0][1].as<double>()};
+}
+
+//===========================================================================//
+
+void ExampleSetAdapter::selectStatistics(ExampleSet &set, WorkPtr &work)
+{
+	// Seleciona a relação de treinamento
+	int trained = selectTrainedRelation(set, work);
+
+	// Seleciona o intervalo de valores do MLP
+	Range range = selectRange(set.mlpID, work);
+
+	const result &res = work->prepared("selectStatistics")(trained).exec();
+
+	// Para cada tupla do resultado
+	for (auto row = res.begin(); row != res.end(); row++)
+	{
+		// Se for numérico
+		if (row["Type"].as<int>() == NUMERIC_TYPE)
+		{
+			double min = row["Minimum"].as<double>();
+			double max = row["Maximum"].as<double>();
+
+			set.stat.push_back({{min, max}, {-1, 1}});
+		}
+
+		// Se for nominal
+		else
+		{
+			uint card = row["NominalCard"].as<uint>();
+
+			for (uint i = 0; i < card; i++)
+				set.stat.push_back({{0, 1}, {range.lower, range.upper}});
+		}
+	}
+}
+
+//===========================================================================//
+
 void ExampleSetAdapter::addValue(ExampleSet &set, double value, bool isTarget)
 {
 	// Se for saída
@@ -149,60 +212,115 @@ void ExampleSetAdapter::addValue(ExampleSet &set, int value, uint card,
 
 //===========================================================================//
 
-int ExampleSetAdapter::selectTrainedRelation(int mlpID, ExampleSet &set,
-		WorkPtr &work)
+void ExampleSetAdapter::prepareForInsert(connection* conn)
 {
-	// Se for conjunto de treinamento, retorna próprio ID
-	if (set.type == TRAINING)
-		return set.relationID;
-	// Se for outro tipo, retorna a relação de treinamento do MLP
-	else
+	try
 	{
-		const result &res = work->prepared("selectTrainedRelation")(mlpID).exec();
-		return res[0][0].as<int>();
+		// Inserção na tabela Operation
+		conn->prepare("insertOperation",
+				"INSERT INTO Operation (Type, MLPID, RelationID, "
+				"LearningRate, Tolerance, MaxEpochs, Error, Time) VALUES "
+				"($1, $2, $3, $4, $5, $6, $7, $8)")
+				("SMALLINT")("INTEGER")("INTEGER")("NUMERIC")("NUMERIC")
+				("INTEGER")("NUMERIC")("NUMERIC");
+
+		// Seleção do tipo do atributo de saída
+		conn->prepare("selectType",
+				"SELECT A.Type FROM Attribute A, Relation R WHERE "
+				"A.AttrIndex = R.NAttributes AND A.RelationID = $1 "
+				"AND R.RelationID = $1")
+				("INTEGER");
+
+		// Inserção na tabela Results
+		conn->prepare("insertResults",
+				"INSERT INTO Result (OperationID, InstanceIndex, "
+				"NumericValue, NominalValue) VALUES ($1, $2, $3, $4)")
+				("INTEGER")("INTEGER")("NUMERIC")("SMALLINT");
+
+		// Seleção do último ID de Operation gerado
+		conn->prepare("selectLastID",
+				"SELECT currval(pg_get_serial_sequence('Operation', "
+				"'operationid'))");
+	}
+	catch (pqxx_exception &e)
+	{
+		throw DatabaseException(e);
 	}
 }
 
 //===========================================================================//
 
-Range ExampleSetAdapter::selectRange(int mlpID, WorkPtr &work)
+void ExampleSetAdapter::insert(const ExampleSet &set)
 {
-	const result &res = work->prepared("selectRange")(mlpID).exec();
-	return {res[0][0].as<double>(), res[0][1].as<double>()};
+	// Cria uma nova conexão com a base de dados
+	Connection conn;
+	prepareForInsert(conn.get());
+
+	WorkPtr work = conn.getWork();
+
+	try
+	{
+		// Insere as informações da operação
+		int opID = insertOperation(set, work);
+
+		// Insere os resultados
+		insertResults(opID, set, work);
+
+		// Salva as alterações
+		work->commit();
+	}
+	catch (pqxx_exception &e)
+	{
+		// Desfaz as alterações
+		work->abort();
+		throw DatabaseException(e);
+	}
 }
 
 //===========================================================================//
 
-void ExampleSetAdapter::selectStatistics(int mlpID, ExampleSet &set,
+int ExampleSetAdapter::insertOperation(const ExampleSet &set, WorkPtr &work)
+{
+	work->prepared("insertOperation")((int) set.type)(set.mlpID)
+			(set.relationID)(set.learning)(set.tolerance)(set.maxEpochs)
+			(set.error)(set.time).exec();
+
+	// Recupera o ID gerado
+	const result &res = work->prepared("selectLastID").exec();
+	return res[0][0].as<int>();
+}
+
+//===========================================================================//
+
+bool ExampleSetAdapter::selectType(const ExampleSet &set, WorkPtr &work)
+{
+	const result &res = work->prepared("selectType")(set.relationID).exec();
+
+	// Verifica o tipo
+	return (res[0]["Type"].as<int>() == 1);
+}
+
+//===========================================================================//
+
+void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
 		WorkPtr &work)
 {
-	// Seleciona a relação de treinamento
-	int trained = selectTrainedRelation(mlpID, set, work);
-
-	// Seleciona o intervalo de valores do MLP
-	Range range = selectRange(mlpID, work);
-
-	const result &res = work->prepared("selectStatistics")(trained).exec();
-
-	// Para cada tupla do resultado
-	for (auto row = res.begin(); row != res.end(); row++)
+	// Para cada instância
+	for (uint i = 0; i < set.size(); i++)
 	{
-		// Se for numérico
-		if (row["Type"].as<int>() == NUMERIC_TYPE)
+		// Se for do tipo numérico
+		if (selectType(set, work))
 		{
-			double min = row["Minimum"].as<double>();
-			double max = row["Maximum"].as<double>();
-
-			set.stat.push_back({{min, max}, {-1, 1}});
+			double value = set.output[i][0];
+			work->prepared("insertResults")(opID)(i + 1)(value)().exec();
 		}
 
-		// Se for nominal
+		// Se for do tipo nominal
 		else
 		{
-			uint card = row["NominalCard"].as<uint>();
-
-			for (uint i = 0; i < card; i++)
-				set.stat.push_back({{0, 1}, {range.lower, range.upper}});
+			auto it = max_element(set.output[i].begin(), set.output[i].end());
+			int value = it - set.output[i].begin() + 1;
+			work->prepared("insertResults")(opID)(i + 1)()(value).exec();
 		}
 	}
 }
