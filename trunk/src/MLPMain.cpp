@@ -18,22 +18,26 @@ int main(int argc, char* argv[])
 
     try
 	{
+    	int relationID = 4;
+    	int mlpID = 2;
+
 //	    vuint units = {4, 8, 3};
 //	    BackpropMLP mlp("mlpiris", units);
 //	    BackpropMLPAdapter::insert(mlp);
 
-		ExampleSet exampleSet(3, TRAINING);
-		ExampleSetAdapter::select(exampleSet, 1);
+		ExampleSet exampleSet(relationID, mlpID, TRAINING);
+		ExampleSetAdapter::select(exampleSet);
 		exampleSet.learning = 0.4;
 		exampleSet.maxEpochs = 100000;
 		exampleSet.tolerance = 0.01;
 
-		BackpropMLP mlp(1);
+		BackpropMLP mlp(mlpID);
 		BackpropMLPAdapter::select(mlp);
 
 		mlp.train(exampleSet);
 
-		BackpropMLPAdapter::update(mlp, 3);
+		BackpropMLPAdapter::update(mlp, relationID);
+		ExampleSetAdapter::insert(exampleSet);
 	}
 	catch(exception &ex)
 	{

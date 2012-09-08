@@ -37,7 +37,7 @@ CREATE TABLE Attribute (
     Minimum NUMERIC,
     Maximum NUMERIC,
     
-    CHECK (Type IN (1,2)),
+    CHECK (Type IN (1, 2)),
     PRIMARY KEY (RelationID, AttrIndex),
     UNIQUE (RelationID, Name),
     FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
@@ -98,63 +98,31 @@ CREATE TABLE Neuron (
 	FOREIGN KEY (MLPID, LayerIndex) REFERENCES Layer (MLPID, LayerIndex)
 );
 
-CREATE TABLE Training (
-	TrainingID SERIAL,
+CREATE TABLE Operation (
+	OperationID SERIAL,
+	Type SMALLINT,
 	MLPID INTEGER,
 	RelationID INTEGER NOT NULL,
-	LearningRate NUMERIC NOT NULL,
-	SearchPercent INTEGER NOT NULL,
-	MaxTolerance NUMERIC NOT NULL,
-	MaxIterations INTEGER NOT NULL,
-	MinSuccessRate NUMERIC NOT NULL,
-	SucessRate NUMERIC NOT NULL,
-	Time NUMERIC NOT NULL,
+	LearningRate NUMERIC,
+	Tolerance NUMERIC,
+	MaxEpochs INTEGER,
+	Error NUMERIC,
+	Time NUMERIC,
 	
-	PRIMARY KEY (TrainingID),
-	UNIQUE (MLPID),
+	CHECK (Type IN (1, 2, 3)),
+	PRIMARY KEY (OperationID),
 	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID),
 	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
 );
 
-CREATE TABLE TrainingResults (
-	TrainingID INTEGER,
-	RelationID INTEGER,
+CREATE TABLE Result (
+	OperationID INTEGER,
     InstanceIndex INTEGER,
-    AttrIndex INTEGER,
     NumericValue NUMERIC,
-    NominalValue VARCHAR(30),
+    NominalValue SMALLINT,
     
-    PRIMARY KEY (TrainingID, InstanceIndex, AttrIndex),
-    FOREIGN KEY (TrainingID) REFERENCES Training (TrainingID),
-    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
-);
-
-CREATE TABLE Testing (
-	TestingID SERIAL,
-	MLPID INTEGER,
-	RelationID INTEGER NOT NULL,
-	MaxTolerance NUMERIC NOT NULL,
-	MaxIterations INTEGER NOT NULL,
-	MinSuccessRate NUMERIC NOT NULL,
-	SucessRate NUMERIC NOT NULL,
-	Time NUMERIC NOT NULL,
-	
-	PRIMARY KEY (TestingID),
-	FOREIGN KEY (MLPID) REFERENCES MLP (MLPID),
-	FOREIGN KEY (RelationID) REFERENCES Relation (RelationID)
-);
-
-CREATE TABLE TestingResults (
-	TestingID INTEGER,
-	RelationID INTEGER,
-    InstanceIndex INTEGER,
-    AttrIndex INTEGER,
-    NumericValue NUMERIC,
-    NominalValue VARCHAR(30),
-    
-    PRIMARY KEY (TestingID, InstanceIndex, AttrIndex),
-    FOREIGN KEY (TestingID) REFERENCES Testing (TestingID),
-    FOREIGN KEY (RelationID, AttrIndex) REFERENCES Attribute (RelationID, AttrIndex)
+    PRIMARY KEY (OperationID, InstanceIndex),
+    FOREIGN KEY (OperationID) REFERENCES Operation (OperationID)
 );
 
 ## Doação de privilégios
@@ -165,14 +133,11 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON Data TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON MLP TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Layer TO mlpuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Neuron TO mlpuser;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Training TO mlpuser;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TrainingResults TO mlpuser;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Testing TO mlpuser;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TestingResults TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Operation TO mlpuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Result TO mlpuser;
 
 
 GRANT SELECT, UPDATE, USAGE ON relation_relationid_seq TO mlpuser;
 GRANT SELECT, UPDATE, USAGE ON mlp_mlpid_seq TO mlpuser;
-GRANT SELECT, UPDATE, USAGE ON training_trainingid_seq TO mlpuser;
-GRANT SELECT, UPDATE, USAGE ON testing_testingid_seq TO mlpuser;
+GRANT SELECT, UPDATE, USAGE ON operation_operationid_seq TO mlpuser;
 

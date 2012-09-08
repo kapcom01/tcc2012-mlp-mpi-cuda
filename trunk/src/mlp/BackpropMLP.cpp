@@ -75,8 +75,6 @@ void BackpropMLP::train(ExampleSet &training)
 	uint k;
 	for (k = 0; k < training.maxEpochs; k++)
 	{
-		cout << "Epochs: " << k << endl;
-
 		shuffleIndexes(indexes);
 		totalError = 0;
 
@@ -93,6 +91,8 @@ void BackpropMLP::train(ExampleSet &training)
 			calculateError(training.target[r]);
 			feedback(training.learning);
 		}
+
+		totalError /= training.size() * training.outVars();
 
 		// Condição de parada: erro menor do que um valor tolerado
 		if (totalError < training.tolerance)

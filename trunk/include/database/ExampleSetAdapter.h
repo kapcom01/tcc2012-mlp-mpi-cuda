@@ -3,6 +3,7 @@
 
 #include "mlp/ExampleSet.h"
 #include "database/RelationAdapter.h"
+#include <algorithm>
 
 using namespace MLP;
 
@@ -18,11 +19,16 @@ class ExampleSetAdapter
 public:
 
 	/**
-	 * Recupera um conjunto de entrada
-	 * @param set Conjunto de entrada a ser selecionado
-	 * @param mlpID ID da rede
+	 * Recupera um conjunto de dados
+	 * @param set Conjunto de dados a ser selecionado
 	 */
-	static void select(ExampleSet &set, int mlpID);
+	static void select(ExampleSet &set);
+
+	/**
+	 * Insere um conjunto de dados
+	 * @param set Conjunto de dados
+	 */
+	static void insert(const ExampleSet &set);
 
 private:
 
@@ -31,6 +37,12 @@ private:
 	 * @param conn Conexão
 	 */
 	static void prepareForSelect(connection* conn);
+
+	/**
+	 * Prepara a conexão para operações de seleção
+	 * @param conn Conexão
+	 */
+	static void prepareForInsert(connection* conn);
 
 	/**
 	 * Seleciona a quantidade de atributos de uma relação
@@ -50,12 +62,10 @@ private:
 
 	/**
 	 * Seleciona a relação de treinamento
-	 * @param mlpID ID da rede
 	 * @param set Conjunto de dados
 	 * @return ID da relação de treinamento
 	 */
-	static int selectTrainedRelation(int mlpID, ExampleSet &set,
-			WorkPtr &work);
+	static int selectTrainedRelation(ExampleSet &set, WorkPtr &work);
 
 	/**
 	 * Seleciona o intervalo de valores do MLP
@@ -67,12 +77,11 @@ private:
 
 	/**
 	 * Seleciona as estatísticas de uma relação
-	 * @param mlpID ID da rede
 	 * @param set Conjunto de dados a serem preenchidos
 	 * @param nattr Quantidade de atributos da relação
 	 * @param work Trabalho
 	 */
-	static void selectStatistics(int mlpID, ExampleSet &set, WorkPtr &work);
+	static void selectStatistics(ExampleSet &set, WorkPtr &work);
 
 	/**
 	 * Adiciona um valor númerico de entrada ou saída
@@ -90,6 +99,30 @@ private:
 	 * @param isTarget Indica se o valor é de saída
 	 */
 	static void addValue(ExampleSet &set, int value, uint card, bool isTarget);
+
+	/**
+	 * Insere os dados da operação
+	 * @param set Conjunto de dados
+	 * @param work Trabalho
+	 * @return ID da operação
+	 */
+	static int insertOperation(const ExampleSet &set, WorkPtr &work);
+
+	/**
+	 * Verifica o tipo do atributo de saída
+	 * @param set Conjunto de dados
+	 * @param work Trabalho
+	 * @return Retorna verdadeiro se for numérico e falso caso contrário
+	 */
+	static bool selectType(const ExampleSet &set, WorkPtr &work);
+
+	/**
+	 * Insere os resultados de uma operação
+	 * @param opID ID da operação
+	 * @param set Conjunto de dados
+	 * @param work Trabalho
+	 */
+	static void insertResults(int opID, const ExampleSet &set, WorkPtr &work);
 
 };
 

@@ -46,60 +46,6 @@ void BackpropMLPAdapter::prepareForInsert(connection* conn)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::prepareForSelect(connection* conn)
-{
-	try
-	{
-		// Seleção na tabela MLP
-		conn->prepare("selectMLP",
-				"SELECT Name, LowerValue, UpperValue FROM MLP "
-				"WHERE MLPID = $1")
-				("INTEGER");
-
-		// Seleção na tabela Layer
-		conn->prepare("selectLayer",
-				"SELECT NInputs, NNeurons FROM Layer WHERE MLPID = $1 "
-				"ORDER BY LayerIndex")
-				("INTEGER");
-
-		// Seleção na tabela Neuron
-		conn->prepare("selectNeuron",
-				"SELECT Weight FROM Neuron WHERE MLPID = $1 AND "
-				"LayerIndex = $2 AND NeuronIndex = $3 "
-				"ORDER BY InputIndex")
-				("INTEGER")("INTEGER")("INTEGER");
-	}
-	catch (pqxx_exception &e)
-	{
-		throw DatabaseException(e);
-	}
-}
-
-//===========================================================================//
-
-void BackpropMLPAdapter::prepareForUpdate(connection* conn)
-{
-	try
-	{
-		// Adiciona a relação treinada
-		conn->prepare("updateRelation",
-				"UPDATE MLP SET TrainedRelation = $2 WHERE MLPID = $1")
-				("INTEGER")("INTEGER");
-
-		// Atualização na tabela Neuron
-		conn->prepare("updateNeuron",
-				"UPDATE Neuron SET Weight = $5 WHERE MLPID = $1 "
-				"AND LayerIndex = $2 AND NeuronIndex = $3 AND InputIndex = $4")
-				("INTEGER")("INTEGER")("INTEGER")("INTEGER")("NUMERIC");
-	}
-	catch (pqxx_exception &e)
-	{
-		throw DatabaseException(e);
-	}
-}
-
-//===========================================================================//
-
 void BackpropMLPAdapter::insert(BackpropMLP &mlp)
 {
 	// Cria uma nova conexão com a base de dados
@@ -178,6 +124,37 @@ void BackpropMLPAdapter::insertNeuron(int mlpID, uint layerIndex,
 	for (uint i = 0; i <= neuron.inUnits; i++)
 		work->prepared("insertNeuron")(mlpID)(layerIndex)(neuronIndex)(i + 1)
 				(neuron.weights[i]).exec();
+}
+
+//===========================================================================//
+
+void BackpropMLPAdapter::prepareForSelect(connection* conn)
+{
+	try
+	{
+		// Seleção na tabela MLP
+		conn->prepare("selectMLP",
+				"SELECT Name, LowerValue, UpperValue FROM MLP "
+				"WHERE MLPID = $1")
+				("INTEGER");
+
+		// Seleção na tabela Layer
+		conn->prepare("selectLayer",
+				"SELECT NInputs, NNeurons FROM Layer WHERE MLPID = $1 "
+				"ORDER BY LayerIndex")
+				("INTEGER");
+
+		// Seleção na tabela Neuron
+		conn->prepare("selectNeuron",
+				"SELECT Weight FROM Neuron WHERE MLPID = $1 AND "
+				"LayerIndex = $2 AND NeuronIndex = $3 "
+				"ORDER BY InputIndex")
+				("INTEGER")("INTEGER")("INTEGER");
+	}
+	catch (pqxx_exception &e)
+	{
+		throw DatabaseException(e);
+	}
 }
 
 //===========================================================================//
@@ -262,6 +239,29 @@ void BackpropMLPAdapter::selectNeuron(int mlpID, uint layerIndex,
 	uint i = 0;
 	for (auto row = res.begin(); row != res.end(); row++)
 		neuron.weights[i++] = row[0].as<double>();
+}
+
+//===========================================================================//
+
+void BackpropMLPAdapter::prepareForUpdate(connection* conn)
+{
+	try
+	{
+		// Adiciona a relação treinada
+		conn->prepare("updateRelation",
+				"UPDATE MLP SET TrainedRelation = $2 WHERE MLPID = $1")
+				("INTEGER")("INTEGER");
+
+		// Atualização na tabela Neuron
+		conn->prepare("updateNeuron",
+				"UPDATE Neuron SET Weight = $5 WHERE MLPID = $1 "
+				"AND LayerIndex = $2 AND NeuronIndex = $3 AND InputIndex = $4")
+				("INTEGER")("INTEGER")("INTEGER")("INTEGER")("NUMERIC");
+	}
+	catch (pqxx_exception &e)
+	{
+		throw DatabaseException(e);
+	}
 }
 
 //===========================================================================//
