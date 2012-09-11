@@ -3,6 +3,9 @@
 
 #include "mlp/Layer.h"
 #include "mlp/ExampleSet.h"
+#include <chrono>
+
+using namespace chrono;
 
 namespace Database { class BackpropMLPAdapter; }
 
@@ -94,10 +97,16 @@ private:
 	void feedback(double learning);
 
 	/**
-	 * Embaralha os índices utilizando o algoritmo de Fisher-Yates
-	 * @param index Vetor contendo os índices
+	 * Inicializa os índices
+	 * @param indexes Vetor contendo os índices
 	 */
-	void shuffleIndexes(vector<uint> &indexes) const;
+	void initIndexes(vuint &indexes) const;
+
+	/**
+	 * Embaralha os índices utilizando o algoritmo de Fisher-Yates
+	 * @param indexes Vetor contendo os índices
+	 */
+	void shuffleIndexes(vuint &indexes) const;
 
 	/**
 	 * ID da rede

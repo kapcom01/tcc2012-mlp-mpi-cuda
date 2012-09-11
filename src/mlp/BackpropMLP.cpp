@@ -63,13 +63,16 @@ Range BackpropMLP::getRange() const
 
 void BackpropMLP::train(ExampleSet &training)
 {
-	// Normaliza o conjunto de treinamento
+	// Randomiza os pesos e normaliza o conjunto de treinamento
+	randomize();
 	training.normalize();
 
 	// Inicializa os índices
-	vector<uint> indexes;
-	for (uint i = 0; i < training.size(); i++)
-		indexes.push_back(i);
+	vuint indexes(training.size());
+	initIndexes(indexes);
+
+	// Inicializa o cronômetro
+	auto begin = high_resolution_clock::now();
 
 	// Épocas
 	uint k;
@@ -99,7 +102,13 @@ void BackpropMLP::train(ExampleSet &training)
 			break;
 	}
 
+	// Duração do treinamento
+	auto end = high_resolution_clock::now();
+
+	training.time = duration_cast<milliseconds>(end - begin).count();
 	training.error = totalError;
+
+	cout << training.time << endl;
 
 	// Desnormaliza o conjunto de treinamento
 	training.unnormalize();
@@ -111,6 +120,9 @@ void BackpropMLP::validate(ExampleSet &validation)
 {
 	// Normaliza o conjunto de testes
 	validation.normalize();
+
+	// Inicializa o cronômetro
+	auto begin = high_resolution_clock::now();
 
 	totalError = 0;
 
@@ -125,6 +137,10 @@ void BackpropMLP::validate(ExampleSet &validation)
 		calculateError(validation.target[i]);
 	}
 
+	// Duração da validação
+	auto end = high_resolution_clock::now();
+
+	validation.time = duration_cast<milliseconds>(end - begin).count();
 	validation.error = totalError;
 
 	// Desnormaliza o conjunto de testes
@@ -138,6 +154,9 @@ void BackpropMLP::test(ExampleSet &test)
 	// Normaliza o conjunto de testes
 	test.normalize();
 
+	// Inicializa o cronômetro
+	auto begin = high_resolution_clock::now();
+
 	// Para cada entrada
 	for (uint i = 0; i < test.size(); i++)
 	{
@@ -145,6 +164,11 @@ void BackpropMLP::test(ExampleSet &test)
 		feedforward(test.input[i]);
 		copyOutput(test, i);
 	}
+
+	// Duração do teste
+	auto end = high_resolution_clock::now();
+
+	test.time = duration_cast<milliseconds>(end - begin).count();
 
 	// Desnormaliza o conjunto de testes
 	test.unnormalize();
@@ -194,7 +218,15 @@ void BackpropMLP::feedback(double learning)
 
 //===========================================================================//
 
-void BackpropMLP::shuffleIndexes(vector<uint> &indexes) const
+void BackpropMLP::initIndexes(vuint &indexes) const
+{
+	for (uint i = 0; i < indexes.size(); i++)
+		indexes[i] = i;
+}
+
+//===========================================================================//
+
+void BackpropMLP::shuffleIndexes(vuint &indexes) const
 {
 	for (uint i = indexes.size() - 1; i > 0; i--)
 	{
