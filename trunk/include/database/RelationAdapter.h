@@ -7,9 +7,7 @@
 #define NUMERIC_TYPE 1
 #define NOMINAL_TYPE 2
 
-using namespace ARFF;
-
-namespace Database
+namespace ParallelMLP
 {
 
 /**

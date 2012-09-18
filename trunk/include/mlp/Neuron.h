@@ -1,12 +1,10 @@
 #ifndef NEURON_H_
 #define NEURON_H_
 
-#include "Common.h"
+#include "mlp/Types.h"
 #include <cmath>
 
-namespace Database { class BackpropMLPAdapter; }
-
-namespace MLP
+namespace ParallelMLP
 {
 
 /**
@@ -49,7 +47,7 @@ public:
 	 */
 	void response(const vdouble &input, double signal, double learning);
 
-	friend class Database::BackpropMLPAdapter;
+	friend class BackpropMLPAdapter;
 	friend class BackpropMLP;
 
 private:

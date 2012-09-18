@@ -1,6 +1,6 @@
 #include "mlp/BackpropMLP.h"
 
-namespace MLP
+namespace ParallelMLP
 {
 
 //===========================================================================//
@@ -178,7 +178,8 @@ void BackpropMLP::test(ExampleSet &test)
 
 void BackpropMLP::copyOutput(ExampleSet &set, uint i)
 {
-	copy(output->begin(), output->end(), set.output[i].begin());
+	set.output[i] = (*output);
+//	copy(output->begin(), output->end(), set.output[i].begin());
 }
 
 //===========================================================================//
@@ -187,7 +188,7 @@ void BackpropMLP::calculateError(const vdouble &target)
 {
 	for (uint i = 0; i < error.size(); i++)
 	{
-		error[i] = target[i] - output->at(i);
+		error[i] = target[i] - (*output)[i];
 		totalError += error[i] * error[i];
 	}
 }

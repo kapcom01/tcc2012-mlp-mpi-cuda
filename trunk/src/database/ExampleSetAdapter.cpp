@@ -1,7 +1,7 @@
 #include "database/ExampleSetAdapter.h"
 #include "database/DatabaseException.h"
 
-namespace Database
+namespace ParallelMLP
 {
 
 //===========================================================================//
@@ -318,7 +318,8 @@ void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
 		// Se for do tipo nominal
 		else
 		{
-			auto it = max_element(set.output[i].begin(), set.output[i].end());
+			auto it = thrust::max_element(set.output[i].begin(),
+					set.output[i].end());
 			int value = it - set.output[i].begin() + 1;
 			work->prepared("insertResults")(opID)(i + 1)()(value).exec();
 		}

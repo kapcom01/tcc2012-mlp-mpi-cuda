@@ -1,6 +1,6 @@
 #include "arff/Value.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 //===========================================================================//

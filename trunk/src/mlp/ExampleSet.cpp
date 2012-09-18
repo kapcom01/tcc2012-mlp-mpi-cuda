@@ -1,6 +1,6 @@
 #include "mlp/ExampleSet.h"
 
-namespace MLP
+namespace ParallelMLP
 {
 
 //===========================================================================//

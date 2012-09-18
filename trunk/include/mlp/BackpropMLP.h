@@ -7,9 +7,7 @@
 
 using namespace chrono;
 
-namespace Database { class BackpropMLPAdapter; }
-
-namespace MLP
+namespace ParallelMLP
 {
 
 /**
@@ -67,7 +65,7 @@ public:
 	 */
 	void test(ExampleSet &test);
 
-	friend class Database::BackpropMLPAdapter;
+	friend class BackpropMLPAdapter;
 
 private:
 

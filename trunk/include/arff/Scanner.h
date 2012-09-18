@@ -8,7 +8,7 @@
 
 #include "arff/Parser.hh"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 /**

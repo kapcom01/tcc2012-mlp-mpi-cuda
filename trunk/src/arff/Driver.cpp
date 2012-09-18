@@ -3,7 +3,7 @@
 #include "arff/Parser.hh"
 #include "arff/Relation.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 //===========================================================================//

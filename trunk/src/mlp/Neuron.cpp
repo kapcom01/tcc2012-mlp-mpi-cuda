@@ -1,6 +1,6 @@
 #include "mlp/Neuron.h"
 
-namespace MLP
+namespace ParallelMLP
 {
 
 //===========================================================================//

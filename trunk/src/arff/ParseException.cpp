@@ -1,7 +1,7 @@
 #include "arff/ParseException.h"
 #include "arff/Scanner.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 /**

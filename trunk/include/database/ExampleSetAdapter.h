@@ -5,9 +5,7 @@
 #include "database/RelationAdapter.h"
 #include <algorithm>
 
-using namespace MLP;
-
-namespace Database
+namespace ParallelMLP
 {
 
 /**

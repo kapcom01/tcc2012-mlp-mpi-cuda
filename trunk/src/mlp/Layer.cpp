@@ -1,6 +1,6 @@
 #include "mlp/Layer.h"
 
-namespace MLP
+namespace ParallelMLP
 {
 
 //===========================================================================//
@@ -45,7 +45,7 @@ void Layer::feedforward(const vdouble& input)
 	this->input = &(input);
 
 	// Inicializa o sinal funcional
-	fill(funcSignal.begin(), funcSignal.end(), 0);
+	thrust::fill(funcSignal.begin(), funcSignal.end(), 0);
 
 	// Executa a ativação de cada neurônio
 	for (uint n = 0; n < outUnits; n++)
@@ -57,7 +57,7 @@ void Layer::feedforward(const vdouble& input)
 void Layer::feedback(const vdouble &signal, double learning)
 {
 	// Inicializa o sinal funcional
-	fill(errorSignal.begin(), errorSignal.end(), 0);
+	thrust::fill(errorSignal.begin(), errorSignal.end(), 0);
 
 	// Atualiza os pesos de cada neurônio
 	for (uint n = 0; n < outUnits; n++)

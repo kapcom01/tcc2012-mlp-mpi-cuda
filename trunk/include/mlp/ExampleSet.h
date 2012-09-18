@@ -1,11 +1,9 @@
 #ifndef EXAMPLESET_H_
 #define EXAMPLESET_H_
 
-#include "Common.h"
+#include "mlp/Types.h"
 
-namespace Database { class ExampleSetAdapter; }
-
-namespace MLP
+namespace ParallelMLP
 {
 
 /**
@@ -112,7 +110,7 @@ public:
 	 */
 	const vdouble& getTarget(uint i) const;
 
-	friend class Database::ExampleSetAdapter;
+	friend class ExampleSetAdapter;
 	friend class BackpropMLP;
 
 //private:

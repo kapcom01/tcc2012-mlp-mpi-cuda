@@ -3,8 +3,7 @@
 #include "database/BackpropMLPAdapter.h"
 #include <ctime>
 
-using namespace MLP;
-using namespace Database;
+using namespace ParallelMLP;
 
 int main(int argc, char* argv[])
 {

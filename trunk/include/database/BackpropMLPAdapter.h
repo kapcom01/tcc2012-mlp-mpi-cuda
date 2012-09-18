@@ -4,9 +4,7 @@
 #include "mlp/BackpropMLP.h"
 #include "database/Connection.h"
 
-using namespace MLP;
-
-namespace Database
+namespace ParallelMLP
 {
 
 /**

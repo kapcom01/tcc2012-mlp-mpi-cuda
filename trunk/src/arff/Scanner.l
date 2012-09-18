@@ -2,7 +2,7 @@
 #include "arff/Scanner.h"
 #include "arff/ParseException.h"
 
-using namespace ARFF;
+using namespace ParallelMLP;
 
 #define YY_NO_UNISTD_H
 

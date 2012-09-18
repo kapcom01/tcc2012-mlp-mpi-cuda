@@ -6,13 +6,13 @@
 
 using namespace pqxx;
 
+namespace ParallelMLP
+{
+
 /**
  * Ponteiro para work
  */
 typedef shared_ptr<work> WorkPtr;
-
-namespace Database
-{
 
 /**
  * Classe que conecta na base de dados

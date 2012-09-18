@@ -2,7 +2,7 @@
 %skeleton "lalr1.cc"
 
 %defines
-%define namespace "ARFF"
+%define namespace "ParallelMLP"
 %define parser_class_name "Parser"
 
 %locations
@@ -22,7 +22,7 @@
 #include "arff/Driver.h"
 #include "arff/ParseException.h"
 #define saveLine markLine(driver);
-using namespace ARFF;
+using namespace ParallelMLP;
 }
 
 %code provides
