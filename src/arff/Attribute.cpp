@@ -1,6 +1,6 @@
 #include "arff/Attribute.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 //===========================================================================//

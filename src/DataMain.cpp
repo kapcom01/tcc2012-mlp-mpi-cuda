@@ -3,8 +3,7 @@
 #include "database/RelationAdapter.h"
 #include "database/ExampleSetAdapter.h"
 
-using namespace ARFF;
-using namespace Database;
+using namespace ParallelMLP;
 
 int main(int argc, char* argv[])
 {

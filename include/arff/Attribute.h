@@ -4,7 +4,7 @@
 #include "Common.h"
 #include <list>
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 /**

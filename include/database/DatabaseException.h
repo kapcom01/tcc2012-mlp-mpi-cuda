@@ -7,7 +7,7 @@
 
 using pqxx::pqxx_exception;
 
-namespace Database
+namespace ParallelMLP
 {
 
 /**

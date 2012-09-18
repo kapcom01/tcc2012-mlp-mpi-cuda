@@ -1,3 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-ADD_LIBRARY(mlp BackpropMLP.cpp ExampleSet.cpp Layer.cpp Neuron.cpp)
+PROJECT(ParallelMLP)
+
+SET(SOURCES
+	BackpropMLP.cpp
+	ExampleSet.cpp
+	Layer.cpp
+	Neuron.cpp
+)
+
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+ADD_LIBRARY(mlp ${SOURCES})
+TARGET_LINK_LIBRARIES(mlp ${CUDA_LIBRARIES})

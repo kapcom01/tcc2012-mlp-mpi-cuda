@@ -7,7 +7,7 @@
 
 #define throwError(A) throw ParseException(A, driver)
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 /**

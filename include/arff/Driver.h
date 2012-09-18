@@ -3,7 +3,7 @@
 
 #include "Common.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 class Relation;

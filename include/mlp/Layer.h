@@ -3,9 +3,7 @@
 
 #include "mlp/Neuron.h"
 
-namespace Database { class BackpropMLPAdapter; }
-
-namespace MLP
+namespace ParallelMLP
 {
 
 /**
@@ -46,7 +44,7 @@ public:
 	 */
 	void feedback(const vdouble &signal, double learning);
 
-	friend class Database::BackpropMLPAdapter;
+	friend class BackpropMLPAdapter;
 	friend class BackpropMLP;
 
 private:

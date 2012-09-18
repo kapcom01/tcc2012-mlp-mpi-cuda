@@ -1,7 +1,7 @@
 #include "database/Connection.h"
 #include "database/DatabaseException.h"
 
-namespace Database
+namespace ParallelMLP
 {
 
 //===========================================================================//

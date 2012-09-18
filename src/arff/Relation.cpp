@@ -1,7 +1,7 @@
 #include "arff/Relation.h"
 #include "arff/ParseException.h"
 
-namespace ARFF
+namespace ParallelMLP
 {
 
 //===========================================================================//

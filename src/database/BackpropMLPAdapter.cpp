@@ -1,7 +1,7 @@
 #include "database/BackpropMLPAdapter.h"
 #include "database/DatabaseException.h"
 
-namespace Database
+namespace ParallelMLP
 {
 
 //===========================================================================//

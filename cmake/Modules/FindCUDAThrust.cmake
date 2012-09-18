@@ -76,7 +76,7 @@ if(CUDA_FOUND)
   endif(CUDATHRUST_INCLUDE)
 else(CUDA_FOUND)
   if(NOT CUDATHRUST_FIND_QUIETLY)
-    message(STATUS "CUDA must be found before CMake looks for Thrust!");
+    message(STATUS "CUDA must be found before CMake looks for Thrust!")
   endif(NOT CUDATHRUST_FIND_QUIETLY)
   set(CUDATHRUST_FOUND FALSE)
 endif(CUDA_FOUND)

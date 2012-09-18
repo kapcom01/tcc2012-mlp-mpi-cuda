@@ -5,9 +5,7 @@
 #include "arff/Driver.h"
 #include <map>
 
-namespace Database { class RelationAdapter; }
-
-namespace ARFF
+namespace ParallelMLP
 {
 
 /**
@@ -47,7 +45,7 @@ public:
 	 */
 	void addInstance(const DataList* dlist, bool isSparse);
 
-	friend class Database::RelationAdapter;
+	friend class RelationAdapter;
 
 private:
 
