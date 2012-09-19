@@ -183,7 +183,7 @@ void RelationAdapter::insertInstance(int relationID, uint instIndex,
 void RelationAdapter::addStatistics(int relationID, uint attrIndex,
 		const Attribute &attr, WorkPtr &work)
 {
-	double min, max;
+	float min, max;
 
 	// Se for numérico
 	if (attr.type == NUMERIC)
@@ -191,7 +191,7 @@ void RelationAdapter::addStatistics(int relationID, uint attrIndex,
 		// Coleta estatísticas
 		const result &res = work->prepared("selectStatistics")(relationID)
 				(attrIndex).exec();
-		min = res[0][0].as<double>(), max = res[0][1].as<double>();
+		min = res[0][0].as<float>(), max = res[0][1].as<float>();
 	}
 
 	// Se for nominal

@@ -1,4 +1,5 @@
-#include "mlp/BackpropMLP.h"
+#include "mlp/cuda/DeviceExampleSet.h"
+#include "mlp/serial/BackpropMLP.h"
 #include "database/ExampleSetAdapter.h"
 #include "database/BackpropMLPAdapter.h"
 #include <ctime>
@@ -17,26 +18,26 @@ int main(int argc, char* argv[])
 
     try
 	{
-    	int relationID = 4;
-    	int mlpID = 2;
+    	int relationID = 2;
+    	int mlpID = 1;
 
-//	    vuint units = {4, 8, 3};
+//	    vector<uint> units = {4, 8, 3};
 //	    BackpropMLP mlp("mlpiris", units);
 //	    BackpropMLPAdapter::insert(mlp);
 
-		ExampleSet exampleSet(relationID, mlpID, TRAINING);
+		DeviceExampleSet exampleSet(relationID, mlpID, TRAINING);
 		ExampleSetAdapter::select(exampleSet);
-		exampleSet.learning = 0.4;
-		exampleSet.maxEpochs = 100000;
-		exampleSet.tolerance = 0.01;
+		exampleSet.setProperties(0.4, 100000, 0.01);
+		exampleSet.normalize();
+		exampleSet.unnormalize();
 
-		BackpropMLP mlp(mlpID);
-		BackpropMLPAdapter::select(mlp);
+//		BackpropMLP mlp(mlpID);
+//		BackpropMLPAdapter::select(mlp);
 
-		mlp.train(exampleSet);
+//		mlp.train(exampleSet);
 
-		BackpropMLPAdapter::update(mlp, relationID);
-		ExampleSetAdapter::insert(exampleSet);
+//		BackpropMLPAdapter::update(mlp, relationID);
+//		ExampleSetAdapter::insert(exampleSet);
 	}
 	catch(exception &ex)
 	{

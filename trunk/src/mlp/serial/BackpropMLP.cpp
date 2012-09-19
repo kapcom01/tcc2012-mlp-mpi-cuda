@@ -1,4 +1,4 @@
-#include "mlp/BackpropMLP.h"
+#include "mlp/serial/BackpropMLP.h"
 
 namespace ParallelMLP
 {
@@ -15,7 +15,7 @@ BackpropMLP::BackpropMLP(int mlpID)
 
 //===========================================================================//
 
-BackpropMLP::BackpropMLP(string name, vuint &units)
+BackpropMLP::BackpropMLP(string name, vector<uint> &units)
 {
 	this->name = name;
 
@@ -61,14 +61,14 @@ Range BackpropMLP::getRange() const
 
 //===========================================================================//
 
-void BackpropMLP::train(ExampleSet &training)
+void BackpropMLP::train(HostExampleSet &training)
 {
 	// Randomiza os pesos e normaliza o conjunto de treinamento
 	randomize();
 	training.normalize();
 
 	// Inicializa os índices
-	vuint indexes(training.size());
+	vector<uint> indexes(training.getSize());
 	initIndexes(indexes);
 
 	// Inicializa o cronômetro
@@ -82,20 +82,20 @@ void BackpropMLP::train(ExampleSet &training)
 		totalError = 0;
 
 		// Para cada entrada
-		for (uint i = 0; i < training.size(); i++)
+		for (uint i = 0; i < training.getSize(); i++)
 		{
 			uint r = indexes[i];
 
 			// Realiza o feedforward e salva os valores no conjunto
-			feedforward(training.input[r]);
+			feedforward(training.getInput(r));
 			copyOutput(training, i);
 
 			// Calcula o erro e realiza o feedback
-			calculateError(training.target[r]);
+			calculateError(training.getTarget(r));
 			feedback(training.learning);
 		}
 
-		totalError /= training.size() * training.outVars();
+		totalError /= training.getSize() * training.getOutVars();
 
 		// Condição de parada: erro menor do que um valor tolerado
 		if (totalError < training.tolerance)
@@ -116,7 +116,7 @@ void BackpropMLP::train(ExampleSet &training)
 
 //===========================================================================//
 
-void BackpropMLP::validate(ExampleSet &validation)
+void BackpropMLP::validate(HostExampleSet &validation)
 {
 	// Normaliza o conjunto de testes
 	validation.normalize();
@@ -127,14 +127,14 @@ void BackpropMLP::validate(ExampleSet &validation)
 	totalError = 0;
 
 	// Para cada entrada
-	for (uint i = 0; i < validation.size(); i++)
+	for (uint i = 0; i < validation.getSize(); i++)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
-		feedforward(validation.input[i]);
+		feedforward(validation.getInput(i));
 		copyOutput(validation, i);
 
 		// Calcula o erro
-		calculateError(validation.target[i]);
+		calculateError(validation.getTarget(i));
 	}
 
 	// Duração da validação
@@ -149,7 +149,7 @@ void BackpropMLP::validate(ExampleSet &validation)
 
 //===========================================================================//
 
-void BackpropMLP::test(ExampleSet &test)
+void BackpropMLP::test(HostExampleSet &test)
 {
 	// Normaliza o conjunto de testes
 	test.normalize();
@@ -158,10 +158,10 @@ void BackpropMLP::test(ExampleSet &test)
 	auto begin = high_resolution_clock::now();
 
 	// Para cada entrada
-	for (uint i = 0; i < test.size(); i++)
+	for (uint i = 0; i < test.getSize(); i++)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
-		feedforward(test.input[i]);
+		feedforward(test.getInput(i));
 		copyOutput(test, i);
 	}
 
@@ -176,15 +176,14 @@ void BackpropMLP::test(ExampleSet &test)
 
 //===========================================================================//
 
-void BackpropMLP::copyOutput(ExampleSet &set, uint i)
+void BackpropMLP::copyOutput(HostExampleSet &set, uint i)
 {
-	set.output[i] = (*output);
-//	copy(output->begin(), output->end(), set.output[i].begin());
+	set.setOutput(i, *output);
 }
 
 //===========================================================================//
 
-void BackpropMLP::calculateError(const vdouble &target)
+void BackpropMLP::calculateError(const hv_float &target)
 {
 	for (uint i = 0; i < error.size(); i++)
 	{
@@ -195,7 +194,7 @@ void BackpropMLP::calculateError(const vdouble &target)
 
 //===========================================================================//
 
-void BackpropMLP::feedforward(const vdouble &input)
+void BackpropMLP::feedforward(const hv_float &input)
 {
 	// Propaga a entrada para a primeira camada escondida
 	layers.front()->feedforward(input);
@@ -207,7 +206,7 @@ void BackpropMLP::feedforward(const vdouble &input)
 
 //===========================================================================//
 
-void BackpropMLP::feedback(double learning)
+void BackpropMLP::feedback(float learning)
 {
 	// Propaga os erros na camada de saída
 	layers.back()->feedback(error, learning);
@@ -219,7 +218,7 @@ void BackpropMLP::feedback(double learning)
 
 //===========================================================================//
 
-void BackpropMLP::initIndexes(vuint &indexes) const
+void BackpropMLP::initIndexes(vector<uint> &indexes) const
 {
 	for (uint i = 0; i < indexes.size(); i++)
 		indexes[i] = i;
@@ -227,7 +226,7 @@ void BackpropMLP::initIndexes(vuint &indexes) const
 
 //===========================================================================//
 
-void BackpropMLP::shuffleIndexes(vuint &indexes) const
+void BackpropMLP::shuffleIndexes(vector<uint> &indexes) const
 {
 	for (uint i = indexes.size() - 1; i > 0; i--)
 	{

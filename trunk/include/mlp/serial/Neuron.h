@@ -21,7 +21,7 @@ public:
 	 * @param output Saída do neurônio
 	 * @param error Erros causados pelo neurônio
 	 */
-	Neuron(uint inUnits, double &output, vdouble &error);
+	Neuron(uint inUnits, float &output, hv_float &error);
 
 	/**
 	 * Destrói o neurônio
@@ -37,7 +37,7 @@ public:
 	 * Processa as entradas e gera uma saída
 	 * @param input Entradas vindas da camada anterior
 	 */
-	void execute(const vdouble &input);
+	void execute(const hv_float &input);
 
 	/**
 	 * Atualiza os pesos das conexões e calcula os erros cometidos
@@ -45,7 +45,7 @@ public:
 	 * @param signal Sinal de feedback vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	void response(const vdouble &input, double signal, double learning);
+	void response(const hv_float &input, float signal, float learning);
 
 	friend class BackpropMLPAdapter;
 	friend class BackpropMLP;
@@ -56,21 +56,21 @@ private:
 	 * Retorna um valor aleatório entre -1 e 1
 	 * @return Valor aleatório entre -1 e 1
 	 */
-	double random() const;
+	float random() const;
 
 	/**
 	 * Ativa um valor através da função de ativação hiperbólica
 	 * @param x Soma das entradas ponderadas pelos pesos
 	 * @return Sinal funcional
 	 */
-	double activate(double x) const;
+	float activate(float x) const;
 
 	/**
 	 * "Desativa" um valor através da derivada da função de ativação
 	 * @param y Sinal de erro vindo da camada posterior
 	 * @return Sinal "desativado"
 	 */
-	double derivate(double y) const;
+	float derivate(float y) const;
 
 	/**
 	 * Quantidade de entradas
@@ -80,22 +80,22 @@ private:
 	/**
 	 * Sinal funcional
 	 */
-	double &output;
+	float &output;
 
 	/**
 	 * Retorno de erro
 	 */
-	vdouble &error;
+	hv_float &error;
 
 	/**
 	 * Pesos das conexões com as entradas
 	 */
-	vdouble weights;
+	hv_float weights;
 
 	/**
 	 * Gradiente
 	 */
-	double gradient;
+	float gradient;
 
 };
 

@@ -1,11 +1,11 @@
-#include "mlp/Neuron.h"
+#include "mlp/serial/Neuron.h"
 
 namespace ParallelMLP
 {
 
 //===========================================================================//
 
-Neuron::Neuron(uint inUnits, double &cOutput, vdouble &cError)
+Neuron::Neuron(uint inUnits, float &cOutput, hv_float &cError)
 	: output(cOutput), error(cError)
 {
 	this->inUnits = inUnits;
@@ -31,7 +31,7 @@ void Neuron::randomize()
 
 //===========================================================================//
 
-void Neuron::execute(const vdouble &input)
+void Neuron::execute(const hv_float &input)
 {
 	for (uint i = 0; i < inUnits; i++)
 		output += input[i] * weights[i];
@@ -42,7 +42,7 @@ void Neuron::execute(const vdouble &input)
 
 //===========================================================================//
 
-void Neuron::response(const vdouble &input, double signal, double learning)
+void Neuron::response(const hv_float &input, float signal, float learning)
 {
 	gradient = derivate(output) * signal;
 
@@ -56,22 +56,22 @@ void Neuron::response(const vdouble &input, double signal, double learning)
 
 //===========================================================================//
 
-double Neuron::random() const
+float Neuron::random() const
 {
-	double r = rand() / (double) RAND_MAX;
+	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
 }
 
 //===========================================================================//
 
-double Neuron::activate(double x) const
+float Neuron::activate(float x) const
 {
 	return tanh(x);
 }
 
 //===========================================================================//
 
-double Neuron::derivate(double y) const
+float Neuron::derivate(float y) const
 {
 	return (1 - y) * (1 + y);
 }

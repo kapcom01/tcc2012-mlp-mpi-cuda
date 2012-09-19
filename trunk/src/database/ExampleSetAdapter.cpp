@@ -15,11 +15,6 @@ void ExampleSetAdapter::prepareForSelect(connection* conn)
 				"SELECT TrainedRelation FROM MLP WHERE MLPID = $1")
 				("INTEGER");
 
-		// Seleção da quantidade de atributos de uma relação
-		conn->prepare("selectNAttr",
-				"SELECT NAttributes FROM Relation WHERE RelationID = $1")
-				("INTEGER");
-
 		// Seleção do intervalo de valores do MLP
 		conn->prepare("selectRange",
 				"SELECT LowerValue, UpperValue FROM MLP WHERE MLPID = $1")
@@ -27,18 +22,25 @@ void ExampleSetAdapter::prepareForSelect(connection* conn)
 
 		// Seleção das estatísticas
 		conn->prepare("selectStatistics",
-				"SELECT Type, NominalCard, Minimum, Maximum "
+				"SELECT AttrIndex, Type, NominalCard, Minimum, Maximum "
 				"FROM Attribute WHERE RelationID = $1 ORDER BY AttrIndex")
+				("INTEGER");
+
+		// Selação da quantidade de instâncias
+		conn->prepare("selectSize",
+				"SELECT NInstances, NAttributes FROM Relation "
+				"WHERE RelationID = $1")
 				("INTEGER");
 
 		// Selação dos dados da relação
 		conn->prepare("selectData",
-				"SELECT D.InstanceIndex, D.AttrIndex, A.Type, A.NominalCard, "
-				"D.NumericValue, D.NominalValue FROM Attribute A, Data D "
+				"SELECT D.AttrIndex, A.Type, A.NominalCard, D.NumericValue, "
+				"D.NominalValue FROM Attribute A, Data D "
 				"WHERE A.AttrIndex = D.AttrIndex AND "
 				"A.RelationID = D.RelationID AND A.RelationID = $1 "
-				"ORDER BY D.InstanceIndex, D.AttrIndex")
-				("INTEGER");
+				"AND D.InstanceIndex = $2 "
+				"ORDER BY D.AttrIndex")
+				("INTEGER")("INTEGER");
 	}
 	catch (pqxx_exception &e)
 	{
@@ -58,14 +60,14 @@ void ExampleSetAdapter::select(ExampleSet &set)
 
 	try
 	{
-		// Seleciona a quantidade de atributos
-		int nattr = selectNAttributes(set.relationID, work);
+		// Seleciona a quantidade de instâncias e atributos
+		Size size = selectSize(set.relationID, work);
 
 		// Seleciona os dados
-		selectData(set, nattr, work);
+		selectData(set, size, work);
 
 		// Seleciona as estatísticas
-		selectStatistics(set, work);
+		selectStatistics(set, size, work);
 
 		// Salva as alterações
 		work->commit();
@@ -80,44 +82,53 @@ void ExampleSetAdapter::select(ExampleSet &set)
 
 //===========================================================================//
 
-int ExampleSetAdapter::selectNAttributes(int relationID, WorkPtr &work)
+Size ExampleSetAdapter::selectSize(int relationID, WorkPtr &work)
 {
-	const result &res = work->prepared("selectNAttr")(relationID).exec();
-	return res[0][0].as<int>();
+	const result &res = work->prepared("selectSize")(relationID).exec();
+	uint nInst = res[0]["NInstances"].as<uint>();
+	uint nAttr = res[0]["NAttributes"].as<uint>();
+	return { nInst, nAttr };
 }
 
 //===========================================================================//
 
-void ExampleSetAdapter::selectData(ExampleSet &set, int nattr, WorkPtr &work)
+void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, WorkPtr &work)
 {
-	const result &res = work->prepared("selectData")(set.relationID).exec();
+	set.size = size.nInst;
 
-	// Para cada tupla do resultado
-	for (auto row = res.begin(); row != res.end(); row++)
+	// Para cada instância
+	for (uint k = 0; k < size.nInst; k++)
 	{
-		int attrIndex = row["AttrIndex"].as<int>();
+		const result &res = work->prepared("selectData")(set.relationID)(k + 1)
+				.exec();
 
-		// Adiciona uma nova instância
-		if (attrIndex == 1)
+		for (auto row = res.begin(); row != res.end(); row++)
 		{
-			set.input.push_back(vector<double>());
-			set.target.push_back(vector<double>());
-			set.output.push_back(vector<double>());
+			uint attrIndex = row["AttrIndex"].as<uint>();
+
+			// Se for numérico
+			if (row["Type"].as<int>() == NUMERIC_TYPE)
+			{
+				float value = row["NumericValue"].as<float>();
+				addValue(set, value,
+						attrIndex == size.nAttr && set.type != TEST);
+			}
+
+			// Se for nominal
+			else
+			{
+				float value = row["NominalValue"].as<int>();
+				int card = row["NominalCard"].as<int>();
+				addValue(set, value, card,
+						attrIndex == size.nAttr && set.type != TEST);
+			}
 		}
 
-		// Se for numérico
-		if (row["Type"].as<int>() == NUMERIC_TYPE)
+		// Seta a quantidade de variáveis de entrada e saída
+		if (k == 0)
 		{
-			double value = row["NumericValue"].as<double>();
-			addValue(set, value, attrIndex == nattr && set.type != TEST);
-		}
-
-		// Se for nominal
-		else
-		{
-			double value = row["NominalValue"].as<int>();
-			int card = row["NominalCard"].as<int>();
-			addValue(set, value, card, attrIndex == nattr && set.type != TEST);
+			set.inVars = set.input.size();
+			set.outVars = set.target.size();
 		}
 	}
 }
@@ -144,12 +155,13 @@ int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
 Range ExampleSetAdapter::selectRange(int mlpID, WorkPtr &work)
 {
 	const result &res = work->prepared("selectRange")(mlpID).exec();
-	return {res[0][0].as<double>(), res[0][1].as<double>()};
+	return {res[0][0].as<float>(), res[0][1].as<float>()};
 }
 
 //===========================================================================//
 
-void ExampleSetAdapter::selectStatistics(ExampleSet &set, WorkPtr &work)
+void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
+		WorkPtr &work)
 {
 	// Seleciona a relação de treinamento
 	int trained = selectTrainedRelation(set, work);
@@ -162,13 +174,16 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, WorkPtr &work)
 	// Para cada tupla do resultado
 	for (auto row = res.begin(); row != res.end(); row++)
 	{
+		uint attrIndex = row["AttrIndex"].as<uint>();
+
 		// Se for numérico
 		if (row["Type"].as<int>() == NUMERIC_TYPE)
 		{
-			double min = row["Minimum"].as<double>();
-			double max = row["Maximum"].as<double>();
+			float min = row["Minimum"].as<float>();
+			float max = row["Maximum"].as<float>();
 
-			set.stat.push_back({{min, max}, {-1, 1}});
+			addStat(set, min, max, -1, 1,
+					attrIndex == size.nAttr && set.type != TEST);
 		}
 
 		// Se for nominal
@@ -176,25 +191,25 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, WorkPtr &work)
 		{
 			uint card = row["NominalCard"].as<uint>();
 
-			for (uint i = 0; i < card; i++)
-				set.stat.push_back({{0, 1}, {range.lower, range.upper}});
+			addStat(set, range.lower, range.upper, card,
+					attrIndex == size.nAttr && set.type != TEST);
 		}
 	}
 }
 
 //===========================================================================//
 
-void ExampleSetAdapter::addValue(ExampleSet &set, double value, bool isTarget)
+void ExampleSetAdapter::addValue(ExampleSet &set, float value, bool isTarget)
 {
 	// Se for saída
 	if (isTarget)
 	{
-		set.target.back().push_back(value);
-		set.output.back().push_back(0);
+		set.target.push_back(value);
+		set.output.push_back(0);
 	}
 	// Se for entrada
 	else
-		set.input.back().push_back(value);
+		set.input.push_back(value);
 }
 
 //===========================================================================//
@@ -208,6 +223,29 @@ void ExampleSetAdapter::addValue(ExampleSet &set, int value, uint card,
 			addValue(set, 1, isTarget);
 		else
 			addValue(set, 0, isTarget);
+}
+
+//===========================================================================//
+
+void ExampleSetAdapter::addStat(ExampleSet &set, float min, float max,
+		float lower, float upper, bool isTarget)
+{
+	// Se for saída
+	if (isTarget)
+		set.outStat.push_back({ {min, max}, {lower, upper} });
+	// Se for entrada
+	else
+		set.inStat.push_back({ {min, max}, {lower, upper} });
+}
+
+//===========================================================================//
+
+void ExampleSetAdapter::addStat(ExampleSet &set, float lower, float upper,
+		uint card, bool isTarget)
+{
+	// Adiciona uma variável para cada possível valor
+	for (uint i = 0; i < card; i++)
+		addStat(set, 0, 1, lower, upper, isTarget);
 }
 
 //===========================================================================//
@@ -306,24 +344,41 @@ void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
 		WorkPtr &work)
 {
 	// Para cada instância
-	for (uint i = 0; i < set.size(); i++)
+	for (uint i = 0; i < set.size; i++)
 	{
 		// Se for do tipo numérico
 		if (selectType(set, work))
 		{
-			double value = set.output[i][0];
+			float value = set.output[i * set.outVars];
 			work->prepared("insertResults")(opID)(i + 1)(value)().exec();
 		}
 
 		// Se for do tipo nominal
 		else
 		{
-			auto it = thrust::max_element(set.output[i].begin(),
-					set.output[i].end());
-			int value = it - set.output[i].begin() + 1;
+			uint ind = indexOfMax(&(set.output[i * set.inVars]), set.inVars);
+			int value = ind % set.inVars + 1;
 			work->prepared("insertResults")(opID)(i + 1)()(value).exec();
 		}
 	}
+}
+
+//===========================================================================//
+
+uint ExampleSetAdapter::indexOfMax(const float* vec, uint size)
+{
+	float max = vec[0];
+	uint ind = 0;
+
+	// Percorre o vetor para encontrar o maior elemento
+	for (uint i = 1; i < size; i++)
+		if (vec[i] > max)
+		{
+			max = vec[i];
+			ind = i;
+		}
+
+	return ind;
 }
 
 //===========================================================================//

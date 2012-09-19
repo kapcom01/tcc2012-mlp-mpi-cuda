@@ -11,19 +11,56 @@ namespace ParallelMLP
 {
 
 /**
- * Vetor de double
+ * Estrutura que armazena um intervalo
  */
-typedef host_vector<double> vdouble;
+struct Range
+{
+	/**
+	 * Valor mínimo
+	 */
+	float lower;
+
+	/**
+	 * Valor máximo
+	 */
+	float upper;
+};
 
 /**
- * Vetor de uint
+ * Estrutura contendo estatísticas sobre o conjunto de entrada
  */
-typedef host_vector<uint> vuint;
+struct Stat
+{
+	/**
+	 * Intervalo de valores de um dado
+	 */
+	Range from;
+
+	/**
+	 * Intervalo de valores de um dado normalizado
+	 */
+	Range to;
+};
 
 /**
- * Vetor de double no dispositivo
+ * Vetor de floats na CPU
  */
-typedef device_vector<double> dvdouble;
+typedef host_vector<float> hv_float;
+
+/**
+ * Vetor de floats na GPU
+ */
+typedef device_vector<float> dv_float;
+
+/**
+ * Vetor de estatísticas na CPU
+ */
+typedef host_vector<Stat> hv_stat;
+
+/**
+ * Vetor de estatísticas na GPU
+ */
+typedef device_vector<Stat> dv_stat;
 
 }
 

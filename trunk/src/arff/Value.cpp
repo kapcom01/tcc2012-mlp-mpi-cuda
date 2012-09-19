@@ -13,7 +13,7 @@ Value::Value(AttributeType type)
 
 //===========================================================================//
 
-Value::Value(AttributeType type, double number)
+Value::Value(AttributeType type, float number)
 {
 	this->type = type;
 	this->number = number;
