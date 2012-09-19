@@ -25,7 +25,7 @@ public:
 	 * @param type Tipo do atributo
 	 * @param number Valor numérico
 	 */
-	Value(AttributeType type, double number);
+	Value(AttributeType type, float number);
 
 	/**
 	 * Constrói um valor
@@ -57,7 +57,7 @@ public:
 		/**
 		 * Valor numérico
 		 */
-		double number;
+		float number;
 
 		struct
 		{

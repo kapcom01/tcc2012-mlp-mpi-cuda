@@ -194,8 +194,8 @@ void BackpropMLPAdapter::selectMLP(BackpropMLP &mlp, WorkPtr &work)
 	const result &res = work->prepared("selectMLP")(mlp.mlpID).exec();
 
 	mlp.name = res[0]["Name"].as<string>();
-	mlp.range.lower = res[0]["LowerValue"].as<double>();
-	mlp.range.upper = res[0]["UpperValue"].as<double>();
+	mlp.range.lower = res[0]["LowerValue"].as<float>();
+	mlp.range.upper = res[0]["UpperValue"].as<float>();
 
 	const result &layers = work->prepared("selectLayer")(mlp.mlpID).exec();
 
@@ -238,7 +238,7 @@ void BackpropMLPAdapter::selectNeuron(int mlpID, uint layerIndex,
 	// Seta os pesos
 	uint i = 0;
 	for (auto row = res.begin(); row != res.end(); row++)
-		neuron.weights[i++] = row[0].as<double>();
+		neuron.weights[i++] = row[0].as<float>();
 }
 
 //===========================================================================//

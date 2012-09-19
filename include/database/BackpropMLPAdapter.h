@@ -1,7 +1,7 @@
 #ifndef BACKPROPMLPADAPTER_H_
 #define BACKPROPMLPADAPTER_H_
 
-#include "mlp/BackpropMLP.h"
+#include "mlp/serial/BackpropMLP.h"
 #include "database/Connection.h"
 
 namespace ParallelMLP

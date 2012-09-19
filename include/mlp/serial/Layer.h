@@ -1,7 +1,7 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "mlp/Neuron.h"
+#include "mlp/serial/Neuron.h"
 
 namespace ParallelMLP
 {
@@ -35,14 +35,14 @@ public:
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	void feedforward(const vdouble &input);
+	void feedforward(const hv_float &input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vdouble &signal, double learning);
+	void feedback(const hv_float &signal, float learning);
 
 	friend class BackpropMLPAdapter;
 	friend class BackpropMLP;
@@ -67,17 +67,17 @@ private:
 	/**
 	 * Entrada vinda da camada anterior
 	 */
-	const vdouble* input;
+	const hv_float* input;
 
 	/**
 	 * Sinal funcional dos neurônios
 	 */
-	vdouble funcSignal;
+	hv_float funcSignal;
 
 	/**
 	 * Sinal de erro
 	 */
-	vdouble errorSignal;
+	hv_float errorSignal;
 
 };
 

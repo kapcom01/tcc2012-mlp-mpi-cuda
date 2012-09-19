@@ -1,0 +1,16 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(ParallelMLP)
+
+SET(SOURCES
+	BackpropMLP.cpp
+	HostExampleSet.cpp
+	Layer.cpp
+	Neuron.cpp
+)
+
+LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)
+
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+ADD_LIBRARY(mlp_serial ${SOURCES})
+TARGET_LINK_LIBRARIES(mlp_serial mlp_common ${CUDA_LIBRARIES})

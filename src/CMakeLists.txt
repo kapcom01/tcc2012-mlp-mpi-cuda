@@ -21,7 +21,7 @@ LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp)
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(pmlp MLPMain.cpp)
-TARGET_LINK_LIBRARIES(pmlp arff database mlp)
+TARGET_LINK_LIBRARIES(pmlp arff database mlp_serial mlp_cuda)
 
 ADD_EXECUTABLE(data DataMain.cpp)
-TARGET_LINK_LIBRARIES(data arff database mlp)
+TARGET_LINK_LIBRARIES(data arff database mlp_serial mlp_cuda)

@@ -1,7 +1,7 @@
 #ifndef EXAMPLESET_H_
 #define EXAMPLESET_H_
 
-#include "mlp/Types.h"
+#include "mlp/Vector.h"
 
 namespace ParallelMLP
 {
@@ -12,38 +12,6 @@ namespace ParallelMLP
 enum SetType
 {
 	TRAINING = 1, VALIDATION = 2, TEST = 3
-};
-
-/**
- * Estrutura que armazena um intervalo
- */
-struct Range
-{
-	/**
-	 * Valor mínimo
-	 */
-	double lower;
-
-	/**
-	 * Valor máximo
-	 */
-	double upper;
-};
-
-/**
- * Estrutura contendo estatísticas sobre o conjunto de entrada
- */
-struct Statistics
-{
-	/**
-	 * Intervalo de valores de um dado
-	 */
-	Range from;
-
-	/**
-	 * Intervalo de valores de um dado normalizado
-	 */
-	Range to;
 };
 
 /**
@@ -69,59 +37,66 @@ public:
 
 	/**
 	 * Normaliza as entradas e saídas alvo do conjunto de dados
-	 * @param range Intervalo de valores para a nova saída alvo
 	 */
-	void normalize();
+	virtual void normalize() = 0;
 
 	/**
 	 * Desnormaliza as entradas, saídas alvo e saídas do conjunto de dados
 	 */
-	void unnormalize();
+	virtual void unnormalize() = 0;
+
+	/**
+	 * Seta algumas propriedades do conjunto de amostras
+	 * @param learning Taxa de aprendizado
+	 * @param maxEpochs Quantidade máxima de épocas
+	 * @param tolerance Tolerância
+	 */
+	void setProperties(float learning, uint maxEpochs, float tolerance);
 
 	/**
 	 * Retorna a quantidade de variáveis de entrada
 	 * @return Quantidade de variáveis de entrada
 	 */
-	uint inVars() const;
+	uint getInVars() const;
 
 	/**
 	 * Retorna a quantidade de variáveis de saída
 	 * @return Quantidade de variáveis de saída
 	 */
-	uint outVars() const;
+	uint getOutVars() const;
 
 	/**
 	 * Retorna o tamanho do conjunto de entrada
 	 * @return Tamanho do conjunto de entrada
 	 */
-	uint size() const;
+	uint getSize() const;
 
 	/**
 	 * Retorna a i-ésima entrada do conjunto
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	const vdouble& getInput(uint i) const;
+	const hv_float getInput(uint i) const;
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	const vdouble& getTarget(uint i) const;
+	const hv_float getTarget(uint i) const;
+
+	/**
+	 * Seta os valores da i-ésima saída
+	 * @param output Vetor contendo a i-ésima saída
+	 */
+	void setOutput(uint i, const hv_float &output);
 
 	friend class ExampleSetAdapter;
 	friend class BackpropMLP;
 
-//private:
+protected:
 
-	/**
-	 * Ajusta o valor de x para um novo intervalo
-	 * @param x Valor a ser ajustado
-	 * @param from Intervalo de valores para x
-	 * @param to Intervalo de valores para a saída
-	 */
-	void adjust(double &x, const Range &from, const Range &to);
+	void print();
 
 	/**
 	 * ID da relação
@@ -141,7 +116,7 @@ public:
 	/**
 	 * Taxa de aprendizado
 	 */
-	double learning;
+	float learning;
 
 	/**
 	 * Número máximo de épocas
@@ -151,37 +126,57 @@ public:
 	/**
 	 * Tolerância máxima
 	 */
-	double tolerance;
+	float tolerance;
+
+	/**
+	 * Quantidade de variáveis de entrada
+	 */
+	uint inVars;
+
+	/**
+	 * Quantidade de variáveis de saída
+	 */
+	uint outVars;
+
+	/**
+	 * Quantidade de instâncias
+	 */
+	uint size;
 
 	/**
 	 * Dados de entrada do treinamento
 	 */
-	vector<vdouble> input;
+	hv_float input;
 
 	/**
 	 * Dados de saída alvo para o treinamento
 	 */
-	vector<vdouble> target;
+	hv_float target;
 
 	/**
 	 * Dados de saída da rede neural
 	 */
-	vector<vdouble> output;
+	hv_float output;
 
 	/**
-	 * Estatísticas para cada coluna de dados
+	 * Estatísticas para cada coluna de entrada
 	 */
-	vector<Statistics> stat;
+	hv_stat inStat;
+
+	/**
+	 * Estatísticas para cada coluna de saída
+	 */
+	hv_stat outStat;
 
 	/**
 	 * Erro cometido pela rede
 	 */
-	double error;
+	float error;
 
 	/**
 	 * Tempo de execução da operação
 	 */
-	double time;
+	float time;
 
 	/**
 	 * Indica se o conjunto de dados está normalizado
@@ -189,11 +184,6 @@ public:
 	bool isNormalized;
 
 };
-
-/**
- * Ponteiro para InputSet
- */
-typedef shared_ptr<ExampleSet> InputSetPtr;
 
 }
 

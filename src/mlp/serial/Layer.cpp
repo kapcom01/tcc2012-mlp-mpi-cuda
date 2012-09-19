@@ -1,4 +1,4 @@
-#include "mlp/Layer.h"
+#include "mlp/serial/Layer.h"
 
 namespace ParallelMLP
 {
@@ -40,7 +40,7 @@ void Layer::randomize()
 
 //===========================================================================//
 
-void Layer::feedforward(const vdouble& input)
+void Layer::feedforward(const hv_float& input)
 {
 	this->input = &(input);
 
@@ -54,7 +54,7 @@ void Layer::feedforward(const vdouble& input)
 
 //===========================================================================//
 
-void Layer::feedback(const vdouble &signal, double learning)
+void Layer::feedback(const hv_float &signal, float learning)
 {
 	// Inicializa o sinal funcional
 	thrust::fill(errorSignal.begin(), errorSignal.end(), 0);
