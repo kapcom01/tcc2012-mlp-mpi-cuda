@@ -1,7 +1,7 @@
-#ifndef BACKPROPMLPADAPTER_H_
-#define BACKPROPMLPADAPTER_H_
+#ifndef MLPADAPTER_H_
+#define MLPADAPTER_H_
 
-#include "mlp/serial/BackpropMLP.h"
+#include "mlp/common/MLP.h"
 #include "database/Connection.h"
 
 namespace ParallelMLP
@@ -10,7 +10,7 @@ namespace ParallelMLP
 /**
  * Classe responsável por realizar operações sobre um MLP na base de dados
  */
-class BackpropMLPAdapter
+class MLPAdapter
 {
 
 public:
@@ -19,20 +19,20 @@ public:
 	 * Insere um MLP
 	 * @param mlp Multi-Layer Perceptron
 	 */
-	static void insert(BackpropMLP &mlp);
+	static void insert(MLP &mlp);
 
 	/**
 	 * Recupera um MLP
 	 * @param mlp Multi-Layer Perceptron
 	 */
-	static void select(BackpropMLP &mlp);
+	static void select(MLP &mlp);
 
 	/**
 	 * Atualiza um MLP
 	 * @param mlp Multi-Layer Perceptron
 	 * @param relationID Relação com qual a rede foi treinada
 	 */
-	static void update(const BackpropMLP &mlp, int relationID);
+	static void update(const MLP &mlp, int relationID);
 
 private:
 
@@ -68,7 +68,7 @@ private:
 	 * @param work Trabalho
 	 * @return ID gerado
 	 */
-	static int insertMLP(const BackpropMLP &mlp, WorkPtr &work);
+	static int insertMLP(const MLP &mlp, WorkPtr &work);
 
 	/**
 	 * Insere as informações de uma camada
@@ -81,22 +81,11 @@ private:
 			WorkPtr &work);
 
 	/**
-	 * Insere as informações de um neurônio
-	 * @param mlpID ID da rede
-	 * @param layerIndex Índice da camada
-	 * @param neuronIndex Índice do neurônio
-	 * @param neuron Neurônio
-	 * @param work Trabalho
-	 */
-	static void insertNeuron(int mlpID, uint layerIndex, uint neuronIndex,
-			const Neuron &neuron, WorkPtr &work);
-
-	/**
 	 * Seleciona as informações do MLP
 	 * @param mlp Multi-Layer Perceptron
 	 * @param work Trabalho
 	 */
-	static void selectMLP(BackpropMLP &mlp, WorkPtr &work);
+	static void selectMLP(MLP &mlp, WorkPtr &work);
 
 	/**
 	 * Seleciona os pesos de uma camada
@@ -107,17 +96,6 @@ private:
 	 */
 	static void selectLayer(int mlpID, uint layerIndex, Layer &layer,
 			WorkPtr &work);
-
-	/**
-	 * Seleciona as informações de um neurônio
-	 * @param mlpID ID da rede
-	 * @param layerIndex Índice da camada
-	 * @param neuronIndex Índice do neurônio
-	 * @param neuron Neurônio
-	 * @param work Trabalho
-	 */
-	static void selectNeuron(int mlpID, uint layerIndex, uint neuronIndex,
-			Neuron &neuron, WorkPtr &work);
 
 	/**
 	 * Adiciona a relação com qual a rede foi treinada
@@ -136,17 +114,6 @@ private:
 	 */
 	static void updateLayer(int mlpID, uint layerIndex, const Layer &layer,
 			WorkPtr &work);
-
-	/**
-	 * Atualiza as informações de um neurônio
-	 * @param mlpID ID da rede
-	 * @param layerIndex Índice da camada
-	 * @param neuronIndex Índice do neurônio
-	 * @param neuron Neurônio
-	 * @param work Trabalho
-	 */
-	static void updateNeuron(int mlpID, uint layerIndex, uint neuronIndex,
-			const Neuron &neuron, WorkPtr &work);
 
 };
 

@@ -77,23 +77,23 @@ void RelationAdapter::insert(const Relation &relation)
 	try
 	{
 		// Verifica se o nome da relação é realmente único
-		if (!checkUnique(relation.name, work))
+		if (!checkUnique(relation.getName(), work))
 			throw DatabaseException(RELATION_NOT_UNIQUE);
 
 		// Insere a relação
 		int relationID = insertRelation(relation, work);
 
 		// Insere os atributos
-		for (uint i = 0; i < relation.attributes.size(); i++)
-			insertAttribute(relationID, i + 1, *(relation.attributes[i]), work);
+		for (uint i = 0; i < relation.getNAttributes(); i++)
+			insertAttribute(relationID, i + 1, relation.getAttribute(i), work);
 
 		// Insere os dados
-		for (uint i = 0; i < relation.data.size(); i++)
-			insertInstance(relationID, i + 1, *(relation.data[i]), work);
+		for (uint i = 0; i < relation.getNInstances(); i++)
+			insertInstance(relationID, i + 1, relation.getInstance(i), work);
 
 		// Insere as estatísticas dos atributos
-		for (uint i = 0; i < relation.attributes.size(); i++)
-			addStatistics(relationID, i + 1, *(relation.attributes[i]), work);
+		for (uint i = 0; i < relation.getNAttributes(); i++)
+			addStatistics(relationID, i + 1, relation.getAttribute(i), work);
 
 		// Salva as alterações
 		work->commit();
@@ -119,8 +119,8 @@ bool RelationAdapter::checkUnique(const string &name, WorkPtr &work)
 int RelationAdapter::insertRelation(const Relation &relation, WorkPtr &work)
 {
 	// Insere informações da relação
-	work->prepared("insertRelation")(relation.name)
-			(relation.attributes.size())(relation.data.size()).exec();
+	work->prepared("insertRelation")(relation.getName())
+			(relation.getNAttributes())(relation.getNInstances()).exec();
 
 	// Recupera o ID gerado
 	const result &res = work->prepared("selectLastID").exec();
@@ -133,19 +133,21 @@ void RelationAdapter::insertAttribute(int relationID, uint attrIndex,
 		const Attribute &attr, WorkPtr &work)
 {
 	// Se for numérico
-	if (attr.type == NUMERIC)
+	if (attr.isNumeric())
 		work->prepared("insertAttribute")(relationID)(attrIndex)
-				(attr.name)(NUMERIC_TYPE)().exec();
+				(attr.getName())(NUMERIC_TYPE)().exec();
 
 	// Se for nominal
-	else if (attr.type == NOMINAL)
+	else if (attr.isNominal())
 	{
-		work->prepared("insertAttribute")(relationID)(attrIndex)(attr.name)
-				(NOMINAL_TYPE)(attr.nominal->size()).exec();
+		const Nominal& nom = attr.getNominalList();
+
+		work->prepared("insertAttribute")(relationID)(attrIndex)
+				(attr.getName())(NOMINAL_TYPE)(nom.size()).exec();
 
 		// Insere os valores nominais
 		uint i = 1;
-		for (auto it = attr.nominal->begin(); it != attr.nominal->end(); it++)
+		for (auto it = nom.begin(); it != nom.end(); it++)
 			work->prepared("insertNominal")(relationID)(attrIndex)(i++)
 					(*it).exec();
 	}
@@ -162,17 +164,17 @@ void RelationAdapter::insertInstance(int relationID, uint instIndex,
 		const Value &value = *(inst[i]);
 
 		// Se for numérico
-		if (value.type == NUMERIC)
+		if (value.isNumeric())
 			work->prepared("insertInstance")(relationID)(instIndex)(i + 1)
-					(value.number)().exec();
+					(value.getNumber())().exec();
 
 		// Se for nominal
-		else if (value.type == NOMINAL)
+		else if (value.isNominal())
 			work->prepared("insertInstance")(relationID)(instIndex)(i + 1)()
-					(value.nominal).exec();
+					(value.getNominal()).exec();
 
 		// Se for vazio
-		else if (value.type == EMPTY)
+		else if (value.isEmpty())
 			work->prepared("insertInstance")(relationID)(instIndex)(i + 1)()()
 					.exec();
 	}
@@ -186,7 +188,7 @@ void RelationAdapter::addStatistics(int relationID, uint attrIndex,
 	float min, max;
 
 	// Se for numérico
-	if (attr.type == NUMERIC)
+	if (attr.isNumeric())
 	{
 		// Coleta estatísticas
 		const result &res = work->prepared("selectStatistics")(relationID)
@@ -195,7 +197,7 @@ void RelationAdapter::addStatistics(int relationID, uint attrIndex,
 	}
 
 	// Se for nominal
-	else if (attr.type == NOMINAL)
+	else if (attr.isNominal())
 		min = 0, max = 1;
 
 	// Adiciona as estatísticas

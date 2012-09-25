@@ -3,10 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ParallelMLP)
 
 SET(SOURCES
-	BackpropMLP.cpp
 	HostExampleSet.cpp
-	Layer.cpp
-	Neuron.cpp
+	HostLayer.cpp
+	HostMLP.cpp
+	HostNeuron.cpp
 )
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)

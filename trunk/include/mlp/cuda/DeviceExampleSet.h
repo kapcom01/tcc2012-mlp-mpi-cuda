@@ -5,6 +5,8 @@
 #include "mlp/Vector.h"
 #include <thrust/sort.h>
 
+#define MAX_BLOCKS 256
+
 namespace ParallelMLP
 {
 
@@ -49,6 +51,26 @@ public:
 	 */
 	void unnormalize();
 
+	/**
+	 * Retorna a i-ésima entrada do conjunto
+	 * @param i Índice da entrada
+	 * @return Entrada de índice i
+	 */
+	vec_float getInput(uint i);
+
+	/**
+	 * Retorna a i-ésima saída alvo do conjunto
+	 * @param i Índice da saída alvo
+	 * @return Saída alvo de índice i
+	 */
+	vec_float getTarget(uint i);
+
+	/**
+	 * Seta os valores da i-ésima saída
+	 * @param output Vetor contendo a i-ésima saída
+	 */
+	void setOutput(uint i, const vec_float output);
+
 private:
 
 	/**
@@ -59,7 +81,7 @@ private:
 	/**
 	 * Ponteiro para os dados de entrada e seu tamanho
 	 */
-	Vector<float> rawInput;
+	vec_float rawInput;
 
 	/**
 	 * Dados de saída alvo para o treinamento
@@ -69,7 +91,7 @@ private:
 	/**
 	 * Ponteiro para os dados de saída alvo e seu tamanho
 	 */
-	Vector<float> rawTarget;
+	vec_float rawTarget;
 
 	/**
 	 * Dados de saída da rede neural
@@ -79,7 +101,7 @@ private:
 	/**
 	 * Ponteiro para os dados de saída da rede e seu tamanho
 	 */
-	Vector<float> rawOutput;
+	vec_float rawOutput;
 
 	/**
 	 * Estatísticas para cada coluna de entrada
@@ -89,7 +111,7 @@ private:
 	/**
 	 * Ponteiro para as estatísticas de entrada e seu tamanho
 	 */
-	Vector<Stat> rawInStat;
+	vec_stat rawInStat;
 
 	/**
 	 * Estatísticas para cada coluna de saída
@@ -99,7 +121,7 @@ private:
 	/**
 	 * Ponteiro para os estatísticas de saída e seu tamanho
 	 */
-	Vector<Stat> rawOutStat;
+	vec_stat rawOutStat;
 
 };
 

@@ -27,12 +27,6 @@ public:
 	~Relation();
 
 	/**
-	 * Seta o nome da relação
-	 * @param name Nome da relação
-	 */
-	void setRelation(const string *name);
-
-	/**
 	 * Adiciona um atributo
 	 * @param attr Atributo
 	 */
@@ -45,7 +39,43 @@ public:
 	 */
 	void addInstance(const DataList* dlist, bool isSparse);
 
-	friend class RelationAdapter;
+	/**
+	 * Retorna a quantidade de atributos
+	 * @return Quantidade de atributos
+	 */
+	uint getNAttributes() const;
+
+	/**
+	 * Retorna a quantidade de instâncias
+	 * @return Quantidade de instâncias
+	 */
+	uint getNInstances() const;
+
+	/**
+	 * Retorna o nome da relação
+	 * @return Nome da relação
+	 */
+	string getName() const;
+
+	/**
+	 * Seta o nome da relação
+	 * @param name Nome da relação
+	 */
+	void setName(const string *name);
+
+	/**
+	 * Retorna o i-ésimo atributo
+	 * @param i Índice do atributo
+	 * @return i-ésimo atributo
+	 */
+	const Attribute& getAttribute(uint i) const;
+
+	/**
+	 * Retorna a i-ésima instância
+	 * @param i Índice da instância
+	 * @return i-ésima instância
+	 */
+	const Instance& getInstance(uint i) const;
 
 private:
 

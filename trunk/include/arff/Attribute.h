@@ -57,6 +57,38 @@ public:
 	virtual ~Attribute();
 
 	/**
+	 * Verifica se o atributo é nominal
+	 * @return Verdadeiro se for nominal ou falso caso contrário
+	 */
+	bool isNominal() const;
+
+	/**
+	 * Verifica se o atributo é numérico
+	 * @return Verdadeiro se for numérico ou falso caso contrário
+	 */
+	bool isNumeric() const;
+
+	/**
+	 * Retorna o nome do atributo
+	 * @return Nome do atributo
+	 */
+	string getName() const;
+
+	/**
+	 * Retorna o tipo do atributo
+	 * @return Tipo do atributo
+	 */
+	AttributeType getType() const;
+
+	/**
+	 * Retorna uma lista de valores nominais
+	 * @return Lista de valores nominais
+	 */
+	const Nominal& getNominalList() const;
+
+private:
+
+	/**
 	 * Nome
 	 */
 	string name;

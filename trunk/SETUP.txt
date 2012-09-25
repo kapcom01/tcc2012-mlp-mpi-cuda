@@ -107,6 +107,7 @@ CREATE TABLE Operation (
 	Tolerance NUMERIC,
 	MaxEpochs INTEGER,
 	Error NUMERIC,
+	Epochs INTEGER,
 	Time NUMERIC,
 	
 	CHECK (Type IN (1, 2, 3)),

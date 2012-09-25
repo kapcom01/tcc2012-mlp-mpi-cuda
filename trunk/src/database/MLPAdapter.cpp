@@ -1,4 +1,4 @@
-#include "database/BackpropMLPAdapter.h"
+#include "database/MLPAdapter.h"
 #include "database/DatabaseException.h"
 
 namespace ParallelMLP
@@ -6,7 +6,7 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-void BackpropMLPAdapter::prepareForInsert(connection* conn)
+void MLPAdapter::prepareForInsert(connection* conn)
 {
 	try
 	{
@@ -46,7 +46,7 @@ void BackpropMLPAdapter::prepareForInsert(connection* conn)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::insert(BackpropMLP &mlp)
+void MLPAdapter::insert(MLP &mlp)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -57,15 +57,15 @@ void BackpropMLPAdapter::insert(BackpropMLP &mlp)
 	try
 	{
 		// Verifica se o nome da relação é realmente único
-		if (!checkUnique(mlp.name, work))
+		if (!checkUnique(mlp.getName(), work))
 			throw DatabaseException(RELATION_NOT_UNIQUE);
 
 		// Insere as informações do MLP
-		mlp.mlpID = insertMLP(mlp, work);
+		mlp.setID(insertMLP(mlp, work));
 
 		// Insere as camadas
-		for (uint l = 0; l < mlp.layers.size(); l++)
-			insertLayer(mlp.mlpID, l + 1, *(mlp.layers[l]), work);
+		for (uint l = 0; l < mlp.getNLayers(); l++)
+			insertLayer(mlp.getID(), l + 1, mlp.getLayer(l), work);
 
 		// Salva as alterações
 		work->commit();
@@ -80,7 +80,7 @@ void BackpropMLPAdapter::insert(BackpropMLP &mlp)
 
 //===========================================================================//
 
-bool BackpropMLPAdapter::checkUnique(const string &name, WorkPtr &work)
+bool MLPAdapter::checkUnique(const string &name, WorkPtr &work)
 {
 	const result &res = work->prepared("checkUnique")(name).exec();
 	return (res[0][0].as<int>() == 0);
@@ -88,13 +88,13 @@ bool BackpropMLPAdapter::checkUnique(const string &name, WorkPtr &work)
 
 //===========================================================================//
 
-int BackpropMLPAdapter::insertMLP(const BackpropMLP &mlp, WorkPtr &work)
+int MLPAdapter::insertMLP(const MLP &mlp, WorkPtr &work)
 {
 	// Insere informações do MLP
 	Range range = mlp.getRange();
 
-	work->prepared("insertMLP")(mlp.name)(range.lower)(range.upper)
-			(mlp.layers.size()).exec();
+	work->prepared("insertMLP")(mlp.getName())(range.lower)(range.upper)
+			(mlp.getNLayers()).exec();
 
 	// Recupera o ID gerado
 	const result &res = work->prepared("selectLastID").exec();
@@ -103,32 +103,23 @@ int BackpropMLPAdapter::insertMLP(const BackpropMLP &mlp, WorkPtr &work)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::insertLayer(int mlpID, uint layerIndex,
+void MLPAdapter::insertLayer(int mlpID, uint layerIndex,
 		const Layer &layer, WorkPtr &work)
 {
 	// Insere informações da camada
-	work->prepared("insertLayer")(mlpID)(layerIndex)(layer.inUnits)
-			(layer.outUnits).exec();
+	work->prepared("insertLayer")(mlpID)(layerIndex)(layer.getInUnits())
+			(layer.getOutUnits()).exec();
 
 	// Insere os neurônios
-	for (uint n = 0; n < layer.outUnits; n++)
-		insertNeuron(mlpID, layerIndex, n + 1, *(layer.neurons[n]), work);
+	for (uint n = 0; n < layer.getOutUnits(); n++)
+		for (uint i = 0; i <= layer.getInUnits(); i++)
+			work->prepared("insertNeuron")(mlpID)(layerIndex)(n + 1)(i + 1)
+					(layer.getWeight(n, i)).exec();
 }
 
 //===========================================================================//
 
-void BackpropMLPAdapter::insertNeuron(int mlpID, uint layerIndex,
-		uint neuronIndex, const Neuron &neuron, WorkPtr &work)
-{
-	// Insere cada um dos pesos
-	for (uint i = 0; i <= neuron.inUnits; i++)
-		work->prepared("insertNeuron")(mlpID)(layerIndex)(neuronIndex)(i + 1)
-				(neuron.weights[i]).exec();
-}
-
-//===========================================================================//
-
-void BackpropMLPAdapter::prepareForSelect(connection* conn)
+void MLPAdapter::prepareForSelect(connection* conn)
 {
 	try
 	{
@@ -148,8 +139,8 @@ void BackpropMLPAdapter::prepareForSelect(connection* conn)
 		conn->prepare("selectNeuron",
 				"SELECT Weight FROM Neuron WHERE MLPID = $1 AND "
 				"LayerIndex = $2 AND NeuronIndex = $3 "
-				"ORDER BY InputIndex")
-				("INTEGER")("INTEGER")("INTEGER");
+				"AND InputIndex = $4")
+				("INTEGER")("INTEGER")("INTEGER")("INTEGER");
 	}
 	catch (pqxx_exception &e)
 	{
@@ -159,7 +150,7 @@ void BackpropMLPAdapter::prepareForSelect(connection* conn)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::select(BackpropMLP &mlp)
+void MLPAdapter::select(MLP &mlp)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -173,8 +164,8 @@ void BackpropMLPAdapter::select(BackpropMLP &mlp)
 		selectMLP(mlp, work);
 
 		// Recupera as camadas
-		for (uint l = 0; l < mlp.layers.size(); l++)
-			selectLayer(mlp.mlpID, l + 1, *(mlp.layers[l]), work);
+		for (uint l = 0; l < mlp.getNLayers(); l++)
+			selectLayer(mlp.getID(), l + 1, mlp.getLayer(l), work);
 
 		// Salva as alterações
 		work->commit();
@@ -189,15 +180,17 @@ void BackpropMLPAdapter::select(BackpropMLP &mlp)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::selectMLP(BackpropMLP &mlp, WorkPtr &work)
+void MLPAdapter::selectMLP(MLP &mlp, WorkPtr &work)
 {
-	const result &res = work->prepared("selectMLP")(mlp.mlpID).exec();
+	const result &res = work->prepared("selectMLP")(mlp.getID()).exec();
 
-	mlp.name = res[0]["Name"].as<string>();
-	mlp.range.lower = res[0]["LowerValue"].as<float>();
-	mlp.range.upper = res[0]["UpperValue"].as<float>();
+	mlp.setName(res[0]["Name"].as<string>());
 
-	const result &layers = work->prepared("selectLayer")(mlp.mlpID).exec();
+	float lower = res[0]["LowerValue"].as<float>();
+	float upper = res[0]["UpperValue"].as<float>();
+	mlp.setRange({ lower, upper });
+
+	const result &layers = work->prepared("selectLayer")(mlp.getID()).exec();
 
 	// Adiciona as camadas
 	for (auto row = layers.begin(); row != layers.end(); row++)
@@ -205,45 +198,34 @@ void BackpropMLPAdapter::selectMLP(BackpropMLP &mlp, WorkPtr &work)
 		uint inUnits = row["NInputs"].as<uint>();
 		uint outUnits = row["NNeurons"].as<uint>();
 
-		LayerPtr layer(new Layer(inUnits, outUnits));
-		mlp.layers.push_back(layer);
-
-		if (row + 1 == layers.end())
-		{
-			mlp.output = &(layer->funcSignal);
-			mlp.error.resize(outUnits);
-		}
+		mlp.addLayer(inUnits, outUnits);
 	}
+
+	// Seta a saída do MLP
+	mlp.setOutput();
 }
 
 //===========================================================================//
 
-void BackpropMLPAdapter::selectLayer(int mlpID, uint layerIndex, Layer &layer,
+void MLPAdapter::selectLayer(int mlpID, uint layerIndex, Layer &layer,
 		WorkPtr &work)
 {
 	// Recupera os pesos de cada neurônio
-	for (uint n = 0; n < layer.outUnits; n++)
-		selectNeuron(mlpID, layerIndex, n + 1, *(layer.neurons[n]), work);
+	for (uint n = 0; n < layer.getOutUnits(); n++)
+		for (uint i = 0; i <= layer.getInUnits(); i++)
+		{
+			// Seleciona o peso
+			const result &res = work->prepared("selectNeuron")(mlpID)
+					(layerIndex)(n + 1)(i + 1).exec();
+
+			// Seta o peso
+			layer.setWeight(n, i, res[0][0].as<float>());
+		}
 }
 
 //===========================================================================//
 
-void BackpropMLPAdapter::selectNeuron(int mlpID, uint layerIndex,
-		uint neuronIndex, Neuron &neuron, WorkPtr &work)
-{
-	// Seleciona os pesos dos neurônios
-	const result &res = work->prepared("selectNeuron")(mlpID)(layerIndex)
-			(neuronIndex).exec();
-
-	// Seta os pesos
-	uint i = 0;
-	for (auto row = res.begin(); row != res.end(); row++)
-		neuron.weights[i++] = row[0].as<float>();
-}
-
-//===========================================================================//
-
-void BackpropMLPAdapter::prepareForUpdate(connection* conn)
+void MLPAdapter::prepareForUpdate(connection* conn)
 {
 	try
 	{
@@ -266,7 +248,7 @@ void BackpropMLPAdapter::prepareForUpdate(connection* conn)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::update(const BackpropMLP &mlp, int relationID)
+void MLPAdapter::update(const MLP &mlp, int relationID)
 {
 	// Cria uma nova conexão com a base de dados
 	Connection conn;
@@ -277,11 +259,11 @@ void BackpropMLPAdapter::update(const BackpropMLP &mlp, int relationID)
 	try
 	{
 		// Adiciona a relação com qual a rede foi treinada
-		updateRelation(mlp.mlpID, relationID, work);
+		updateRelation(mlp.getID(), relationID, work);
 
 		// Atualiza cada camada
-		for (uint l = 0; l < mlp.layers.size(); l++)
-			updateLayer(mlp.mlpID, l + 1, *(mlp.layers[l]), work);
+		for (uint l = 0; l < mlp.getNLayers(); l++)
+			updateLayer(mlp.getID(), l + 1, mlp.getLayer(l), work);
 
 		// Salva as alterações
 		work->commit();
@@ -296,7 +278,7 @@ void BackpropMLPAdapter::update(const BackpropMLP &mlp, int relationID)
 
 //===========================================================================//
 
-void BackpropMLPAdapter::updateRelation(int mlpID, int relationID,
+void MLPAdapter::updateRelation(int mlpID, int relationID,
 		WorkPtr &work)
 {
 	work->prepared("updateRelation")(mlpID)(relationID).exec();
@@ -304,23 +286,14 @@ void BackpropMLPAdapter::updateRelation(int mlpID, int relationID,
 
 //===========================================================================//
 
-void BackpropMLPAdapter::updateLayer(int mlpID, uint layerIndex,
+void MLPAdapter::updateLayer(int mlpID, uint layerIndex,
 		const Layer &layer, WorkPtr &work)
 {
 	// Insere os pesos de cada neurônio
-	for (uint n = 0; n < layer.outUnits; n++)
-		updateNeuron(mlpID, layerIndex, n + 1, *(layer.neurons[n]), work);
-}
-
-//===========================================================================//
-
-void BackpropMLPAdapter::updateNeuron(int mlpID, uint layerIndex,
-		uint neuronIndex, const Neuron &neuron, WorkPtr &work)
-{
-	// Atualiza cada um dos pesos
-	for (uint i = 0; i <= neuron.inUnits; i++)
-		work->prepared("updateNeuron")(mlpID)(layerIndex)(neuronIndex)(i + 1)
-				(neuron.weights[i]).exec();
+	for (uint n = 0; n < layer.getOutUnits(); n++)
+		for (uint i = 0; i <= layer.getInUnits(); i++)
+			work->prepared("updateNeuron")(mlpID)(layerIndex)(n + 1)(i + 1)
+					(layer.getWeight(n, i)).exec();
 }
 
 //===========================================================================//

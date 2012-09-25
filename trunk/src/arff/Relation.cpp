@@ -21,31 +21,24 @@ Relation::~Relation()
 
 //===========================================================================//
 
-void Relation::setRelation(const string *name)
-{
-	this->name = *name;
-}
-
-//===========================================================================//
-
 void Relation::addAttribute(Attribute *attr)
 {
 	AttributePtr ptr(attr);
 
 	// Verifica o tipo do atributo (só aceita numérico ou nominal)
-	if (ptr->type != NUMERIC && ptr->type != NOMINAL)
+	if (!attr->isNumeric() && !attr->isNominal())
 		throwError(SEM_TYPE_NOT_ALLOWED);
 
 	// Verifica se o nome do atributo já não foi utilizado anteriormente
-	if (attrMap.find(attr->name) != attrMap.end())
+	if (attrMap.find(attr->getName()) != attrMap.end())
 		throwError(SEM_SAME_ATTRIBUTE_NAME);
 
 	// Se o tipo for nominal
-	if (attr->type == NOMINAL)
+	if (attr->isNominal())
 	{
 		// Verifica se existem valores nominais repetidos
 		map<string, bool> nominalMap;
-		for (string &str : *(attr->nominal))
+		for (const string &str : attr->getNominalList())
 		{
 			if (nominalMap.find(str) != nominalMap.end())
 				throwError(SEM_SAME_NOMINAL_VALUE);
@@ -53,7 +46,7 @@ void Relation::addAttribute(Attribute *attr)
 		}
 	}
 
-	attrMap[attr->name] = true;
+	attrMap[attr->getName()] = true;
 	attributes.push_back(ptr);
 }
 
@@ -76,7 +69,7 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 		auto it = dlist->begin();
 		for (uint i = 0; i < attributes.size(); i++)
 		{
-			if (it != dlist->end() && (*it)->index == i)
+			if (it != dlist->end() && (*it)->getIndex() == i)
 				row->push_back(*it), it++;
 			else
 				row->push_back(ValuePtr(new Value(EMPTY)));
@@ -96,11 +89,11 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 	{
 		ValuePtr &value = row->at(i);
 
-		if (value->type != EMPTY && value->type != attributes[i]->type)
+		if (!value->isEmpty() && value->getType() != attributes[i]->getType())
 			throwError(SEM_WRONG_INSTANCE_TYPE);
 
 		// Se for nominal, checa se o valor foi declarado
-		if (value->type == NOMINAL)
+		if (value->isNominal())
 		{
 			int nominalIndex = checkNominal(i, *(value->str));
 
@@ -119,17 +112,59 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 
 int Relation::checkNominal(uint attrIndex, const string &name)
 {
-	Nominal* nominal = attributes[attrIndex]->nominal;
+	const Nominal& nominal = attributes[attrIndex]->getNominalList();
 	uint i = 1;
 
 	// Para cada valor nominal do atributo
-	for (auto it = nominal->begin(); it != nominal->end(); it++, i++)
+	for (auto it = nominal.begin(); it != nominal.end(); it++, i++)
 		// Se for igual, retorna o índice
 		if (!name.compare(*it))
 			return i;
 
 	// Se não encontrar, retorna -1
 	return -1;
+}
+
+//===========================================================================//
+
+uint Relation::getNAttributes() const
+{
+	return attributes.size();
+}
+
+//===========================================================================//
+
+uint Relation::getNInstances() const
+{
+	return data.size();
+}
+
+//===========================================================================//
+
+string Relation::getName() const
+{
+	return name;
+}
+
+//===========================================================================//
+
+void Relation::setName(const string *name)
+{
+	this->name = *name;
+}
+
+//===========================================================================//
+
+const Attribute& Relation::getAttribute(uint i) const
+{
+	return *(attributes[i]);
+}
+
+//===========================================================================//
+
+const Instance& Relation::getInstance(uint i) const
+{
+	return *(data[i]);
 }
 
 //===========================================================================//
