@@ -98,46 +98,6 @@ private:
 	static void selectStatistics(ExampleSet &set, Size &size, WorkPtr &work);
 
 	/**
-	 * Adiciona um valor númerico de entrada ou saída
-	 * @param set Conjunto de dados
-	 * @param value Valor numérico de entrada ou saída
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	static void addValue(ExampleSet &set, float value, bool isTarget);
-
-	/**
-	 * Adiciona um valor nominal de entrada ou saída
-	 * @param set Conjunto de dados
-	 * @param value Valor nominal de entrada ou saída
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	static void addValue(ExampleSet &set, int value, uint card, bool isTarget);
-
-	/**
-	 * Adiciona um valor estatístico numérico de entrada ou saída
-	 * @param set Conjunto de dados
-	 * @param min Valor mínimo da amostra
-	 * @param max Valor máximo da amostra
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	static void addStat(ExampleSet &set, float min, float max,
-			float lower, float upper, bool isTarget);
-
-	/**
-	 * Adiciona um valor estatístico nominal de entrada ou saída
-	 * @param set Conjunto de dados
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	static void addStat(ExampleSet &set, float lower, float upper, uint card,
-			bool isTarget);
-
-	/**
 	 * Insere os dados da operação
 	 * @param set Conjunto de dados
 	 * @param work Trabalho
@@ -160,14 +120,6 @@ private:
 	 * @param work Trabalho
 	 */
 	static void insertResults(int opID, const ExampleSet &set, WorkPtr &work);
-
-	/**
-	 * Seleciona o índice do maior elemento do vetor
-	 * @param vec Vetor
-	 * @param size Tamanho do vetor
-	 * @return Índice do maior elemento do vetor
-	 */
-	static uint indexOfMax(const float* vec, uint size);
 
 };
 

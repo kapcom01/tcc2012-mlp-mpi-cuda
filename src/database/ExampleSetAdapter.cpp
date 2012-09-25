@@ -61,7 +61,7 @@ void ExampleSetAdapter::select(ExampleSet &set)
 	try
 	{
 		// Seleciona a quantidade de instâncias e atributos
-		Size size = selectSize(set.relationID, work);
+		Size size = selectSize(set.getID(), work);
 
 		// Seleciona os dados
 		selectData(set, size, work);
@@ -94,24 +94,24 @@ Size ExampleSetAdapter::selectSize(int relationID, WorkPtr &work)
 
 void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, WorkPtr &work)
 {
-	set.size = size.nInst;
+	set.setSize(size.nInst);
 
 	// Para cada instância
 	for (uint k = 0; k < size.nInst; k++)
 	{
-		const result &res = work->prepared("selectData")(set.relationID)(k + 1)
+		const result &res = work->prepared("selectData")(set.getID())(k + 1)
 				.exec();
 
 		for (auto row = res.begin(); row != res.end(); row++)
 		{
 			uint attrIndex = row["AttrIndex"].as<uint>();
+			bool isTarget = attrIndex == size.nAttr && !set.isTest();
 
 			// Se for numérico
 			if (row["Type"].as<int>() == NUMERIC_TYPE)
 			{
 				float value = row["NumericValue"].as<float>();
-				addValue(set, value,
-						attrIndex == size.nAttr && set.type != TEST);
+				set.addValue(value, isTarget);
 			}
 
 			// Se for nominal
@@ -119,18 +119,13 @@ void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, WorkPtr &work)
 			{
 				float value = row["NominalValue"].as<int>();
 				int card = row["NominalCard"].as<int>();
-				addValue(set, value, card,
-						attrIndex == size.nAttr && set.type != TEST);
+				set.addValue(value, card, isTarget);
 			}
 		}
-
-		// Seta a quantidade de variáveis de entrada e saída
-		if (k == 0)
-		{
-			set.inVars = set.input.size();
-			set.outVars = set.target.size();
-		}
 	}
+
+	// Seta a quantidade de variáveis de entrada e saída
+	set.setVars();
 }
 
 //===========================================================================//
@@ -139,13 +134,13 @@ int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
 		WorkPtr &work)
 {
 	// Se for conjunto de treinamento, retorna próprio ID
-	if (set.type == TRAINING)
-		return set.relationID;
+	if (set.isTraining())
+		return set.getID();
 	// Se for outro tipo, retorna a relação de treinamento do MLP
 	else
 	{
 		const result &res = work->prepared("selectTrainedRelation")
-				(set.mlpID).exec();
+				(set.getMLPID()).exec();
 		return res[0][0].as<int>();
 	}
 }
@@ -167,7 +162,7 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
 	int trained = selectTrainedRelation(set, work);
 
 	// Seleciona o intervalo de valores do MLP
-	Range range = selectRange(set.mlpID, work);
+	Range range = selectRange(set.getMLPID(), work);
 
 	const result &res = work->prepared("selectStatistics")(trained).exec();
 
@@ -175,78 +170,26 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
 	for (auto row = res.begin(); row != res.end(); row++)
 	{
 		uint attrIndex = row["AttrIndex"].as<uint>();
+		bool isTarget = attrIndex == size.nAttr && !set.isTest();
 
 		// Se for numérico
 		if (row["Type"].as<int>() == NUMERIC_TYPE)
 		{
 			float min = row["Minimum"].as<float>();
 			float max = row["Maximum"].as<float>();
-
-			addStat(set, min, max, -1, 1,
-					attrIndex == size.nAttr && set.type != TEST);
+			set.addStat(min, max, -1, 1, isTarget);
 		}
 
 		// Se for nominal
 		else
 		{
 			uint card = row["NominalCard"].as<uint>();
-
-			addStat(set, range.lower, range.upper, card,
-					attrIndex == size.nAttr && set.type != TEST);
+			set.addStat(range.lower, range.upper, card, isTarget);
 		}
 	}
 }
 
-//===========================================================================//
 
-void ExampleSetAdapter::addValue(ExampleSet &set, float value, bool isTarget)
-{
-	// Se for saída
-	if (isTarget)
-	{
-		set.target.push_back(value);
-		set.output.push_back(0);
-	}
-	// Se for entrada
-	else
-		set.input.push_back(value);
-}
-
-//===========================================================================//
-
-void ExampleSetAdapter::addValue(ExampleSet &set, int value, uint card,
-		bool isTarget)
-{
-	// Adiciona uma variável para cada possível valor
-	for (uint i = 0; i < card; i++)
-		if (i + 1 == value)
-			addValue(set, 1, isTarget);
-		else
-			addValue(set, 0, isTarget);
-}
-
-//===========================================================================//
-
-void ExampleSetAdapter::addStat(ExampleSet &set, float min, float max,
-		float lower, float upper, bool isTarget)
-{
-	// Se for saída
-	if (isTarget)
-		set.outStat.push_back({ {min, max}, {lower, upper} });
-	// Se for entrada
-	else
-		set.inStat.push_back({ {min, max}, {lower, upper} });
-}
-
-//===========================================================================//
-
-void ExampleSetAdapter::addStat(ExampleSet &set, float lower, float upper,
-		uint card, bool isTarget)
-{
-	// Adiciona uma variável para cada possível valor
-	for (uint i = 0; i < card; i++)
-		addStat(set, 0, 1, lower, upper, isTarget);
-}
 
 //===========================================================================//
 
@@ -257,10 +200,10 @@ void ExampleSetAdapter::prepareForInsert(connection* conn)
 		// Inserção na tabela Operation
 		conn->prepare("insertOperation",
 				"INSERT INTO Operation (Type, MLPID, RelationID, "
-				"LearningRate, Tolerance, MaxEpochs, Error, Time) VALUES "
-				"($1, $2, $3, $4, $5, $6, $7, $8)")
+				"LearningRate, Tolerance, MaxEpochs, Error, Epochs, Time) "
+				"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
 				("SMALLINT")("INTEGER")("INTEGER")("NUMERIC")("NUMERIC")
-				("INTEGER")("NUMERIC")("NUMERIC");
+				("INTEGER")("NUMERIC")("INTEGER")("NUMERIC");
 
 		// Seleção do tipo do atributo de saída
 		conn->prepare("selectType",
@@ -319,9 +262,10 @@ void ExampleSetAdapter::insert(const ExampleSet &set)
 
 int ExampleSetAdapter::insertOperation(const ExampleSet &set, WorkPtr &work)
 {
-	work->prepared("insertOperation")((int) set.type)(set.mlpID)
-			(set.relationID)(set.learning)(set.tolerance)(set.maxEpochs)
-			(set.error)(set.time).exec();
+	work->prepared("insertOperation")(set.getType())(set.getMLPID())
+			(set.getID())(set.getLearning())(set.getTolerance())
+			(set.getMaxEpochs())(set.getError())(set.getEpochs())
+			(set.getTime()).exec();
 
 	// Recupera o ID gerado
 	const result &res = work->prepared("selectLastID").exec();
@@ -332,7 +276,7 @@ int ExampleSetAdapter::insertOperation(const ExampleSet &set, WorkPtr &work)
 
 bool ExampleSetAdapter::selectType(const ExampleSet &set, WorkPtr &work)
 {
-	const result &res = work->prepared("selectType")(set.relationID).exec();
+	const result &res = work->prepared("selectType")(set.getID()).exec();
 
 	// Verifica o tipo
 	return (res[0]["Type"].as<int>() == 1);
@@ -344,41 +288,22 @@ void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
 		WorkPtr &work)
 {
 	// Para cada instância
-	for (uint i = 0; i < set.size; i++)
+	for (uint i = 0; i < set.getSize(); i++)
 	{
 		// Se for do tipo numérico
 		if (selectType(set, work))
 		{
-			float value = set.output[i * set.outVars];
+			float value = set.getNumericOutput(i);
 			work->prepared("insertResults")(opID)(i + 1)(value)().exec();
 		}
 
 		// Se for do tipo nominal
 		else
 		{
-			uint ind = indexOfMax(&(set.output[i * set.inVars]), set.inVars);
-			int value = ind % set.inVars + 1;
+			int value = set.getNominalOutput(i);
 			work->prepared("insertResults")(opID)(i + 1)()(value).exec();
 		}
 	}
-}
-
-//===========================================================================//
-
-uint ExampleSetAdapter::indexOfMax(const float* vec, uint size)
-{
-	float max = vec[0];
-	uint ind = 0;
-
-	// Percorre o vetor para encontrar o maior elemento
-	for (uint i = 1; i < size; i++)
-		if (vec[i] > max)
-		{
-			max = vec[i];
-			ind = i;
-		}
-
-	return ind;
 }
 
 //===========================================================================//

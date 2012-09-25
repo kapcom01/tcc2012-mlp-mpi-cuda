@@ -40,6 +40,56 @@ public:
 	virtual ~Value();
 
 	/**
+	 * Verifica se o valor é numérico
+	 * @return Verdadeiro se o valor for numérico ou falso caso contrário
+	 */
+	bool isNumeric() const;
+
+	/**
+	 * Verifica se o valor é nominal
+	 * @return Verdadeiro se o valor for nominal ou falso caso contrário
+	 */
+	bool isNominal() const;
+
+	/**
+	 * Verifica se o valor está vazio
+	 * @return Verdadeiro se o valor for vazio ou falso caso contrário
+	 */
+	bool isEmpty() const;
+
+	/**
+	 * Retorna o índice associado ao valor
+	 * @return Índice associado ao valor
+	 */
+	int getIndex() const;
+
+	/**
+	 * Seta o índice associado ao valor
+	 * @param index Índice associado ao valor
+	 */
+	void setIndex(int index);
+
+	/**
+	 * Retorna o tipo do valor
+	 * @return Tipo do valor
+	 */
+	AttributeType getType() const;
+
+	/**
+	 * Retorna o valor numérico
+	 * @return Valor numérico
+	 */
+	float getNumber() const;
+
+	/**
+	 * Retorna o valor nominal
+	 * @return Valor nominal
+	 */
+	int getNominal() const;
+
+private:
+
+	/**
 	 * Índice
 	 */
 	int index;

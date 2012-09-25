@@ -111,7 +111,7 @@ header
 
 relation
 	: RELATION ID {
-		driver.dataset->setRelation($2);
+		driver.dataset->setName($2);
 		delete $2;
 	}
 	;
@@ -179,7 +179,7 @@ instance
 	}
 	| RIGHT_BRACES INTEGER value more_sparse LEFT_BRACES {
 		DataList* row = $4;
-		$3->index = $2;
+		$3->setIndex($2);
 		row->push_front(ValuePtr($3));
 		driver.dataset->addInstance(row, true);
 		delete row;
@@ -197,7 +197,7 @@ more_values
 more_sparse
 	: COMMA INTEGER value more_sparse {
 		$$ = $4;
-		$3->index = $2;
+		$3->setIndex($2);
 		$$->push_front(ValuePtr($3));
 	}
 	| { $$ = new DataList; }

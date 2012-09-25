@@ -37,11 +37,11 @@ void HostExampleSet::normalize()
 	{
 		// Normaliza cada coluna de entrada
 		for (uint i = 0; i < inVars; i++)
-			adjust(&(input[k][i]), &(inStat[i]->from), &(inStat[i]->to));
+			adjust(&(input(k)[i]), &(inStat(i)->from), &(inStat(i)->to));
 
 		// Normaliza cada coluna de saída
 		for (uint t = 0; t < outVars; t++)
-			adjust(&(target[k][t]), &(outStat[t]->from), &(outStat[t]->to));
+			adjust(&(target(k)[t]), &(outStat(t)->from), &(outStat(t)->to));
 	}
 
 	isNormalized = true;
@@ -65,13 +65,13 @@ void HostExampleSet::unnormalize()
 	{
 		// Para cada coluna de entrada
 		for (uint i = 0; i < inVars; i++)
-			adjust(&(input[k][i]), &(inStat[i]->to), &(inStat[i]->from));
+			adjust(&(input(k)[i]), &(inStat(i)->to), &(inStat(i)->from));
 
 		// Para cada coluna de saída
 		for (uint t = 0; t < outVars; t++)
 		{
-			adjust(&(target[k][t]), &(outStat[t]->to), &(outStat[t]->from));
-			adjust(&(output[k][t]), &(outStat[t]->to), &(outStat[t]->from));
+			adjust(&(target(k)[t]), &(outStat(t)->to), &(outStat(t)->from));
+			adjust(&(output(k)[t]), &(outStat(t)->to), &(outStat(t)->from));
 		}
 	}
 

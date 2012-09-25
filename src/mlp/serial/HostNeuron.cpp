@@ -1,29 +1,32 @@
-#include "mlp/serial/Neuron.h"
+#include "mlp/serial/HostNeuron.h"
 
 namespace ParallelMLP
 {
 
-//===========================================================================//
+float random();
 
-Neuron::Neuron(uint inUnits, float &cOutput, hv_float &cError)
-	: output(cOutput), error(cError)
-{
-	this->inUnits = inUnits;
+float activate(float x);
 
-	weights.resize(inUnits + 1);
-	gradient = 0;
-}
+float derivate(float y);
 
 //===========================================================================//
 
-Neuron::~Neuron()
+HostNeuron::HostNeuron(uint inUnits, float &cOutput, hv_float &cError)
+	: Neuron(inUnits), output(cOutput), error(cError)
 {
 
 }
 
 //===========================================================================//
 
-void Neuron::randomize()
+HostNeuron::~HostNeuron()
+{
+
+}
+
+//===========================================================================//
+
+void HostNeuron::randomize()
 {
 	for (uint i = 0; i <= inUnits; i++)
 		weights[i] = random();
@@ -31,7 +34,7 @@ void Neuron::randomize()
 
 //===========================================================================//
 
-void Neuron::execute(const hv_float &input)
+void HostNeuron::execute(const vec_float input)
 {
 	for (uint i = 0; i < inUnits; i++)
 		output += input[i] * weights[i];
@@ -42,7 +45,7 @@ void Neuron::execute(const hv_float &input)
 
 //===========================================================================//
 
-void Neuron::response(const hv_float &input, float signal, float learning)
+void HostNeuron::response(const vec_float input, float signal, float learning)
 {
 	gradient = derivate(output) * signal;
 
@@ -56,7 +59,7 @@ void Neuron::response(const hv_float &input, float signal, float learning)
 
 //===========================================================================//
 
-float Neuron::random() const
+float random()
 {
 	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
@@ -64,14 +67,14 @@ float Neuron::random() const
 
 //===========================================================================//
 
-float Neuron::activate(float x) const
+float activate(float x)
 {
 	return tanh(x);
 }
 
 //===========================================================================//
 
-float Neuron::derivate(float y) const
+float derivate(float y)
 {
 	return (1 - y) * (1 + y);
 }

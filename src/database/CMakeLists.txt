@@ -3,10 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ParallelMLP)
 
 SET(SOURCES
-	BackpropMLPAdapter.cpp
 	Connection.cpp
 	DatabaseException.cpp
 	ExampleSetAdapter.cpp
+	MLPAdapter.cpp
 	RelationAdapter.cpp
 )
 

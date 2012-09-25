@@ -45,11 +45,6 @@ public:
 	 */
 	Relation* dataset;
 
-	friend class Scanner;
-	friend class Parser;
-
-private:
-
 	/**
 	 * Nome do arquivo de entrada
 	 */

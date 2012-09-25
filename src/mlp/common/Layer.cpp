@@ -1,4 +1,4 @@
-#include "mlp/serial/Layer.h"
+#include "mlp/common/Layer.h"
 
 namespace ParallelMLP
 {
@@ -9,25 +9,18 @@ Layer::Layer(uint inUnits, uint outUnits)
 {
 	this->inUnits = inUnits;
 	this->outUnits = outUnits;
-	this->input = NULL;
 
 	// Aloca os vetores de saída, de feedback e de erro
 	funcSignal.resize(outUnits);
 	errorSignal.resize(inUnits);
-
-	// Adiciona os neurônios
-	for (uint n = 0; n < outUnits; n++)
-	{
-		NeuronPtr neuron(new Neuron(inUnits, funcSignal[n], errorSignal));
-		neurons.push_back(neuron);
-	}
 }
 
 //===========================================================================//
 
 Layer::~Layer()
 {
-
+	for (uint i = 0; i < neurons.size(); i++)
+		delete neurons[i];
 }
 
 //===========================================================================//
@@ -40,28 +33,44 @@ void Layer::randomize()
 
 //===========================================================================//
 
-void Layer::feedforward(const hv_float& input)
+vec_float Layer::getFuncSignal()
 {
-	this->input = &(input);
-
-	// Inicializa o sinal funcional
-	thrust::fill(funcSignal.begin(), funcSignal.end(), 0);
-
-	// Executa a ativação de cada neurônio
-	for (uint n = 0; n < outUnits; n++)
-		neurons[n]->execute(input);
+	return vec_float(funcSignal);
 }
 
 //===========================================================================//
 
-void Layer::feedback(const hv_float &signal, float learning)
+vec_float Layer::getErrorSignal()
 {
-	// Inicializa o sinal funcional
-	thrust::fill(errorSignal.begin(), errorSignal.end(), 0);
+	return vec_float(errorSignal);
+}
 
-	// Atualiza os pesos de cada neurônio
-	for (uint n = 0; n < outUnits; n++)
-		neurons[n]->response(*input, signal[n], learning);
+//===========================================================================//
+
+uint Layer::getInUnits() const
+{
+	return inUnits;
+}
+
+//===========================================================================//
+
+uint Layer::getOutUnits() const
+{
+	return outUnits;
+}
+
+//===========================================================================//
+
+float Layer::getWeight(uint n, uint i) const
+{
+	return neurons[n]->getWeight(i);
+}
+
+//===========================================================================//
+
+void Layer::setWeight(uint n, uint i, float weight)
+{
+	neurons[n]->setWeight(i, weight);
 }
 
 //===========================================================================//

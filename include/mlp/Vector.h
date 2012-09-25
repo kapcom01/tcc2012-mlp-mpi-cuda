@@ -19,25 +19,11 @@ public:
 	 * Construtor padrão
 	 */
 	__host__
-	Vector()
+	inline Vector()
 	{
 		this->data = NULL;
-		this->size = 0;
-		this->step = 1;
-	}
-
-	/**
-	 * Constrói a partir de um ponteiro para um vetor
-	 * @param data Ponteiro para um vetor
-	 * @param size Tamanho do vetor
-	 * @param step Tamanho do passo considerando o vetor como uma matriz
-	 */
-	__host__
-	Vector(T* data, uint size, uint step = 1)
-	{
-		this->data = data;
-		this->size = size;
-		this->step = step;
+		this->vsize = 0;
+		this->vstep = 1;
 	}
 
 	/**
@@ -46,11 +32,11 @@ public:
 	 * @param step Tamanho do passo considerando o vetor como uma matriz
 	 */
 	__host__
-	Vector(vector<T> &vector, uint step = 1)
+	inline Vector(vector<T> &vector, uint step = 1)
 	{
 		data = &(vector[0]);
-		size = vector.size();
-		this->step = step;
+		vsize = vector.size();
+		this->vstep = step;
 	}
 
 	/**
@@ -59,11 +45,25 @@ public:
 	 * @param step Tamanho do passo considerando o vetor como uma matriz
 	 */
 	__host__
-	Vector(host_vector<T> &vector, uint step = 1)
+	inline Vector(host_vector<T> &vector, uint step = 1)
 	{
 		data = &(vector[0]);
-		size = vector.size();
-		this->step = step;
+		vsize = vector.size();
+		this->vstep = step;
+	}
+
+	/**
+	 * Contrói a partir de uma linha de uma matriz
+	 * @param vector Vetor localizado na memória da máquina
+	 * @param step Tamanho do passo da matriz
+	 * @param index Índice da linha
+	 */
+	__host__
+	inline Vector(host_vector<T> &vector, uint step, uint index)
+	{
+		this->data = &(vector[index * step]);
+		this->vsize = step;
+		this->vstep = 1;
 	}
 
 	/**
@@ -72,18 +72,32 @@ public:
 	 * @param step Tamanho do passo considerando o vetor como uma matriz
 	 */
 	__host__
-	Vector(device_vector<T> &vector, uint step = 1)
+	inline Vector(device_vector<T> &vector, uint step = 1)
 	{
-		data = vector.data().get();
-		size = vector.size();
-		this->step = step;
+		data = raw_pointer_cast(&(vector[0]));
+		vsize = vector.size();
+		this->vstep = step;
+	}
+
+	/**
+	 * Contrói a partir de uma linha de uma matriz
+	 * @param vector Vetor localizado na memória do dispositivo
+	 * @param step Tamanho do passo da matriz
+	 * @param index Índice da linha
+	 */
+	__host__
+	inline Vector(device_vector<T> &vector, uint step, uint index)
+	{
+		this->data = raw_pointer_cast(&(vector[index * step]));
+		this->vsize = step;
+		this->vstep = 1;
 	}
 
 	/**
 	 * Destrói o vetor
 	 */
 	__host__
-	~Vector()
+	inline ~Vector()
 	{
 
 	}
@@ -93,11 +107,21 @@ public:
 	 * @param vec Outro vetor
 	 */
 	__host__
-	void operator =(const Vector<T> &vec)
+	inline void operator =(const Vector<T> &vec)
 	{
 		this->data = vec.data;
-		this->size = vec.size;
-		this->step = vec.step;
+		this->vsize = vec.vsize;
+		this->vstep = vec.vstep;
+	}
+
+	/**
+	 * Retorna o tamanho do vetor
+	 * @return Tamanho do vetor
+	 */
+	__host__ __device__
+	inline uint size() const
+	{
+		return vsize;
 	}
 
 	/**
@@ -106,9 +130,20 @@ public:
 	 * @return i-ésimo elemento do vetor
 	 */
 	__host__ __device__
-	T* operator [](uint i) const
+	inline T* operator ()(uint i)
 	{
-		return &(data[i * step]);
+		return &(data[i * vstep]);
+	}
+
+	/**
+	 * Retorna o i-ésimo elemento do vetor
+	 * @param i Índice do elemento
+	 * @return i-ésimo elemento do vetor
+	 */
+	__host__ __device__
+	inline T operator [](uint i) const
+	{
+		return data[i];
 	}
 
 	/**
@@ -116,17 +151,29 @@ public:
 	 */
 	T* data;
 
+private:
+
 	/**
 	 * Tamanho do vetor
 	 */
-	uint size;
+	uint vsize;
 
 	/**
 	 * Passo
 	 */
-	uint step;
+	uint vstep;
 
 };
+
+/**
+ * Vetor de double
+ */
+typedef Vector<float> vec_float;
+
+/**
+ * Vetor de Stat
+ */
+typedef Vector<Stat> vec_stat;
 
 }
 
