@@ -59,10 +59,11 @@ public:
 	 * @param index Índice da linha
 	 */
 	__host__
-	inline Vector(host_vector<T> &vector, uint step, uint index)
+	inline Vector(host_vector<T> &vector, uint step, uint index,
+			uint size, uint offset = 0)
 	{
-		this->data = &(vector[index * step]);
-		this->vsize = step;
+		this->data = &(vector[index * step + offset]);
+		this->vsize = size;
 		this->vstep = 1;
 	}
 
@@ -86,10 +87,11 @@ public:
 	 * @param index Índice da linha
 	 */
 	__host__
-	inline Vector(device_vector<T> &vector, uint step, uint index)
+	inline Vector(device_vector<T> &vector, uint step, uint index,
+			uint size, uint offset = 0)
 	{
-		this->data = raw_pointer_cast(&(vector[index * step]));
-		this->vsize = step;
+		this->data = raw_pointer_cast(&(vector[index * step + offset]));
+		this->vsize = size;
 		this->vstep = 1;
 	}
 

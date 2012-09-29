@@ -1,8 +1,11 @@
 #include "database/Connection.h"
-#include "database/DatabaseException.h"
 
 namespace ParallelMLP
 {
+
+//===========================================================================//
+
+ConnectionPtr Connection::conn = ConnectionPtr(new Connection());
 
 //===========================================================================//
 
@@ -10,13 +13,13 @@ Connection::Connection()
 {
 	try
 	{
-		conn = new connection(
+		baseConn = new connection(
 				"dbname=mlpdb host=localhost user=mlpuser password=mlpuser");
 	}
 	catch (pqxx_exception &e)
 	{
-		conn = NULL;
-		throw DatabaseException(COULD_NOT_CONNECT);
+		baseConn = NULL;
+		throw ParallelMLPException(COULD_NOT_CONNECT);
 	}
 }
 
@@ -24,25 +27,21 @@ Connection::Connection()
 
 Connection::~Connection()
 {
-	if (conn != NULL)
+	if (baseConn != NULL)
 	{
-		conn->disconnect();
-		delete conn;
+		baseConn->disconnect();
+		delete baseConn;
 	}
 }
 
 //===========================================================================//
 
-connection* Connection::get()
+connection& Connection::get()
 {
-	return conn;
-}
-
-//===========================================================================//
-
-WorkPtr Connection::getWork() const
-{
-	return WorkPtr(new work(*conn));
+	if (conn.get() == NULL)
+		throw ParallelMLPException(COULD_NOT_CONNECT);
+	else
+		return *(conn->baseConn);
 }
 
 //===========================================================================//

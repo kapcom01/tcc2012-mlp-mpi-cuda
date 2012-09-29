@@ -7,7 +7,6 @@ SET(SOURCES
 	ExampleSet.cpp
 	Layer.cpp
 	MLP.cpp
-	Neuron.cpp
 )
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})

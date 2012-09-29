@@ -84,16 +84,6 @@ private:
 	vec_float rawInput;
 
 	/**
-	 * Dados de saída alvo para o treinamento
-	 */
-	dv_float devTarget;
-
-	/**
-	 * Ponteiro para os dados de saída alvo e seu tamanho
-	 */
-	vec_float rawTarget;
-
-	/**
 	 * Dados de saída da rede neural
 	 */
 	dv_float devOutput;
@@ -104,24 +94,14 @@ private:
 	vec_float rawOutput;
 
 	/**
-	 * Estatísticas para cada coluna de entrada
+	 * Estatísticas para cada coluna de dados
 	 */
-	dv_stat devInStat;
+	dv_stat devStat;
 
 	/**
-	 * Ponteiro para as estatísticas de entrada e seu tamanho
+	 * Ponteiro para as estatísticas e seu tamanho
 	 */
-	vec_stat rawInStat;
-
-	/**
-	 * Estatísticas para cada coluna de saída
-	 */
-	dv_stat devOutStat;
-
-	/**
-	 * Ponteiro para os estatísticas de saída e seu tamanho
-	 */
-	vec_stat rawOutStat;
+	vec_stat rawStat;
 
 };
 

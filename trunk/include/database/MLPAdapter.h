@@ -40,19 +40,7 @@ private:
 	 * Prepara a conexão para operações de inserção
 	 * @param conn Conexão
 	 */
-	static void prepareForInsert(connection* conn);
-
-	/**
-	 * Prepara a conexão para operações de seleção
-	 * @param conn Conexão
-	 */
-	static void prepareForSelect(connection* conn);
-
-	/**
-	 * Prepara a conexão para operações de atualização
-	 * @param conn Conexão
-	 */
-	static void prepareForUpdate(connection* conn);
+	static void prepareForInsert(connection &conn);
 
 	/**
 	 * Verifica se o nome do MLP já existe anteriormente
@@ -60,7 +48,7 @@ private:
 	 * @param work Trabalho
 	 * @return Verdadeiro se não existir ou falso caso contrário
 	 */
-	static bool checkUnique(const string &name, WorkPtr &work);
+	static bool checkUnique(const string &name, work &work);
 
 	/**
 	 * Insere as informações básicas do MLP
@@ -68,7 +56,7 @@ private:
 	 * @param work Trabalho
 	 * @return ID gerado
 	 */
-	static int insertMLP(const MLP &mlp, WorkPtr &work);
+	static int insertMLP(const MLP &mlp, work &work);
 
 	/**
 	 * Insere as informações de uma camada
@@ -78,14 +66,20 @@ private:
 	 * @param work Trabalho
 	 */
 	static void insertLayer(int mlpID, uint layerIndex, const Layer &layer,
-			WorkPtr &work);
+			work &work);
+
+	/**
+	 * Prepara a conexão para operações de seleção
+	 * @param conn Conexão
+	 */
+	static void prepareForSelect(connection &conn);
 
 	/**
 	 * Seleciona as informações do MLP
 	 * @param mlp Multi-Layer Perceptron
 	 * @param work Trabalho
 	 */
-	static void selectMLP(MLP &mlp, WorkPtr &work);
+	static void selectMLP(MLP &mlp, work &work);
 
 	/**
 	 * Seleciona os pesos de uma camada
@@ -95,7 +89,13 @@ private:
 	 * @param work Trabalho
 	 */
 	static void selectLayer(int mlpID, uint layerIndex, Layer &layer,
-			WorkPtr &work);
+			work &work);
+
+	/**
+	 * Prepara a conexão para operações de atualização
+	 * @param conn Conexão
+	 */
+	static void prepareForUpdate(connection &conn);
 
 	/**
 	 * Adiciona a relação com qual a rede foi treinada
@@ -103,7 +103,7 @@ private:
 	 * @param relationID Relação com qual a rede foi treinada
 	 * @param work Trabalho
 	 */
-	static void updateRelation(int mlpID, int relationID, WorkPtr &work);
+	static void updateRelation(int mlpID, int relationID, work &work);
 
 	/**
 	 * Atualiza os pesos de uma camada
@@ -113,7 +113,7 @@ private:
 	 * @param work Trabalho
 	 */
 	static void updateLayer(int mlpID, uint layerIndex, const Layer &layer,
-			WorkPtr &work);
+			work &work);
 
 };
 

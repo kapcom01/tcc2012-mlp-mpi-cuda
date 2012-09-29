@@ -1,6 +1,5 @@
 %{
 #include "arff/Scanner.h"
-#include "arff/ParseException.h"
 
 using namespace ParallelMLP;
 

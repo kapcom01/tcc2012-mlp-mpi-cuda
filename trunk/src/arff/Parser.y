@@ -20,7 +20,7 @@
 {
 #include "arff/Relation.h"
 #include "arff/Driver.h"
-#include "arff/ParseException.h"
+#include "exception/ParallelMLPException.h"
 #define saveLine markLine(driver);
 using namespace ParallelMLP;
 }
@@ -41,6 +41,13 @@ using namespace ParallelMLP;
    * @param driver Driver
    */
   void markLine(Driver &driver);
+  
+  /**
+   * Lança uma exceção
+   * @param error Tipo do erro
+   * @param driver Driver
+   */
+  void throwError(ErrorType error, Driver &driver);
 }
 
 /**
@@ -106,7 +113,7 @@ main
 
 header
 	: {saveLine;} relation attributes
-	| error { throwError(SIN_INVALID_RELATION); }
+	| error { throwError(SIN_INVALID_RELATION, driver); }
 	;
 
 relation
@@ -118,7 +125,7 @@ relation
 
 attributes
 	: {saveLine;} attribute attributes
-	| error { throwError(SIN_INVALID_ATTRIBUTE); }
+	| error { throwError(SIN_INVALID_ATTRIBUTE, driver); }
 	|
 	;
 
@@ -166,7 +173,7 @@ data
 
 instances
 	: {saveLine;} instance instances
-	| error { throwError(SIN_INVALID_INSTANCE); }
+	| error { throwError(SIN_INVALID_INSTANCE, driver); }
 	|
 	;
 
@@ -228,34 +235,35 @@ value
 #include "arff/Driver.h"
 #include "arff/Scanner.h"
 
-/**
- * Chama o scanner para recuperar próximo token
- * @param yylval Valor semântico
- * @param yylloc Localização no arquivo
- * @param driver Driver
- * @return Token
- */
+//===========================================================================//
+
 int yylex(Parser::semantic_type* yylval, Parser::location_type* yyloc,
 		Driver &driver)
 {
 	return driver.scanner->yylex(yylval, yyloc);
 }
 
-/**
- * Marca a linha atual
- * @param driver Driver
- */
+//===========================================================================//
+
 void markLine(Driver &driver)
 {
 	driver.scanner->markLine();
 }
 
-/**
- * Função de erro para análise sintática
- * @param loc Localização no arquivo
- * @param msg Mensagem
- */
+//===========================================================================//
+
+void throwError(ErrorType error, Driver &driver)
+{
+	throw ParallelMLPException(error, driver.scanner->getToken(),
+			driver.scanner->getLineno());
+}
+
+//===========================================================================//
+
 void Parser::error(const Parser::location_type &loc, const string &msg)
 {
+
 }
+
+//===========================================================================//
 

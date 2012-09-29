@@ -50,13 +50,7 @@ private:
 	 * Prepara a conexão para operações de seleção
 	 * @param conn Conexão
 	 */
-	static void prepareForSelect(connection* conn);
-
-	/**
-	 * Prepara a conexão para operações de seleção
-	 * @param conn Conexão
-	 */
-	static void prepareForInsert(connection* conn);
+	static void prepareForSelect(connection &conn);
 
 	/**
 	 * Seleciona a quantidade de instâncias e atributos de uma relação
@@ -64,7 +58,7 @@ private:
 	 * @param work Trabalho
 	 * @return Quantidade de instâncias e atributos de uma relação
 	 */
-	static Size selectSize(int relationID, WorkPtr &work);
+	static Size selectSize(int relationID, work &work);
 
 	/**
 	 * Seleciona os dados de uma relação
@@ -72,14 +66,14 @@ private:
 	 * @param size Quantidade de instâncias e atributos da relação
 	 * @param work Trabalho
 	 */
-	static void selectData(ExampleSet &set, Size &size, WorkPtr &work);
+	static void selectData(ExampleSet &set, Size &size, work &work);
 
 	/**
 	 * Seleciona a relação de treinamento
 	 * @param set Conjunto de dados
 	 * @return ID da relação de treinamento
 	 */
-	static int selectTrainedRelation(ExampleSet &set, WorkPtr &work);
+	static int selectTrainedRelation(ExampleSet &set, work &work);
 
 	/**
 	 * Seleciona o intervalo de valores do MLP
@@ -87,7 +81,7 @@ private:
 	 * @param work Trabalho
 	 * @return Intervalo de valores do MLP
 	 */
-	static Range selectRange(int mlpID, WorkPtr &work);
+	static Range selectRange(int mlpID, work &work);
 
 	/**
 	 * Seleciona as estatísticas de uma relação
@@ -95,7 +89,13 @@ private:
 	 * @param size Quantidade de instâncias e atributos da relação
 	 * @param work Trabalho
 	 */
-	static void selectStatistics(ExampleSet &set, Size &size, WorkPtr &work);
+	static void selectStatistics(ExampleSet &set, Size &size, work &work);
+
+	/**
+	 * Prepara a conexão para operações de seleção
+	 * @param conn Conexão
+	 */
+	static void prepareForInsert(connection &conn);
 
 	/**
 	 * Insere os dados da operação
@@ -103,7 +103,7 @@ private:
 	 * @param work Trabalho
 	 * @return ID da operação
 	 */
-	static int insertOperation(const ExampleSet &set, WorkPtr &work);
+	static int insertOperation(const ExampleSet &set, work &work);
 
 	/**
 	 * Verifica o tipo do atributo de saída
@@ -111,7 +111,7 @@ private:
 	 * @param work Trabalho
 	 * @return Retorna verdadeiro se for numérico e falso caso contrário
 	 */
-	static bool selectType(const ExampleSet &set, WorkPtr &work);
+	static bool selectType(const ExampleSet &set, work &work);
 
 	/**
 	 * Insere os resultados de uma operação
@@ -119,7 +119,7 @@ private:
 	 * @param set Conjunto de dados
 	 * @param work Trabalho
 	 */
-	static void insertResults(int opID, const ExampleSet &set, WorkPtr &work);
+	static void insertResults(int opID, const ExampleSet &set, work &work);
 
 };
 

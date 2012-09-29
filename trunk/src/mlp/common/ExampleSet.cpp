@@ -34,15 +34,16 @@ ExampleSet::~ExampleSet()
 
 void ExampleSet::addValue(float value, bool isTarget)
 {
+	input.push_back(value);
+
 	// Se for saída
 	if (isTarget)
 	{
-		target.push_back(value);
 		output.push_back(0);
+		outVars++;
 	}
-	// Se for entrada
 	else
-		input.push_back(value);
+		inVars++;
 }
 
 //===========================================================================//
@@ -62,12 +63,7 @@ void ExampleSet::addValue(int value, uint card, bool isTarget)
 void ExampleSet::addStat(float min, float max, float lower, float upper,
 		bool isTarget)
 {
-	// Se for saída
-	if (isTarget)
-		outStat.push_back({ {min, max}, {lower, upper} });
-	// Se for entrada
-	else
-		inStat.push_back({ {min, max}, {lower, upper} });
+	stat.push_back({ {min, max}, {lower, upper} });
 }
 
 //===========================================================================//
@@ -132,8 +128,11 @@ uint ExampleSet::getOutVars() const
 
 void ExampleSet::setVars()
 {
-	this->inVars = input.size() / size;
-	this->outVars = target.size() / size;
+	if (size * (inVars + outVars) > input.size())
+	{
+		inVars /= size;
+		outVars /= size;
+	}
 }
 
 //===========================================================================//
@@ -148,20 +147,21 @@ uint ExampleSet::getSize() const
 void ExampleSet::setSize(uint size)
 {
 	this->size = size;
+	setVars();
 }
 
 //===========================================================================//
 
 vec_float ExampleSet::getInput(uint i)
 {
-	return vec_float(input, inVars, i);
+	return vec_float(input, inVars + outVars, i, inVars);
 }
 
 //===========================================================================//
 
 vec_float ExampleSet::getTarget(uint i)
 {
-	return vec_float(target, outVars, i);
+	return vec_float(input, inVars + outVars, i, outVars, inVars);
 }
 
 //===========================================================================//
@@ -193,7 +193,7 @@ int ExampleSet::getNominalOutput(uint k) const
 
 void ExampleSet::setOutput(uint i, const vec_float output)
 {
-	vec_float this_out(this->output, outVars, i);
+	vec_float this_out(this->output, outVars, i, outVars);
 	memcpy(this_out.data, output.data, outVars * sizeof(float));
 }
 
@@ -292,15 +292,19 @@ void ExampleSet::setTime(float time)
 
 void ExampleSet::print()
 {
+	cout << "Size=" << size << " inVars=" << inVars << " outVars=" << outVars << endl;
+	cout << "Input" << endl;
 	for (uint k = 0; k < size; k++)
 	{
-		for (uint i = 0; i < inVars; i++)
-			cout << input[k * inVars + i] << " ";
-		cout << "| ";
-		for (uint i = 0; i < outVars; i++)
-			cout << target[k * outVars + i] << " ";
+		for (uint i = 0; i < inVars + outVars; i++)
+			cout << input[k * (inVars + outVars) + i] << " ";
 		cout << endl;
 	}
+	cout << "Stat" << endl;
+	for (uint i = 0; i < inVars + outVars; i++)
+		cout << stat[i].from.lower << ":" << stat[i].from.upper << ":"
+				<< stat[i].to.lower << ":" << stat[i].to.upper << " ";
+	cout << endl;
 }
 
 }

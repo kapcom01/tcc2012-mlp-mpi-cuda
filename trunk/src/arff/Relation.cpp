@@ -1,5 +1,5 @@
 #include "arff/Relation.h"
-#include "arff/ParseException.h"
+#include "arff/Scanner.h"
 
 namespace ParallelMLP
 {
@@ -165,6 +165,14 @@ const Attribute& Relation::getAttribute(uint i) const
 const Instance& Relation::getInstance(uint i) const
 {
 	return *(data[i]);
+}
+
+//===========================================================================//
+
+void Relation::throwError(ErrorType error) const
+{
+	throw ParallelMLPException(error, driver.scanner->getToken(),
+			driver.scanner->getLineno());
 }
 
 //===========================================================================//

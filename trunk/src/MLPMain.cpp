@@ -2,7 +2,6 @@
 #include "mlp/serial/HostMLP.h"
 #include "database/ExampleSetAdapter.h"
 #include "database/MLPAdapter.h"
-#include <ctime>
 
 using namespace ParallelMLP;
 
@@ -14,12 +13,10 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    srand(time(NULL));
-
     try
 	{
     	int relationID = 1;
-    	int mlpID = 2;
+    	int mlpID = 1;
 
 //	    vector<uint> units = {2, 3, 1};
 //	    HostMLP mlp("mlpxor2", units);
@@ -27,10 +24,10 @@ int main(int argc, char* argv[])
 
     	cout << "Reading example set" << endl;
 
-		HostExampleSet exampleSet(relationID, mlpID, TRAINING);
+		DeviceExampleSet exampleSet(relationID, mlpID, TRAINING);
 		ExampleSetAdapter::select(exampleSet);
 		exampleSet.setLearning(0.4);
-		exampleSet.setMaxEpochs(10000);
+		exampleSet.setMaxEpochs(1000000);
 		exampleSet.setTolerance(0.01);
 
 		cout << "Example set read" << endl;
@@ -46,8 +43,8 @@ int main(int argc, char* argv[])
 
 		cout << "MLP trained" << endl;
 
-		MLPAdapter::update(mlp, relationID);
-		ExampleSetAdapter::insert(exampleSet);
+//		MLPAdapter::update(mlp, relationID);
+//		ExampleSetAdapter::insert(exampleSet);
 	}
 	catch(exception &ex)
 	{

@@ -7,6 +7,7 @@
 #endif
 
 #include "arff/Parser.hh"
+#include "exception/ParallelMLPException.h"
 
 namespace ParallelMLP
 {
@@ -51,6 +52,12 @@ public:
 	string getToken() const;
 
 private:
+
+	/**
+	 * Lança uma exceção
+	 * @param error Tipo do erro
+	 */
+	void throwError(ErrorType error) const;
 
 	/**
 	 * Driver

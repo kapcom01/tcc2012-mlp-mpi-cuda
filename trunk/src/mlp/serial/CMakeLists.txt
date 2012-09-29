@@ -6,7 +6,6 @@ SET(SOURCES
 	HostExampleSet.cpp
 	HostLayer.cpp
 	HostMLP.cpp
-	HostNeuron.cpp
 )
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)

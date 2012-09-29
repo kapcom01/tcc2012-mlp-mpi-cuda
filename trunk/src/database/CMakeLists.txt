@@ -4,7 +4,6 @@ PROJECT(ParallelMLP)
 
 SET(SOURCES
 	Connection.cpp
-	DatabaseException.cpp
 	ExampleSetAdapter.cpp
 	MLPAdapter.cpp
 	RelationAdapter.cpp
