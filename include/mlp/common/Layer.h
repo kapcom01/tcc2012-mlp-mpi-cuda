@@ -1,7 +1,7 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "mlp/common/Neuron.h"
+#include "mlp/Vector.h"
 
 namespace ParallelMLP
 {
@@ -29,7 +29,7 @@ public:
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	void randomize();
+	virtual void randomize() = 0;
 
 	/**
 	 * Realiza a operação de feedforward
@@ -97,14 +97,19 @@ protected:
 	uint outUnits;
 
 	/**
-	 * Neurônios da camada
-	 */
-	vector<Neuron*> neurons;
-
-	/**
 	 * Entrada vinda da camada anterior
 	 */
 	vec_float input;
+
+	/**
+	 * Pesos de conexão entre os neurônios e as entradas
+	 */
+	hv_float weights;
+
+	/**
+	 * Gradiente dos neurônios
+	 */
+	hv_float gradient;
 
 	/**
 	 * Sinal funcional dos neurônios

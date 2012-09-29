@@ -34,4 +34,11 @@ string Scanner::getToken() const
 
 //===========================================================================//
 
+void Scanner::throwError(ErrorType error) const
+{
+	throw ParallelMLPException(error, getToken(), getLineno());
+}
+
+//===========================================================================//
+
 }

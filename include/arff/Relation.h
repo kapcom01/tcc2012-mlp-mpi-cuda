@@ -3,6 +3,7 @@
 
 #include "arff/Value.h"
 #include "arff/Driver.h"
+#include "exception/ParallelMLPException.h"
 #include <map>
 
 namespace ParallelMLP
@@ -86,6 +87,12 @@ private:
 	 * @return Índice do valor nominal
 	 */
 	int checkNominal(uint attrIndex, const string &name);
+
+	/**
+	 * Lança uma exceção
+	 * @param error Tipo do erro
+	 */
+	void throwError(ErrorType error) const;
 
 	/**
 	 * Nome da relação

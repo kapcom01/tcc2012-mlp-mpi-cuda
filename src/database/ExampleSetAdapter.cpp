@@ -1,39 +1,38 @@
 #include "database/ExampleSetAdapter.h"
-#include "database/DatabaseException.h"
 
 namespace ParallelMLP
 {
 
 //===========================================================================//
 
-void ExampleSetAdapter::prepareForSelect(connection* conn)
+void ExampleSetAdapter::prepareForSelect(connection &conn)
 {
 	try
 	{
 		// Seleção da relação de treinamento
-		conn->prepare("selectTrainedRelation",
+		conn.prepare("selectTrainedRelation",
 				"SELECT TrainedRelation FROM MLP WHERE MLPID = $1")
 				("INTEGER");
 
 		// Seleção do intervalo de valores do MLP
-		conn->prepare("selectRange",
+		conn.prepare("selectRange",
 				"SELECT LowerValue, UpperValue FROM MLP WHERE MLPID = $1")
 				("INTEGER");
 
 		// Seleção das estatísticas
-		conn->prepare("selectStatistics",
+		conn.prepare("selectStatistics",
 				"SELECT AttrIndex, Type, NominalCard, Minimum, Maximum "
 				"FROM Attribute WHERE RelationID = $1 ORDER BY AttrIndex")
 				("INTEGER");
 
 		// Selação da quantidade de instâncias
-		conn->prepare("selectSize",
+		conn.prepare("selectSize",
 				"SELECT NInstances, NAttributes FROM Relation "
 				"WHERE RelationID = $1")
 				("INTEGER");
 
 		// Selação dos dados da relação
-		conn->prepare("selectData",
+		conn.prepare("selectData",
 				"SELECT D.AttrIndex, A.Type, A.NominalCard, D.NumericValue, "
 				"D.NominalValue FROM Attribute A, Data D "
 				"WHERE A.AttrIndex = D.AttrIndex AND "
@@ -44,7 +43,7 @@ void ExampleSetAdapter::prepareForSelect(connection* conn)
 	}
 	catch (pqxx_exception &e)
 	{
-		throw DatabaseException(e);
+		throw ParallelMLPException(e.base());
 	}
 }
 
@@ -53,10 +52,8 @@ void ExampleSetAdapter::prepareForSelect(connection* conn)
 void ExampleSetAdapter::select(ExampleSet &set)
 {
 	// Cria uma nova conexão com a base de dados
-	Connection conn;
-	prepareForSelect(conn.get());
-
-	WorkPtr work = conn.getWork();
+	prepareForSelect(Connection::get());
+	work work(Connection::get());
 
 	try
 	{
@@ -70,21 +67,21 @@ void ExampleSetAdapter::select(ExampleSet &set)
 		selectStatistics(set, size, work);
 
 		// Salva as alterações
-		work->commit();
+		work.commit();
 	}
 	catch (pqxx_exception &e)
 	{
 		// Desfaz as alterações
-		work->abort();
-		throw DatabaseException(e);
+		work.abort();
+		throw ParallelMLPException(e.base());
 	}
 }
 
 //===========================================================================//
 
-Size ExampleSetAdapter::selectSize(int relationID, WorkPtr &work)
+Size ExampleSetAdapter::selectSize(int relationID, work &work)
 {
-	const result &res = work->prepared("selectSize")(relationID).exec();
+	const result &res = work.prepared("selectSize")(relationID).exec();
 	uint nInst = res[0]["NInstances"].as<uint>();
 	uint nAttr = res[0]["NAttributes"].as<uint>();
 	return { nInst, nAttr };
@@ -92,14 +89,12 @@ Size ExampleSetAdapter::selectSize(int relationID, WorkPtr &work)
 
 //===========================================================================//
 
-void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, WorkPtr &work)
+void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, work &work)
 {
-	set.setSize(size.nInst);
-
 	// Para cada instância
 	for (uint k = 0; k < size.nInst; k++)
 	{
-		const result &res = work->prepared("selectData")(set.getID())(k + 1)
+		const result &res = work.prepared("selectData")(set.getID())(k + 1)
 				.exec();
 
 		for (auto row = res.begin(); row != res.end(); row++)
@@ -124,14 +119,14 @@ void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, WorkPtr &work)
 		}
 	}
 
-	// Seta a quantidade de variáveis de entrada e saída
-	set.setVars();
+	// Seta a quantidade de instâncias
+	set.setSize(size.nInst);
 }
 
 //===========================================================================//
 
 int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
-		WorkPtr &work)
+		work &work)
 {
 	// Se for conjunto de treinamento, retorna próprio ID
 	if (set.isTraining())
@@ -139,7 +134,7 @@ int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
 	// Se for outro tipo, retorna a relação de treinamento do MLP
 	else
 	{
-		const result &res = work->prepared("selectTrainedRelation")
+		const result &res = work.prepared("selectTrainedRelation")
 				(set.getMLPID()).exec();
 		return res[0][0].as<int>();
 	}
@@ -147,16 +142,16 @@ int ExampleSetAdapter::selectTrainedRelation(ExampleSet &set,
 
 //===========================================================================//
 
-Range ExampleSetAdapter::selectRange(int mlpID, WorkPtr &work)
+Range ExampleSetAdapter::selectRange(int mlpID, work &work)
 {
-	const result &res = work->prepared("selectRange")(mlpID).exec();
+	const result &res = work.prepared("selectRange")(mlpID).exec();
 	return {res[0][0].as<float>(), res[0][1].as<float>()};
 }
 
 //===========================================================================//
 
 void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
-		WorkPtr &work)
+		work &work)
 {
 	// Seleciona a relação de treinamento
 	int trained = selectTrainedRelation(set, work);
@@ -164,7 +159,7 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
 	// Seleciona o intervalo de valores do MLP
 	Range range = selectRange(set.getMLPID(), work);
 
-	const result &res = work->prepared("selectStatistics")(trained).exec();
+	const result &res = work.prepared("selectStatistics")(trained).exec();
 
 	// Para cada tupla do resultado
 	for (auto row = res.begin(); row != res.end(); row++)
@@ -193,12 +188,12 @@ void ExampleSetAdapter::selectStatistics(ExampleSet &set, Size &size,
 
 //===========================================================================//
 
-void ExampleSetAdapter::prepareForInsert(connection* conn)
+void ExampleSetAdapter::prepareForInsert(connection &conn)
 {
 	try
 	{
 		// Inserção na tabela Operation
-		conn->prepare("insertOperation",
+		conn.prepare("insertOperation",
 				"INSERT INTO Operation (Type, MLPID, RelationID, "
 				"LearningRate, Tolerance, MaxEpochs, Error, Epochs, Time) "
 				"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
@@ -206,26 +201,26 @@ void ExampleSetAdapter::prepareForInsert(connection* conn)
 				("INTEGER")("NUMERIC")("INTEGER")("NUMERIC");
 
 		// Seleção do tipo do atributo de saída
-		conn->prepare("selectType",
+		conn.prepare("selectType",
 				"SELECT A.Type FROM Attribute A, Relation R WHERE "
 				"A.AttrIndex = R.NAttributes AND A.RelationID = $1 "
 				"AND R.RelationID = $1")
 				("INTEGER");
 
 		// Inserção na tabela Results
-		conn->prepare("insertResults",
+		conn.prepare("insertResults",
 				"INSERT INTO Result (OperationID, InstanceIndex, "
 				"NumericValue, NominalValue) VALUES ($1, $2, $3, $4)")
 				("INTEGER")("INTEGER")("NUMERIC")("SMALLINT");
 
 		// Seleção do último ID de Operation gerado
-		conn->prepare("selectLastID",
+		conn.prepare("selectLastID",
 				"SELECT currval(pg_get_serial_sequence('Operation', "
 				"'operationid'))");
 	}
 	catch (pqxx_exception &e)
 	{
-		throw DatabaseException(e);
+		throw ParallelMLPException(e.base());
 	}
 }
 
@@ -234,10 +229,8 @@ void ExampleSetAdapter::prepareForInsert(connection* conn)
 void ExampleSetAdapter::insert(const ExampleSet &set)
 {
 	// Cria uma nova conexão com a base de dados
-	Connection conn;
-	prepareForInsert(conn.get());
-
-	WorkPtr work = conn.getWork();
+	prepareForInsert(Connection::get());
+	work work(Connection::get());
 
 	try
 	{
@@ -248,35 +241,35 @@ void ExampleSetAdapter::insert(const ExampleSet &set)
 		insertResults(opID, set, work);
 
 		// Salva as alterações
-		work->commit();
+		work.commit();
 	}
 	catch (pqxx_exception &e)
 	{
 		// Desfaz as alterações
-		work->abort();
-		throw DatabaseException(e);
+		work.abort();
+		throw ParallelMLPException(e.base());
 	}
 }
 
 //===========================================================================//
 
-int ExampleSetAdapter::insertOperation(const ExampleSet &set, WorkPtr &work)
+int ExampleSetAdapter::insertOperation(const ExampleSet &set, work &work)
 {
-	work->prepared("insertOperation")(set.getType())(set.getMLPID())
+	work.prepared("insertOperation")(set.getType())(set.getMLPID())
 			(set.getID())(set.getLearning())(set.getTolerance())
 			(set.getMaxEpochs())(set.getError())(set.getEpochs())
 			(set.getTime()).exec();
 
 	// Recupera o ID gerado
-	const result &res = work->prepared("selectLastID").exec();
+	const result &res = work.prepared("selectLastID").exec();
 	return res[0][0].as<int>();
 }
 
 //===========================================================================//
 
-bool ExampleSetAdapter::selectType(const ExampleSet &set, WorkPtr &work)
+bool ExampleSetAdapter::selectType(const ExampleSet &set, work &work)
 {
-	const result &res = work->prepared("selectType")(set.getID()).exec();
+	const result &res = work.prepared("selectType")(set.getID()).exec();
 
 	// Verifica o tipo
 	return (res[0]["Type"].as<int>() == 1);
@@ -285,7 +278,7 @@ bool ExampleSetAdapter::selectType(const ExampleSet &set, WorkPtr &work)
 //===========================================================================//
 
 void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
-		WorkPtr &work)
+		work &work)
 {
 	// Para cada instância
 	for (uint i = 0; i < set.getSize(); i++)
@@ -294,14 +287,14 @@ void ExampleSetAdapter::insertResults(int opID, const ExampleSet &set,
 		if (selectType(set, work))
 		{
 			float value = set.getNumericOutput(i);
-			work->prepared("insertResults")(opID)(i + 1)(value)().exec();
+			work.prepared("insertResults")(opID)(i + 1)(value)().exec();
 		}
 
 		// Se for do tipo nominal
 		else
 		{
 			int value = set.getNominalOutput(i);
-			work->prepared("insertResults")(opID)(i + 1)()(value).exec();
+			work.prepared("insertResults")(opID)(i + 1)()(value).exec();
 		}
 	}
 }

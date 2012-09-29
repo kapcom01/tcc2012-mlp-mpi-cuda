@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ParallelMLP)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-SET(CMAKE_CXX_FLAGS "-O2 -std=c++0x")
+SET(CMAKE_CXX_FLAGS "-g -O2 -std=c++0x")
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
 FIND_PACKAGE(FLEX)
@@ -20,7 +20,7 @@ LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp)
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(pmlp src/MLPMain.cpp)
-TARGET_LINK_LIBRARIES(pmlp arff database mlp_serial mlp_cuda)
+TARGET_LINK_LIBRARIES(pmlp arff database exception mlp_serial mlp_cuda)
 
 ADD_EXECUTABLE(data src/DataMain.cpp)
-TARGET_LINK_LIBRARIES(data arff database mlp_serial mlp_cuda)
+TARGET_LINK_LIBRARIES(data arff database exception mlp_serial mlp_cuda)

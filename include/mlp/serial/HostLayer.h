@@ -2,7 +2,6 @@
 #define HOSTLAYER_H_
 
 #include "mlp/common/Layer.h"
-#include "mlp/serial/HostNeuron.h"
 
 namespace ParallelMLP
 {
@@ -26,6 +25,11 @@ public:
 	 * Destrói a camada
 	 */
 	virtual ~HostLayer();
+
+	/**
+	 * Randomiza os pesos de todas as conexões com a camada anterior
+	 */
+	void randomize();
 
 	/**
 	 * Realiza a operação de feedforward

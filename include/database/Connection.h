@@ -2,17 +2,13 @@
 #define CONNECTION_H_
 
 #include "Common.h"
+#include "exception/ParallelMLPException.h"
 #include <pqxx/pqxx>
 
 using namespace pqxx;
 
 namespace ParallelMLP
 {
-
-/**
- * Ponteiro para work
- */
-typedef shared_ptr<work> WorkPtr;
 
 /**
  * Classe que conecta na base de dados
@@ -28,7 +24,7 @@ public:
 	Connection();
 
 	/**
-	 * Destrói a conexão
+	 * Destrói a conexão com a base de dados
 	 */
 	virtual ~Connection();
 
@@ -36,22 +32,26 @@ public:
 	 * Retorna a conexão
 	 * @return Conexão
 	 */
-	connection* get();
-
-	/**
-	 * Retorna um trabalho
-	 * @return Trabalho
-	 */
-	WorkPtr getWork() const;
+	static connection& get();
 
 private:
 
 	/**
 	 * Conexão com a base de dados
 	 */
-	connection* conn;
+	connection* baseConn;
+
+	/**
+	 * Conexão estática
+	 */
+	static shared_ptr<Connection> conn;
 
 };
+
+/**
+ * Ponteiro para uma conexão
+ */
+typedef shared_ptr<Connection> ConnectionPtr;
 
 }
 

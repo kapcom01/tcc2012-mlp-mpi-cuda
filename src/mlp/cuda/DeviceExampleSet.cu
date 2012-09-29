@@ -35,12 +35,13 @@ void normalizeVec(vec_float vec, vec_stat stat, uint offset)
 //===========================================================================//
 
 __global__
-void unnormalizeVec(vec_float vec, vec_stat stat, uint offset)
+void unnormalizeVec(vec_float vec, vec_stat stat, uint offset, uint statOffset)
 {
 	int k = blockIdx.x + offset;
 	int i = threadIdx.x;
 
-	adjust(&(vec(k)[i]), &(stat(i)->to), &(stat(i)->from));
+	adjust(&(vec(k)[i]), &(stat(i + statOffset)->to),
+			&(stat(i + statOffset)->from));
 }
 
 //===========================================================================//
@@ -49,17 +50,13 @@ void DeviceExampleSet::copyToDevice()
 {
 	// Copia os dados da memória para a GPU
 	devInput = input;
-	devTarget = target;
 	devOutput = output;
-	devInStat = inStat;
-	devOutStat = outStat;
+	devStat = stat;
 
 	// Atribui os ponteiros puros
-	rawInput = vec_float(devInput, inVars);
-	rawTarget = vec_float(devTarget, outVars);
+	rawInput = vec_float(devInput, inVars + outVars);
 	rawOutput = vec_float(devOutput, outVars);
-	rawInStat = vec_stat(devInStat);
-	rawOutStat = vec_stat(devOutStat);
+	rawStat = vec_stat(devStat);
 }
 
 //===========================================================================//
@@ -68,7 +65,7 @@ void DeviceExampleSet::copyToHost()
 {
 	// Copia os dados da GPU para a memória
 	input = devInput;
-	target = devTarget;
+	output = devOutput;
 }
 
 //===========================================================================//
@@ -85,12 +82,11 @@ void DeviceExampleSet::normalize()
 	{
 		uint blocks = (size - i >= MAX_BLOCKS) ? MAX_BLOCKS : (size - i);
 
-		// Normaliza as colunas de entrada
-		normalizeVec<<<blocks, inVars>>>(rawInput, rawInStat, i);
-
-		// Normaliza as colunas de saída alvo
-		normalizeVec<<<blocks, outVars>>>(rawTarget, rawOutStat, i);
+		// Normaliza as colunas de dados
+		normalizeVec<<<blocks, inVars + outVars>>>(rawInput, rawStat, i);
 	}
+
+	copyToHost();
 
 	isNormalized = true;
 }
@@ -106,14 +102,11 @@ void DeviceExampleSet::unnormalize()
 	{
 		uint blocks = (size - i >= MAX_BLOCKS) ? MAX_BLOCKS : (size - i);
 
-		// Normaliza as colunas de entrada
-		unnormalizeVec<<<blocks, inVars>>>(rawInput, rawInStat, i);
-
-		// Normaliza as colunas de saída alvo
-		unnormalizeVec<<<blocks, outVars>>>(rawTarget, rawOutStat, i);
+		// Normaliza as colunas de dados
+		unnormalizeVec<<<blocks, inVars + outVars>>>(rawInput, rawStat, i, 0);
 
 		// Normaliza as colunas de saída da rede neural
-		unnormalizeVec<<<blocks, outVars>>>(rawOutput, rawOutStat, i);
+		unnormalizeVec<<<blocks, outVars>>>(rawOutput, rawStat, i, inVars);
 	}
 
 	// Copia os dados de volta para a memória
@@ -127,7 +120,7 @@ void DeviceExampleSet::unnormalize()
 vec_float DeviceExampleSet::getInput(uint i)
 {
 	if (isNormalized)
-		return vec_float(devInput, inVars, i);
+		return vec_float(devInput, inVars + outVars, i, inVars);
 	else
 		return ExampleSet::getInput(i);
 }
@@ -137,7 +130,7 @@ vec_float DeviceExampleSet::getInput(uint i)
 vec_float DeviceExampleSet::getTarget(uint i)
 {
 	if (isNormalized)
-		return vec_float(devTarget, outVars, i);
+		return vec_float(devInput, inVars + outVars, i, outVars, inVars);
 	else
 		return ExampleSet::getTarget(i);
 }
@@ -146,7 +139,7 @@ vec_float DeviceExampleSet::getTarget(uint i)
 
 void DeviceExampleSet::setOutput(uint i, const vec_float output)
 {
-	vec_float this_out(this->devOutput, outVars, i);
+	vec_float this_out(this->devOutput, outVars, i, outVars);
 	cudaMemcpy(this_out.data, output.data, outVars * sizeof(float),
 			cudaMemcpyDeviceToDevice);
 }

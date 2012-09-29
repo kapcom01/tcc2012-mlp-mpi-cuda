@@ -13,7 +13,8 @@ Attribute::Attribute(const string &name, AttributeType type)
 
 //===========================================================================//
 
-Attribute::Attribute(const string &name, AttributeType type, const string &format)
+Attribute::Attribute(const string &name, AttributeType type,
+		const string &format)
 {
 	this->name = name;
 	this->type = type;
@@ -22,7 +23,8 @@ Attribute::Attribute(const string &name, AttributeType type, const string &forma
 
 //===========================================================================//
 
-Attribute::Attribute(const string &name, AttributeType type, const Nominal &nominal)
+Attribute::Attribute(const string &name, AttributeType type,
+		const Nominal &nominal)
 {
 	this->name = name;
 	this->type = type;

@@ -8,7 +8,7 @@ namespace ParallelMLP
 HostMLP::HostMLP(int mlpID)
 	: MLP(mlpID)
 {
-
+	srand(time(NULL));
 }
 
 //===========================================================================//
@@ -49,6 +49,8 @@ void HostMLP::train(HostExampleSet &training)
 	// Épocas
 	for (; epoch < training.getMaxEpochs(); epoch++)
 	{
+		cout << "Epoch " << epoch << endl;
+
 		shuffleIndexes();
 		totalError = 0;
 
@@ -59,7 +61,7 @@ void HostMLP::train(HostExampleSet &training)
 
 			// Realiza o feedforward e salva os valores no conjunto
 			feedforward(training.getInput(r));
-			training.setOutput(i, output);
+			training.setOutput(r, output);
 
 			// Calcula o erro e realiza o feedback
 			calculateError(training.getTarget(r));

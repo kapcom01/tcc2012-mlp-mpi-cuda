@@ -13,7 +13,6 @@ SET(FLEX_SOURCES
 SET(SOURCES
 	Attribute.cpp
 	Driver.cpp
-	ParseException.cpp
 	Relation.cpp
 	Scanner.cpp
 	Value.cpp

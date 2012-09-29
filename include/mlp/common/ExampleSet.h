@@ -251,9 +251,9 @@ public:
 	 */
 	void setTime(float time);
 
-protected:
-
 	void print();
+
+protected:
 
 	/**
 	 * ID da relação
@@ -306,24 +306,14 @@ protected:
 	hv_float input;
 
 	/**
-	 * Dados de saída alvo para o treinamento
-	 */
-	hv_float target;
-
-	/**
 	 * Dados de saída da rede neural
 	 */
 	hv_float output;
 
 	/**
-	 * Estatísticas para cada coluna de entrada
+	 * Estatísticas para cada coluna de dados
 	 */
-	hv_stat inStat;
-
-	/**
-	 * Estatísticas para cada coluna de saída
-	 */
-	hv_stat outStat;
+	hv_stat stat;
 
 	/**
 	 * Erro cometido pela rede

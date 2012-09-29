@@ -27,21 +27,15 @@ void HostExampleSet::normalize()
 	if (isNormalized)
 		return;
 
-	Vector<float> input(this->input, inVars);
-	Vector<float> target(this->target, outVars);
-	Vector<Stat> inStat(this->inStat);
-	Vector<Stat> outStat(this->outStat);
+	Vector<float> input(this->input, inVars + outVars);
+	Vector<Stat> stat(this->stat);
 
 	// Para cada instância
 	for (uint k = 0; k < size; k++)
 	{
-		// Normaliza cada coluna de entrada
-		for (uint i = 0; i < inVars; i++)
-			adjust(&(input(k)[i]), &(inStat(i)->from), &(inStat(i)->to));
-
-		// Normaliza cada coluna de saída
-		for (uint t = 0; t < outVars; t++)
-			adjust(&(target(k)[t]), &(outStat(t)->from), &(outStat(t)->to));
+		// Normaliza cada coluna de dados
+		for (uint i = 0; i < inVars + outVars; i++)
+			adjust(&(input(k)[i]), &(stat(i)->from), &(stat(i)->to));
 	}
 
 	isNormalized = true;
@@ -54,25 +48,21 @@ void HostExampleSet::unnormalize()
 	if (!isNormalized)
 		return;
 
-	Vector<float> input(this->input, inVars);
-	Vector<float> target(this->target, outVars);
+	Vector<float> input(this->input, inVars + outVars);
 	Vector<float> output(this->output, outVars);
-	Vector<Stat> inStat(this->inStat);
-	Vector<Stat> outStat(this->outStat);
+	Vector<Stat> stat(this->stat);
 
 	// Para cada instância
 	for (uint k = 0; k < size; k++)
 	{
-		// Para cada coluna de entrada
-		for (uint i = 0; i < inVars; i++)
-			adjust(&(input(k)[i]), &(inStat(i)->to), &(inStat(i)->from));
+		// Para cada coluna de dados
+		for (uint i = 0; i < inVars + outVars; i++)
+			adjust(&(input(k)[i]), &(stat(i)->to), &(stat(i)->from));
 
-		// Para cada coluna de saída
+		// Para cada coluna de saída da rede neural
 		for (uint t = 0; t < outVars; t++)
-		{
-			adjust(&(target(k)[t]), &(outStat(t)->to), &(outStat(t)->from));
-			adjust(&(output(k)[t]), &(outStat(t)->to), &(outStat(t)->from));
-		}
+			adjust(&(output(k)[t]), &(stat(t + inVars)->to),
+					&(stat(t + inVars)->from));
 	}
 
 	isNormalized = false;

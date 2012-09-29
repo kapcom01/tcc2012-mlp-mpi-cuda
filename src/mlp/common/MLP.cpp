@@ -1,4 +1,5 @@
 #include "mlp/common/MLP.h"
+#include "exception/ParallelMLPException.h"
 
 namespace ParallelMLP
 {
@@ -45,6 +46,12 @@ void MLP::randomize()
 
 void MLP::initOperation(ExampleSet &set)
 {
+	// Verifica a quantidade de entradas e saídas
+	if (set.getInVars() != layers.front()->getInUnits())
+		throw ParallelMLPException(INVALID_INPUT_VARS);
+	else if (set.getOutVars() != layers.back()->getOutUnits())
+		throw ParallelMLPException(INVALID_OUTPUT_VARS);
+
 	// Reseta o cronômetro, o erro total e a época
 	chrono.reset();
 	totalError = 0;
@@ -72,6 +79,8 @@ void MLP::endOperation(ExampleSet &set)
 	set.setError(totalError);
 	set.setTime(chrono.getMiliseconds());
 	set.setEpochs(epoch);
+
+	cout << "totalError: " << totalError << endl;
 }
 
 //===========================================================================//

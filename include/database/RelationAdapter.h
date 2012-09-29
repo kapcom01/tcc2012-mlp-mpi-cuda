@@ -30,7 +30,7 @@ private:
 	 * Prepara a conexão para operações de inserção
 	 * @param conn Conexão
 	 */
-	static void prepareForInsert(connection* conn);
+	static void prepareForInsert(connection &conn);
 
 	/**
 	 * Verifica se o nome da relação já existe anteriormente
@@ -38,7 +38,7 @@ private:
 	 * @param work Trabalho
 	 * @return Verdadeiro se não existir ou falso caso contrário
 	 */
-	static bool checkUnique(const string &name, WorkPtr &work);
+	static bool checkUnique(const string &name, work &work);
 
 	/**
 	 * Insere as informações da relação
@@ -46,7 +46,7 @@ private:
 	 * @param work Trabalho
 	 * @return ID gerado
 	 */
-	static int insertRelation(const Relation &relation, WorkPtr &work);
+	static int insertRelation(const Relation &relation, work &work);
 
 	/**
 	 * Insere um atributo
@@ -56,7 +56,7 @@ private:
 	 * @param work Trabalho
 	 */
 	static void insertAttribute(int relationID, uint attrIndex,
-			const Attribute &attr, WorkPtr &work);
+			const Attribute &attr, work &work);
 
 	/**
 	 * Insere uma instância
@@ -66,7 +66,7 @@ private:
 	 * @param work Trabalho
 	 */
 	static void insertInstance(int relationID, uint instIndex,
-			const Instance &inst, WorkPtr &work);
+			const Instance &inst, work &work);
 
 	/**
 	 * Adiciona estatísticas sobre um atributo
@@ -76,7 +76,7 @@ private:
 	 * @param work Trabalho
 	 */
 	static void addStatistics(int relationID, uint attrIndex,
-			const Attribute &attr, WorkPtr &work);
+			const Attribute &attr, work &work);
 
 };
 

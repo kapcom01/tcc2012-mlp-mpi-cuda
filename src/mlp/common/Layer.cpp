@@ -6,29 +6,18 @@ namespace ParallelMLP
 //===========================================================================//
 
 Layer::Layer(uint inUnits, uint outUnits)
+	: weights(outUnits * (inUnits + 1)), gradient(outUnits),
+	  funcSignal(outUnits), errorSignal(inUnits)
 {
 	this->inUnits = inUnits;
 	this->outUnits = outUnits;
-
-	// Aloca os vetores de saída, de feedback e de erro
-	funcSignal.resize(outUnits);
-	errorSignal.resize(inUnits);
 }
 
 //===========================================================================//
 
 Layer::~Layer()
 {
-	for (uint i = 0; i < neurons.size(); i++)
-		delete neurons[i];
-}
 
-//===========================================================================//
-
-void Layer::randomize()
-{
-	for (uint n = 0; n < outUnits; n++)
-		neurons[n]->randomize();
 }
 
 //===========================================================================//
@@ -63,14 +52,14 @@ uint Layer::getOutUnits() const
 
 float Layer::getWeight(uint n, uint i) const
 {
-	return neurons[n]->getWeight(i);
+	return weights[n * inUnits + i];
 }
 
 //===========================================================================//
 
 void Layer::setWeight(uint n, uint i, float weight)
 {
-	neurons[n]->setWeight(i, weight);
+	weights[n * inUnits + i] = weight;
 }
 
 //===========================================================================//
