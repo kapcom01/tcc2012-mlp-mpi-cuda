@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
     	cout << "Reading example set" << endl;
 
-		DeviceExampleSet exampleSet(relationID, mlpID, TRAINING);
+		HostExampleSet exampleSet(relationID, mlpID, TRAINING);
 		ExampleSetAdapter::select(exampleSet);
 		exampleSet.setLearning(0.4);
 		exampleSet.setMaxEpochs(1000000);

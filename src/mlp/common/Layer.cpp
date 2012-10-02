@@ -6,8 +6,7 @@ namespace ParallelMLP
 //===========================================================================//
 
 Layer::Layer(uint inUnits, uint outUnits)
-	: weights(outUnits * (inUnits + 1)), gradient(outUnits),
-	  funcSignal(outUnits), errorSignal(inUnits)
+	: weights(outUnits * (inUnits + 1))
 {
 	this->inUnits = inUnits;
 	this->outUnits = outUnits;
@@ -18,20 +17,6 @@ Layer::Layer(uint inUnits, uint outUnits)
 Layer::~Layer()
 {
 
-}
-
-//===========================================================================//
-
-vec_float Layer::getFuncSignal()
-{
-	return vec_float(funcSignal);
-}
-
-//===========================================================================//
-
-vec_float Layer::getErrorSignal()
-{
-	return vec_float(errorSignal);
 }
 
 //===========================================================================//
@@ -60,6 +45,20 @@ float Layer::getWeight(uint n, uint i) const
 void Layer::setWeight(uint n, uint i, float weight)
 {
 	weights[n * inUnits + i] = weight;
+}
+
+//===========================================================================//
+
+vec_float Layer::getFuncSignal()
+{
+	return rawFuncSignal;
+}
+
+//===========================================================================//
+
+vec_float Layer::getErrorSignal()
+{
+	return rawErrorSignal;
 }
 
 //===========================================================================//

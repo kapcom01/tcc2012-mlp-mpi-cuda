@@ -12,7 +12,8 @@ float derivate(float y);
 //===========================================================================//
 
 HostLayer::HostLayer(uint inUnits, uint outUnits)
-	: Layer(inUnits, outUnits)
+	: Layer(inUnits, outUnits), gradient(outUnits), funcSignal(outUnits),
+	  errorSignal(inUnits)
 {
 
 }
@@ -35,21 +36,36 @@ void HostLayer::randomize()
 
 //===========================================================================//
 
+void HostLayer::initOperation()
+{
+	rawWeights = vec_float(weights, inUnits + 1);
+	rawFuncSignal = vec_float(funcSignal);
+	rawErrorSignal = vec_float(errorSignal);
+}
+
+//===========================================================================//
+
+void HostLayer::endOperation()
+{
+
+}
+
+//===========================================================================//
+
 void HostLayer::feedforward(const vec_float input)
 {
 	this->input = input;
-	vec_float w(weights, inUnits);
 
 	// Inicializa o sinal funcional
-	thrust::fill(funcSignal.begin(), funcSignal.end(), 0);
+	rawFuncSignal.hostClear();
 
 	// Executa a ativação de cada neurônio
 	for (uint n = 0; n < outUnits; n++)
 	{
 		// Calcula o sinal funcional
 		for (uint i = 0; i < inUnits; i++)
-			funcSignal[n] += input[i] * w(n)[i];
-		funcSignal[n] += w(n)[inUnits];
+			funcSignal[n] += input[i] * rawWeights(n)[i];
+		funcSignal[n] += rawWeights(n)[inUnits];
 
 		// Ativa a saída
 		funcSignal[n] = activate(funcSignal[n]);
@@ -60,10 +76,8 @@ void HostLayer::feedforward(const vec_float input)
 
 void HostLayer::feedback(const vec_float signal, float learning)
 {
-	vec_float w(weights, inUnits);
-
 	// Inicializa o sinal funcional
-	thrust::fill(errorSignal.begin(), errorSignal.end(), 0);
+	rawErrorSignal.hostClear();
 
 	// Atualiza os pesos de cada neurônio
 	for (uint n = 0; n < outUnits; n++)
@@ -74,10 +88,10 @@ void HostLayer::feedback(const vec_float signal, float learning)
 		// Atualiza o peso e calcula o sinal de erro
 		for (uint i = 0; i < inUnits; i++)
 		{
-			w(n)[i] += learning * gradient[n] * input[i];
-			errorSignal[i] += gradient[n] * w(n)[i];
+			rawWeights(n)[i] += learning * gradient[n] * input[i];
+			errorSignal[i] += gradient[n] * rawWeights(n)[i];
 		}
-		w(n)[inUnits] += learning * gradient[n];
+		rawWeights(n)[inUnits] += learning * gradient[n];
 	}
 }
 

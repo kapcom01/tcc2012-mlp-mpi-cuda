@@ -122,10 +122,28 @@ protected:
 	void endOperation(ExampleSet &set);
 
 	/**
+	 * Treina a rede neural
+	 * @param training Conjunto de treinamento
+	 */
+	void train(ExampleSet &training);
+
+	/**
+	 * Valida a rede neural
+	 * @param validation Conjunto de validação
+	 */
+	void validate(ExampleSet &validation);
+
+	/**
+	 * Testa a rede neural
+	 * @param test Conjunto de testes
+	 */
+	void test(ExampleSet &test);
+
+	/**
 	 * Calcula o erro cometido pela rede
 	 * @param target Saída alvo
 	 */
-	void calculateError(const vec_float target);
+	virtual void calculateError(const vec_float target) = 0;
 
 	/**
 	 * Realiza o feedforward
@@ -183,7 +201,7 @@ protected:
 	/**
 	 * Erro cometido pela rede
 	 */
-	hv_float error;
+	vec_float rawError;
 
 	/**
 	 * Erro total

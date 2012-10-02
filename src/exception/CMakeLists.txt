@@ -1,0 +1,9 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(ParallelMLP)
+
+SET(SOURCES
+	ParallelMLPException.cpp
+)
+
+ADD_LIBRARY(exception ${SOURCES})

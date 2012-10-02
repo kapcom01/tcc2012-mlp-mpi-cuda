@@ -1,17 +1,19 @@
-#ifndef HOSTMLP_H_
-#define HOSTMLP_H_
+#ifndef DEVICEMLP_H_
+#define DEVICEMLP_H_
 
 #include "mlp/common/MLP.h"
-#include "mlp/serial/HostLayer.h"
-#include "mlp/serial/HostExampleSet.h"
+#include "mlp/cuda/DeviceLayer.h"
+#include "mlp/cuda/DeviceExampleSet.h"
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/reduce.h>
 
 namespace ParallelMLP
 {
 
 /**
- * Classe que representa um Multi-Layer Perceptron na CPU
+ * Classe que representa um Multi-Layer Perceptron na GPU
  */
-class HostMLP : public MLP
+class DeviceMLP : public MLP
 {
 
 public:
@@ -20,19 +22,19 @@ public:
 	 * Constrói um MLP que será recuperado
 	 * @param mlpID ID da rede
 	 */
-	HostMLP(int mlpID);
+	DeviceMLP(int mlpID);
 
 	/**
 	 * Constrói um MLP não treinado
 	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	HostMLP(string name, vector<uint> &units);
+	DeviceMLP(string name, vector<uint> &units);
 
 	/**
 	 * Destrói o MLP
 	 */
-	virtual ~HostMLP();
+	virtual ~DeviceMLP();
 
 	/**
 	 * Adiciona uma nova camada
@@ -45,19 +47,19 @@ public:
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(HostExampleSet &training);
+	void train(DeviceExampleSet &training);
 
 	/**
 	 * Valida a rede neural
 	 * @param validation Conjunto de validação
 	 */
-	void validate(HostExampleSet &validation);
+	void validate(DeviceExampleSet &validation);
 
 	/**
 	 * Testa a rede neural
 	 * @param test Conjunto de testes
 	 */
-	void test(HostExampleSet &test);
+	void test(DeviceExampleSet &test);
 
 	/**
 	 * Linka a saída da última camada como a saída da rede
@@ -75,7 +77,7 @@ protected:
 	/**
 	 * Erro cometido pela rede neural
 	 */
-	hv_float error;
+	dv_float error;
 
 };
 
