@@ -32,16 +32,6 @@ public:
 	virtual ~DeviceExampleSet();
 
 	/**
-	 * Copia os dados da memória da CPU para a memória da GPU
-	 */
-	void copyToDevice();
-
-	/**
-	 * Copia os dados da memória da GPU para a memória da CPU
-	 */
-	void copyToHost();
-
-	/**
 	 * Normaliza as entradas e saídas alvo do conjunto de dados
 	 */
 	void normalize();
@@ -69,9 +59,19 @@ public:
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	void setOutput(uint i, const vec_float output);
+	void setOutput(uint i, vec_float output);
 
-private:
+protected:
+
+	/**
+	 * Copia os dados da memória da CPU para a memória da GPU
+	 */
+	void copyToDevice();
+
+	/**
+	 * Copia os dados da memória da GPU para a memória da CPU
+	 */
+	void copyToHost();
 
 	/**
 	 * Dados de entrada do treinamento

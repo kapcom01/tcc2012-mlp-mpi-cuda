@@ -4,7 +4,7 @@ namespace ParallelMLP
 {
 
 __host__ __device__
-void adjust(float* x, const Range* from, const Range* to);
+void adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
@@ -19,29 +19,6 @@ DeviceExampleSet::DeviceExampleSet(int relationID, int mlpID, SetType type)
 DeviceExampleSet::~DeviceExampleSet()
 {
 
-}
-
-//===========================================================================//
-
-__global__
-void normalizeVec(vec_float vec, vec_stat stat, uint offset)
-{
-	int k = blockIdx.x + offset;
-	int i = threadIdx.x;
-
-	adjust(&(vec(k)[i]), &(stat(i)->from), &(stat(i)->to));
-}
-
-//===========================================================================//
-
-__global__
-void unnormalizeVec(vec_float vec, vec_stat stat, uint offset, uint statOffset)
-{
-	int k = blockIdx.x + offset;
-	int i = threadIdx.x;
-
-	adjust(&(vec(k)[i]), &(stat(i + statOffset)->to),
-			&(stat(i + statOffset)->from));
 }
 
 //===========================================================================//
@@ -70,6 +47,17 @@ void DeviceExampleSet::copyToHost()
 
 //===========================================================================//
 
+__global__
+void normalizeVec(vec_float vec, vec_stat stat, uint offset)
+{
+	int k = blockIdx.x + offset;
+	int i = threadIdx.x;
+
+	adjust(vec(k)[i], stat(i)->from, stat(i)->to);
+}
+
+//===========================================================================//
+
 void DeviceExampleSet::normalize()
 {
 	if (isNormalized)
@@ -89,6 +77,17 @@ void DeviceExampleSet::normalize()
 	copyToHost();
 
 	isNormalized = true;
+}
+
+//===========================================================================//
+
+__global__
+void unnormalizeVec(vec_float vec, vec_stat stat, uint offset, uint statOffset)
+{
+	int k = blockIdx.x + offset;
+	int i = threadIdx.x;
+
+	adjust(vec(k)[i], stat(i + statOffset)->to, stat(i + statOffset)->from);
 }
 
 //===========================================================================//
@@ -137,20 +136,20 @@ vec_float DeviceExampleSet::getTarget(uint i)
 
 //===========================================================================//
 
-void DeviceExampleSet::setOutput(uint i, const vec_float output)
+void DeviceExampleSet::setOutput(uint i, vec_float output)
 {
+
 	vec_float this_out(this->devOutput, outVars, i, outVars);
-	cudaMemcpy(this_out.data, output.data, outVars * sizeof(float),
-			cudaMemcpyDeviceToDevice);
+	this_out.deviceCopyTo(output);
 }
 
 //===========================================================================//
 
 __host__ __device__
-void adjust(float* x, const Range* from, const Range* to)
+void adjust(float &x, const Range &from, const Range &to)
 {
-	*x = (to->upper - to->lower) / (from->upper - from->lower)
-			* (*x - from->lower) + to->lower;
+	x = (to.upper - to.lower) / (from.upper - from.lower)
+			* (x - from.lower) + to.lower;
 }
 
 //===========================================================================//

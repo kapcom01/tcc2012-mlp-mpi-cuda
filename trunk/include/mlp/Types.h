@@ -4,6 +4,7 @@
 #include "Common.h"
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <curand_kernel.h>
 
 using namespace thrust;
 
@@ -61,6 +62,11 @@ typedef host_vector<Stat> hv_stat;
  * Vetor de estatísticas na GPU
  */
 typedef device_vector<Stat> dv_stat;
+
+/**
+ * Vetor de estados para geração de números aleatórios
+ */
+typedef device_vector<curandState> dv_rand;
 
 }
 

@@ -1,5 +1,5 @@
-#ifndef HOSTLAYER_H_
-#define HOSTLAYER_H_
+#ifndef DEVICELAYER_H_
+#define DEVICELAYER_H_
 
 #include "mlp/common/Layer.h"
 
@@ -7,9 +7,9 @@ namespace ParallelMLP
 {
 
 /**
- * Classe que representa uma camada da rede MLP na CPU
+ * Classe que representa uma camada da rede MLP na GPU
  */
-class HostLayer : public Layer
+class DeviceLayer : public Layer
 {
 
 public:
@@ -19,12 +19,12 @@ public:
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnits Número de neurônios na camada atual
 	 */
-	HostLayer(uint inUnits, uint outUnits);
+	DeviceLayer(uint inUnits, uint outUnits);
 
 	/**
 	 * Destrói a camada
 	 */
-	virtual ~HostLayer();
+	virtual ~DeviceLayer();
 
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
@@ -57,24 +57,54 @@ public:
 protected:
 
 	/**
-	 * Vetor puro de pesos
+	 * Copia os dados da memória da CPU para a memória da GPU
+	 */
+	void copyToDevice();
+
+	/**
+	 * Copia os dados da memória da GPU para a memória da CPU
+	 */
+	void copyToHost();
+
+	/**
+	 * Pesos de conexão entre os neurônios e as entradas
+	 */
+	dv_float devWeights;
+
+	/**
+	 * Vetor puro de pesos e seu tamanho
 	 */
 	vec_float rawWeights;
 
 	/**
 	 * Gradiente dos neurônios
 	 */
-	hv_float gradient;
+	dv_float devGradient;
+
+	/**
+	 * Vetor puro do gradiente e seu tamanho
+	 */
+	vec_float rawGradient;
 
 	/**
 	 * Sinal funcional dos neurônios
 	 */
-	hv_float funcSignal;
+	dv_float devFuncSignal;
 
 	/**
 	 * Sinal de erro
 	 */
-	hv_float errorSignal;
+	dv_float devErrorSignal;
+
+	/**
+	 * Estados para geração de números aleatórios
+	 */
+	dv_rand devState;
+
+	/**
+	 * Vetor puro de estados e seu tamanho
+	 */
+	vec_rand rawState;
 
 };
 

@@ -27,19 +27,6 @@ public:
 	}
 
 	/**
-	 * Constrói a partir de um vector
-	 * @param vector Vetor localizado na memória da máquina
-	 * @param step Tamanho do passo considerando o vetor como uma matriz
-	 */
-	__host__
-	inline Vector(vector<T> &vector, uint step = 1)
-	{
-		data = &(vector[0]);
-		vsize = vector.size();
-		this->vstep = step;
-	}
-
-	/**
 	 * Constrói a partir de um host_vector
 	 * @param vector Vetor localizado na memória da máquina
 	 * @param step Tamanho do passo considerando o vetor como uma matriz
@@ -143,9 +130,48 @@ public:
 	 * @return i-ésimo elemento do vetor
 	 */
 	__host__ __device__
-	inline T operator [](uint i) const
+	inline T& operator [](uint i) const
 	{
 		return data[i];
+	}
+
+	/**
+	 * Limpa o vetor localizado na memória da CPU
+	 */
+	__host__
+	inline void hostClear()
+	{
+		memset(data, 0, vsize * sizeof(T));
+	}
+
+	/**
+	 * Limpa o vetor localizado na memória da CPU
+	 */
+	__host__
+	inline void deviceClear()
+	{
+		cudaMemset(data, 0, vsize * sizeof(T));
+	}
+
+	/**
+	 * Copia os dados do vetor para um outro localizado na CPU
+	 * @param vec Vetor que terão os dados recebidos
+	 */
+	__host__
+	inline void hostCopyTo(Vector<T> &vec)
+	{
+		memcpy(data, vec.data, vsize * sizeof(T));
+	}
+
+	/**
+	 * Copia os dados do vetor para um outro localizado na GPU
+	 * @param vec Vetor que terão os dados recebidos
+	 */
+	__host__
+	inline void deviceCopyTo(Vector<T> &vec)
+	{
+		cudaMemcpy(data, vec.data, vsize * sizeof(T),
+				cudaMemcpyDeviceToDevice);
 	}
 
 	/**
@@ -176,6 +202,11 @@ typedef Vector<float> vec_float;
  * Vetor de Stat
  */
 typedef Vector<Stat> vec_stat;
+
+/**
+ * Vetor de estados para geração de números aleatórios
+ */
+typedef Vector<curandState> vec_rand;
 
 }
 

@@ -66,12 +66,20 @@ void MLP::initOperation(ExampleSet &set)
 		randomize();
 		initIndexes(set.getSize());
 	}
+
+	// Avisa as camadas para se prepararem para a operação
+	for (uint i = 0; i < layers.size(); i++)
+		layers[i]->initOperation();
 }
 
 //===========================================================================//
 
 void MLP::endOperation(ExampleSet &set)
 {
+	// Avisa as camadas para se finalizarem a operação
+	for (uint i = 0; i < layers.size(); i++)
+		layers[i]->endOperation();
+
 	// Desnormaliza o conjunto de dados
 	set.unnormalize();
 
@@ -85,13 +93,83 @@ void MLP::endOperation(ExampleSet &set)
 
 //===========================================================================//
 
-void MLP::calculateError(const vec_float target)
+void MLP::train(ExampleSet &training)
 {
-	for (uint i = 0; i < error.size(); i++)
+	// Inicializa a operação
+	initOperation(training);
+
+	// Épocas
+	for (; epoch < training.getMaxEpochs(); epoch++)
 	{
-		error[i] = target[i] - output[i];
-		totalError += error[i] * error[i];
+		cout << "Epoch " << epoch << endl;
+
+		shuffleIndexes();
+		totalError = 0;
+
+		// Para cada entrada
+		for (uint i = 0; i < training.getSize(); i++)
+		{
+			uint r = indexes[i];
+
+			// Realiza o feedforward e salva os valores no conjunto
+			feedforward(training.getInput(r));
+			training.setOutput(r, output);
+
+			// Calcula o erro e realiza o feedback
+			calculateError(training.getTarget(r));
+			feedback(training.getLearning());
+		}
+
+		totalError /= training.getSize() * training.getOutVars();
+
+		// Condição de parada: erro menor do que um valor tolerado
+		if (totalError < training.getTolerance())
+			break;
 	}
+
+	// Finaliza a operação
+	endOperation(training);
+}
+
+//===========================================================================//
+
+void MLP::validate(ExampleSet &validation)
+{
+	// Inicializa a operação
+	initOperation(validation);
+
+	// Para cada entrada
+	for (uint i = 0; i < validation.getSize(); i++)
+	{
+		// Realiza o feedforward e salva os valores no conjunto
+		feedforward(validation.getInput(i));
+		validation.setOutput(i, output);
+
+		// Calcula o erro
+		calculateError(validation.getTarget(i));
+	}
+
+	// Finaliza a operação
+	endOperation(validation);
+}
+
+//===========================================================================//
+
+void MLP::test(ExampleSet &test)
+{
+	// Inicializa a operação
+	initOperation(test);
+
+	// Para cada entrada
+	for (uint i = 0; i < test.getSize(); i++)
+	{
+		// Realiza o feedforward e salva os valores no conjunto
+		feedforward(test.getInput(i));
+		test.setOutput(i, output);
+	}
+
+	// Finaliza a operação
+	endOperation(test);
 }
 
 //===========================================================================//
@@ -111,7 +189,7 @@ void MLP::feedforward(const vec_float input)
 void MLP::feedback(float learning)
 {
 	// Propaga os erros na camada de saída
-	layers.back()->feedback(error, learning);
+	layers.back()->feedback(rawError, learning);
 
 	// Propaga o sinal de erro para o restante das camadas
 	for (int i = layers.size() - 2; i >= 0; i--)
@@ -208,7 +286,6 @@ void MLP::setOutput()
 {
 	Layer *last = layers.back();
 	output = last->getFuncSignal();
-	error.resize(last->getOutUnits());
 }
 
 //===========================================================================//

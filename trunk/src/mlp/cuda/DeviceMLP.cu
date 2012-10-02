@@ -1,11 +1,11 @@
-#include "mlp/serial/HostMLP.h"
+#include "mlp/cuda/DeviceMLP.h"
 
 namespace ParallelMLP
 {
 
 //===========================================================================//
 
-HostMLP::HostMLP(int mlpID)
+DeviceMLP::DeviceMLP(int mlpID)
 	: MLP(mlpID)
 {
 	srand(time(NULL));
@@ -13,7 +13,7 @@ HostMLP::HostMLP(int mlpID)
 
 //===========================================================================//
 
-HostMLP::HostMLP(string name, vector<uint> &units)
+DeviceMLP::DeviceMLP(string name, vector<uint> &units)
 	: MLP(name, units)
 {
 	// Adiciona as camadas escondidas e a camada de saída
@@ -27,53 +27,76 @@ HostMLP::HostMLP(string name, vector<uint> &units)
 
 //===========================================================================//
 
-HostMLP::~HostMLP()
+DeviceMLP::~DeviceMLP()
 {
 
 }
 
 //===========================================================================//
 
-void HostMLP::addLayer(uint inUnits, uint outUnits)
+void DeviceMLP::addLayer(uint inUnits, uint outUnits)
 {
-	layers.push_back(new HostLayer(inUnits, outUnits));
+	layers.push_back(new DeviceLayer(inUnits, outUnits));
 }
 
 //===========================================================================//
 
-void HostMLP::train(HostExampleSet &training)
+void DeviceMLP::train(DeviceExampleSet &training)
 {
 	MLP::train(training);
 }
 
 //===========================================================================//
 
-void HostMLP::validate(HostExampleSet &validation)
+void DeviceMLP::validate(DeviceExampleSet &validation)
 {
 	MLP::validate(validation);
 }
 
 //===========================================================================//
 
-void HostMLP::test(HostExampleSet &test)
+void DeviceMLP::test(DeviceExampleSet &test)
 {
 	MLP::test(test);
 }
 
 //===========================================================================//
 
-void HostMLP::calculateError(const vec_float target)
+__global__
+void calculateDiff(vec_float error, vec_float target, vec_float output)
 {
-	for (uint i = 0; i < error.size(); i++)
-	{
-		error[i] = target[i] - output[i];
-		totalError += error[i] * error[i];
-	}
+	int n = blockIdx.x;
+
+	error[n] = target[n] - output[n];
 }
 
 //===========================================================================//
 
-void HostMLP::setOutput()
+struct square : public thrust::unary_function<float, float>
+{
+	__host__ __device__
+	float operator()(float x) const
+	{
+		return x * x;
+	}
+};
+
+//===========================================================================//
+
+void DeviceMLP::calculateError(const vec_float target)
+{
+	// Calcula a diferença da saída alvo com a saída gerada
+	calculateDiff<<<error.size(), 1>>>(rawError, target, output);
+
+	// Calcula o erro total
+	float totalError = thrust::reduce(
+			thrust::make_transform_iterator(error.begin(), square()),
+			thrust::make_transform_iterator(error.end(), square()));
+}
+
+//===========================================================================//
+
+void DeviceMLP::setOutput()
 {
 	MLP::setOutput();
 

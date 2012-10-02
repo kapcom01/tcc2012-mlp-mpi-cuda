@@ -4,10 +4,11 @@ PROJECT(ParallelMLP)
 
 SET(SOURCES
 	DeviceExampleSet.cu
+	DeviceLayer.cu
 )
 
-SET(CMAKE_CXX_FLAGS "-O2")
-SET(CUDA_NVCC_FLAGS)
+SET(CMAKE_CXX_FLAGS "-O2 ")
+SET(CUDA_NVCC_FLAGS "-arch=compute_20")
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)
 

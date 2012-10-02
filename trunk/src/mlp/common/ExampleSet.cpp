@@ -191,10 +191,10 @@ int ExampleSet::getNominalOutput(uint k) const
 
 //===========================================================================//
 
-void ExampleSet::setOutput(uint i, const vec_float output)
+void ExampleSet::setOutput(uint i, vec_float output)
 {
 	vec_float this_out(this->output, outVars, i, outVars);
-	memcpy(this_out.data, output.data, outVars * sizeof(float));
+	this_out.hostCopyTo(output);
 }
 
 //===========================================================================//

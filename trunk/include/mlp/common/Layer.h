@@ -32,6 +32,16 @@ public:
 	virtual void randomize() = 0;
 
 	/**
+	 * Inicia uma operação
+	 */
+	virtual void initOperation() = 0;
+
+	/**
+	 * Finaliza uma operação
+	 */
+	virtual void endOperation() = 0;
+
+	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
@@ -43,18 +53,6 @@ public:
 	 * @param learning Taxa de aprendizado
 	 */
 	virtual void feedback(const vec_float signal, float learning) = 0;
-
-	/**
-	 * Retorna o sinal funcional
-	 * @return Sinal funcional
-	 */
-	vec_float getFuncSignal();
-
-	/**
-	 * Retorna o sinal de erro
-	 * @return Sinal de erro
-	 */
-	vec_float getErrorSignal();
 
 	/**
 	 * Retorna a quantidade de entradas
@@ -84,6 +82,18 @@ public:
 	 */
 	void setWeight(uint n, uint i, float weight);
 
+	/**
+	 * Retorna o sinal funcional
+	 * @return Sinal funcional
+	 */
+	vec_float getFuncSignal();
+
+	/**
+	 * Retorna o sinal de erro
+	 * @return Sinal de erro
+	 */
+	vec_float getErrorSignal();
+
 protected:
 
 	/**
@@ -107,19 +117,14 @@ protected:
 	hv_float weights;
 
 	/**
-	 * Gradiente dos neurônios
+	 * Vetor puro do sinal funcional e seu tamanho
 	 */
-	hv_float gradient;
+	vec_float rawFuncSignal;
 
 	/**
-	 * Sinal funcional dos neurônios
+	 * Vetor puro do sinal de erro e seu tamanho
 	 */
-	hv_float funcSignal;
-
-	/**
-	 * Sinal de erro
-	 */
-	hv_float errorSignal;
+	vec_float rawErrorSignal;
 
 };
 

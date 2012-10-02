@@ -3,7 +3,7 @@
 namespace ParallelMLP
 {
 
-void adjust(float* x, const Range* from, const Range* to);
+void adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
@@ -35,7 +35,7 @@ void HostExampleSet::normalize()
 	{
 		// Normaliza cada coluna de dados
 		for (uint i = 0; i < inVars + outVars; i++)
-			adjust(&(input(k)[i]), &(stat(i)->from), &(stat(i)->to));
+			adjust(input(k)[i], stat(i)->from, stat(i)->to);
 	}
 
 	isNormalized = true;
@@ -57,12 +57,11 @@ void HostExampleSet::unnormalize()
 	{
 		// Para cada coluna de dados
 		for (uint i = 0; i < inVars + outVars; i++)
-			adjust(&(input(k)[i]), &(stat(i)->to), &(stat(i)->from));
+			adjust(input(k)[i], stat(i)->to, stat(i)->from);
 
 		// Para cada coluna de saída da rede neural
 		for (uint t = 0; t < outVars; t++)
-			adjust(&(output(k)[t]), &(stat(t + inVars)->to),
-					&(stat(t + inVars)->from));
+			adjust(output(k)[t], stat(t + inVars)->to, stat(t + inVars)->from);
 	}
 
 	isNormalized = false;
@@ -70,10 +69,10 @@ void HostExampleSet::unnormalize()
 
 //===========================================================================//
 
-void adjust(float* x, const Range* from, const Range* to)
+void adjust(float &x, const Range &from, const Range &to)
 {
-	*x = (to->upper - to->lower) / (from->upper - from->lower)
-			* (*x - from->lower) + to->lower;
+	x = (to.upper - to.lower) / (from.upper - from.lower)
+			* (x - from.lower) + to.lower;
 }
 
 //===========================================================================//
