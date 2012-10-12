@@ -3,11 +3,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ParallelMLP)
 
 SET(SOURCES
+    BalanceInfo.cpp
 	RemoteExampleSet.cpp
 	RemoteLayer.cpp
 	RemoteMLP.cpp
 	RemoteOutLayer.cpp
-	RemoteUtils.cpp
 )
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)

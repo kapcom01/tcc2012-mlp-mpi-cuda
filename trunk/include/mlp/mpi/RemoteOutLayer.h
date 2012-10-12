@@ -2,7 +2,9 @@
 #define REMOTEOUTLAYER_H_
 
 #include "mlp/serial/HostOutLayer.h"
-#include "mlp/mpi/RemoteUtils.h"
+#include <mpi.h>
+
+using namespace MPI;
 
 namespace ParallelMLP
 {

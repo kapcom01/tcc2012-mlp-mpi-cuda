@@ -21,7 +21,19 @@ HostOutLayer::HostOutLayer(uint inUnits, uint outUnits)
 
 void HostOutLayer::init(uint inUnits, uint outUnits)
 {
-	HostLayer::init(inUnits, outUnits);
+	this->inUnits = inUnits;
+	this->outUnits = outUnits;
+
+	weights.resize(outUnits * (inUnits + 1));
+
+	gradient.resize(outUnits);
+	funcSignal.resize(outUnits);
+	errorSignal.resize(inUnits);
+
+	rawWeights = vec_float(weights, inUnits + 1);
+	rawFuncSignal = vec_float(funcSignal);
+	rawErrorSignal = vec_float(errorSignal);
+
 	error.resize(outUnits);
 	rawError = vec_float(error);
 }

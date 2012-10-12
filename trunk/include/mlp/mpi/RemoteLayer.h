@@ -2,7 +2,10 @@
 #define REMOTELAYER_H_
 
 #include "mlp/serial/HostLayer.h"
-#include "mlp/mpi/RemoteUtils.h"
+#include "mlp/mpi/BalanceInfo.h"
+#include <mpi.h>
+
+using namespace MPI;
 
 namespace ParallelMLP
 {
@@ -29,6 +32,19 @@ public:
 	 */
 	virtual ~RemoteLayer();
 
+	/**
+	 * Realiza a operação de feedforward
+	 * @param input Sinal funcional vindo da camada anterior
+	 */
+	void feedforward(const vec_float &input);
+
+	/**
+	 * Realiza a operação de feedforward
+	 * @param signal Sinal de erro vindo da camada posterior
+	 * @param learning Taxa de aprendizado
+	 */
+	void feedback(const vec_float &signal, float learning);
+
 protected:
 
 	/**
@@ -51,14 +67,9 @@ protected:
 	uint hid;
 
 	/**
-	 * Quantidade de neurônios por host
+	 * Informações do balanceamento
 	 */
-	v_int counts;
-
-	/**
-	 * Offset relativo para cada host
-	 */
-	v_int offset;
+	BalanceInfo binfo;
 
 };
 
