@@ -136,7 +136,7 @@ vec_float DeviceExampleSet::getTarget(uint i)
 
 //===========================================================================//
 
-void DeviceExampleSet::setOutput(uint i, vec_float output)
+void DeviceExampleSet::setOutput(uint i, vec_float &output)
 {
 
 	vec_float this_out(this->devOutput, outVars, i, outVars);

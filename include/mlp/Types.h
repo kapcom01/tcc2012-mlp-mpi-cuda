@@ -68,6 +68,16 @@ typedef device_vector<Stat> dv_stat;
  */
 typedef device_vector<curandState> dv_rand;
 
+/**
+ * Vetor de inteiros
+ */
+typedef vector<int> v_int;
+
+/**
+ * Vetor de inteiros sem sinal
+ */
+typedef vector<int> v_uint;
+
 }
 
 #endif

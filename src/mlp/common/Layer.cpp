@@ -5,11 +5,28 @@ namespace ParallelMLP
 
 //===========================================================================//
 
+Layer::Layer()
+{
+	srand(time(NULL));
+
+	this->inUnits = 0;
+	this->outUnits = 0;
+}
+
+//===========================================================================//
+
 Layer::Layer(uint inUnits, uint outUnits)
-	: weights(outUnits * (inUnits + 1))
+{
+	init(inUnits, outUnits);
+}
+
+//===========================================================================//
+
+void Layer::init(uint inUnits, uint outUnits)
 {
 	this->inUnits = inUnits;
 	this->outUnits = outUnits;
+	weights.resize(outUnits * (inUnits + 1));
 }
 
 //===========================================================================//
@@ -49,14 +66,14 @@ void Layer::setWeight(uint n, uint i, float weight)
 
 //===========================================================================//
 
-vec_float Layer::getFuncSignal()
+vec_float& Layer::getFuncSignal()
 {
 	return rawFuncSignal;
 }
 
 //===========================================================================//
 
-vec_float Layer::getErrorSignal()
+vec_float& Layer::getErrorSignal()
 {
 	return rawErrorSignal;
 }

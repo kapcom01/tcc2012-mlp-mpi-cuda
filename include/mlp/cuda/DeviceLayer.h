@@ -9,7 +9,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada da rede MLP na GPU
  */
-class DeviceLayer : public Layer
+class DeviceLayer : virtual public Layer
 {
 
 public:
@@ -45,16 +45,28 @@ public:
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	void feedforward(const vec_float input);
+	void feedforward(const vec_float &input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vec_float signal, float learning);
+	void feedback(const vec_float &signal, float learning);
 
 protected:
+
+	/**
+	 * Constrói uma camada vazia
+	 */
+	DeviceLayer();
+
+	/**
+	 * Inicializa uma camada
+	 * @param inUnits Número de neurônios na camada anterior
+	 * @param outUnits Número de neurônios na camada atual
+	 */
+	void init(uint inUnits, uint outUnits);
 
 	/**
 	 * Copia os dados da memória da CPU para a memória da GPU

@@ -45,14 +45,14 @@ public:
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	virtual void feedforward(const vec_float input) = 0;
+	virtual void feedforward(const vec_float &input) = 0;
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float signal, float learning) = 0;
+	virtual void feedback(const vec_float &signal, float learning) = 0;
 
 	/**
 	 * Retorna a quantidade de entradas
@@ -86,15 +86,27 @@ public:
 	 * Retorna o sinal funcional
 	 * @return Sinal funcional
 	 */
-	vec_float getFuncSignal();
+	vec_float& getFuncSignal();
 
 	/**
 	 * Retorna o sinal de erro
 	 * @return Sinal de erro
 	 */
-	vec_float getErrorSignal();
+	vec_float& getErrorSignal();
 
 protected:
+
+	/**
+	 * Constrói uma camada vazia
+	 */
+	Layer();
+
+	/**
+	 * Inicializa uma camada
+	 * @param inUnits Número de neurônios na camada anterior
+	 * @param outUnits Número de neurônios na camada atual
+	 */
+	void init(uint inUnits, uint outUnits);
 
 	/**
 	 * Número de neurônios na camada anterior

@@ -7,8 +7,9 @@ SET(SOURCES
 	ExampleSet.cpp
 	Layer.cpp
 	MLP.cpp
+	OutLayer.cpp
 )
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 ADD_LIBRARY(mlp_common ${SOURCES})
-TARGET_LINK_LIBRARIES(mlp_common ${CUDA_LIBRARIES} rt)
+TARGET_LINK_LIBRARIES(mlp_common rt)

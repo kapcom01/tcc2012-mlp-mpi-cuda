@@ -9,18 +9,20 @@ namespace ParallelMLP
 MLP::MLP(int mlpID)
 {
 	this->mlpID = mlpID;
-	this->totalError = 0;
 	this->epoch = 0;
+	this->firstLayer = NULL;
+	this->lastLayer = NULL;
 }
 
 //===========================================================================//
 
-MLP::MLP(string name, vector<uint> &units)
+MLP::MLP(string name, v_uint &units)
 {
 	this->name = name;
 	this->mlpID = -1;
-	this->totalError = 0;
 	this->epoch = 0;
+	this->firstLayer = NULL;
+	this->lastLayer = NULL;
 
 	// Intervalo da função de ativação hiperbólica
 	range.lower = -1, range.upper = 1;
@@ -36,6 +38,14 @@ MLP::~MLP()
 
 //===========================================================================//
 
+void MLP::config()
+{
+	firstLayer = layers.front();
+	lastLayer = dynamic_cast<OutLayer*>(layers.back());
+}
+
+//===========================================================================//
+
 void MLP::randomize()
 {
 	for (uint i = 0; i < layers.size(); i++)
@@ -47,14 +57,13 @@ void MLP::randomize()
 void MLP::initOperation(ExampleSet &set)
 {
 	// Verifica a quantidade de entradas e saídas
-	if (set.getInVars() != layers.front()->getInUnits())
+	if (set.getInVars() != firstLayer->getInUnits())
 		throw ParallelMLPException(INVALID_INPUT_VARS);
-	else if (set.getOutVars() != layers.back()->getOutUnits())
+	else if (set.getOutVars() != lastLayer->getOutUnits())
 		throw ParallelMLPException(INVALID_OUTPUT_VARS);
 
 	// Reseta o cronômetro, o erro total e a época
 	chrono.reset();
-	totalError = 0;
 	epoch = 0;
 
 	// Normaliza o conjunto de dados
@@ -84,11 +93,11 @@ void MLP::endOperation(ExampleSet &set)
 	set.unnormalize();
 
 	// Seta o erro e o tempo de execução da operação
-	set.setError(totalError);
+	set.setError(lastLayer->getTotalError());
 	set.setTime(chrono.getMiliseconds());
 	set.setEpochs(epoch);
 
-	cout << "totalError: " << totalError << endl;
+	cout << "totalError: " << lastLayer->getTotalError() << endl;
 }
 
 //===========================================================================//
@@ -104,7 +113,7 @@ void MLP::train(ExampleSet &training)
 		cout << "Epoch " << epoch << endl;
 
 		shuffleIndexes();
-		totalError = 0;
+		lastLayer->clearTotalError();
 
 		// Para cada entrada
 		for (uint i = 0; i < training.getSize(); i++)
@@ -113,17 +122,14 @@ void MLP::train(ExampleSet &training)
 
 			// Realiza o feedforward e salva os valores no conjunto
 			feedforward(training.getInput(r));
-			training.setOutput(r, output);
+			training.setOutput(r, lastLayer->getFuncSignal());
 
-			// Calcula o erro e realiza o feedback
-			calculateError(training.getTarget(r));
-			feedback(training.getLearning());
+			// Realiza o feedback
+			feedback(training.getTarget(r), training.getLearning());
 		}
 
-		totalError /= training.getSize() * training.getOutVars();
-
 		// Condição de parada: erro menor do que um valor tolerado
-		if (totalError < training.getTolerance())
+		if (lastLayer->getTotalError() < training.getTolerance())
 			break;
 	}
 
@@ -137,16 +143,17 @@ void MLP::validate(ExampleSet &validation)
 {
 	// Inicializa a operação
 	initOperation(validation);
+	lastLayer->clearTotalError();
 
 	// Para cada entrada
 	for (uint i = 0; i < validation.getSize(); i++)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
 		feedforward(validation.getInput(i));
-		validation.setOutput(i, output);
+		validation.setOutput(i, lastLayer->getFuncSignal());
 
-		// Calcula o erro
-		calculateError(validation.getTarget(i));
+		// Calcula o erro da rede
+		lastLayer->calculateError(validation.getTarget(i));
 	}
 
 	// Finaliza a operação
@@ -165,7 +172,7 @@ void MLP::test(ExampleSet &test)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
 		feedforward(test.getInput(i));
-		test.setOutput(i, output);
+		test.setOutput(i, lastLayer->getFuncSignal());
 	}
 
 	// Finaliza a operação
@@ -174,10 +181,10 @@ void MLP::test(ExampleSet &test)
 
 //===========================================================================//
 
-void MLP::feedforward(const vec_float input)
+void MLP::feedforward(const vec_float &input)
 {
 	// Propaga a entrada para a primeira camada escondida
-	layers.front()->feedforward(input);
+	firstLayer->feedforward(input);
 
 	// Propaga a saída da primeira camada para o restante das camadas
 	for (uint i = 1; i < layers.size(); i++)
@@ -186,10 +193,10 @@ void MLP::feedforward(const vec_float input)
 
 //===========================================================================//
 
-void MLP::feedback(float learning)
+void MLP::feedback(const vec_float &target, float learning)
 {
 	// Propaga os erros na camada de saída
-	layers.back()->feedback(rawError, learning);
+	lastLayer->feedback(target, learning);
 
 	// Propaga o sinal de erro para o restante das camadas
 	for (int i = layers.size() - 2; i >= 0; i--)
@@ -278,14 +285,6 @@ Layer& MLP::getLayer(uint i)
 const Layer& MLP::getLayer(uint i) const
 {
 	return *(layers[i]);
-}
-
-//===========================================================================//
-
-void MLP::setOutput()
-{
-	Layer *last = layers.back();
-	output = last->getFuncSignal();
 }
 
 //===========================================================================//

@@ -126,7 +126,7 @@ uint ExampleSet::getOutVars() const
 
 //===========================================================================//
 
-void ExampleSet::setVars()
+void ExampleSet::done()
 {
 	if (size * (inVars + outVars) > input.size())
 	{
@@ -147,7 +147,6 @@ uint ExampleSet::getSize() const
 void ExampleSet::setSize(uint size)
 {
 	this->size = size;
-	setVars();
 }
 
 //===========================================================================//
@@ -191,7 +190,7 @@ int ExampleSet::getNominalOutput(uint k) const
 
 //===========================================================================//
 
-void ExampleSet::setOutput(uint i, vec_float output)
+void ExampleSet::setOutput(uint i, vec_float &output)
 {
 	vec_float this_out(this->output, outVars, i, outVars);
 	this_out.hostCopyTo(output);

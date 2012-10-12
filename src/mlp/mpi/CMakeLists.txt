@@ -1,0 +1,16 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(ParallelMLP)
+
+SET(SOURCES
+	RemoteExampleSet.cpp
+	RemoteLayer.cpp
+	RemoteMLP.cpp
+	RemoteOutLayer.cpp
+	RemoteUtils.cpp
+)
+
+LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)
+
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS} ${MPI_CXX_INCLUDE_PATH})
+ADD_LIBRARY(mlp_mpi ${SOURCES} ${MPI_CXX_LIBRARIES})

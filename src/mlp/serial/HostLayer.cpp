@@ -11,11 +11,26 @@ float derivate(float y);
 
 //===========================================================================//
 
-HostLayer::HostLayer(uint inUnits, uint outUnits)
-	: Layer(inUnits, outUnits), gradient(outUnits), funcSignal(outUnits),
-	  errorSignal(inUnits)
+HostLayer::HostLayer()
 {
 
+}
+
+//===========================================================================//
+
+HostLayer::HostLayer(uint inUnits, uint outUnits)
+{
+	init(inUnits, outUnits);
+}
+
+//===========================================================================//
+
+void HostLayer::init(uint inUnits, uint outUnits)
+{
+	Layer::init(inUnits, outUnits);
+	gradient.resize(outUnits);
+	funcSignal.resize(outUnits);
+	errorSignal.resize(inUnits);
 }
 
 //===========================================================================//
@@ -52,7 +67,7 @@ void HostLayer::endOperation()
 
 //===========================================================================//
 
-void HostLayer::feedforward(const vec_float input)
+void HostLayer::feedforward(const vec_float &input)
 {
 	this->input = input;
 
@@ -74,7 +89,7 @@ void HostLayer::feedforward(const vec_float input)
 
 //===========================================================================//
 
-void HostLayer::feedback(const vec_float signal, float learning)
+void HostLayer::feedback(const vec_float &signal, float learning)
 {
 	// Inicializa o sinal funcional
 	rawErrorSignal.hostClear();

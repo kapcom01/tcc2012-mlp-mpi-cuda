@@ -1,15 +1,16 @@
-#ifndef HOSTLAYER_H_
-#define HOSTLAYER_H_
+#ifndef REMOTEOUTLAYER_H_
+#define REMOTEOUTLAYER_H_
 
-#include "mlp/common/Layer.h"
+#include "mlp/serial/HostOutLayer.h"
+#include "mlp/mpi/RemoteUtils.h"
 
 namespace ParallelMLP
 {
 
 /**
- * Classe que representa uma camada da rede MLP na CPU
+ * Classe que representa uma camada de saída da rede MLP em diversas CPUs
  */
-class HostLayer : virtual public Layer
+class RemoteOutLayer : public HostOutLayer
 {
 
 public:
@@ -18,28 +19,15 @@ public:
 	 * Constrói uma camada
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnits Número de neurônios na camada atual
+	 * @param hid ID do host
+	 * @param hosts Quantidade de hosts
 	 */
-	HostLayer(uint inUnits, uint outUnits);
+	RemoteOutLayer(uint inUnits, uint outUnits, uint hid, uint hosts);
 
 	/**
 	 * Destrói a camada
 	 */
-	virtual ~HostLayer();
-
-	/**
-	 * Randomiza os pesos de todas as conexões com a camada anterior
-	 */
-	void randomize();
-
-	/**
-	 * Inicia uma operação
-	 */
-	void initOperation();
-
-	/**
-	 * Finaliza uma operação
-	 */
-	void endOperation();
+	virtual ~RemoteOutLayer();
 
 	/**
 	 * Realiza a operação de feedforward
@@ -59,34 +47,21 @@ protected:
 	/**
 	 * Constrói uma camada vazia
 	 */
-	HostLayer();
+	RemoteOutLayer();
 
 	/**
 	 * Inicializa uma camada
 	 * @param inUnits Número de neurônios na camada anterior
 	 * @param outUnits Número de neurônios na camada atual
+	 * @param hid ID do host
+	 * @param hosts Quantidade de hosts
 	 */
-	void init(uint inUnits, uint outUnits);
+	void init(uint inUnits, uint outUnits, uint hid, uint hosts);
 
 	/**
-	 * Vetor puro de pesos
+	 * ID do host
 	 */
-	vec_float rawWeights;
-
-	/**
-	 * Gradiente dos neurônios
-	 */
-	hv_float gradient;
-
-	/**
-	 * Sinal funcional dos neurônios
-	 */
-	hv_float funcSignal;
-
-	/**
-	 * Sinal de erro
-	 */
-	hv_float errorSignal;
+	uint hid;
 
 };
 

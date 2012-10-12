@@ -2,7 +2,7 @@
 #define DEVICEMLP_H_
 
 #include "mlp/common/MLP.h"
-#include "mlp/cuda/DeviceLayer.h"
+#include "mlp/cuda/DeviceOutLayer.h"
 #include "mlp/cuda/DeviceExampleSet.h"
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/reduce.h>
@@ -29,7 +29,7 @@ public:
 	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	DeviceMLP(string name, vector<uint> &units);
+	DeviceMLP(string name, v_uint &units);
 
 	/**
 	 * Destrói o MLP
@@ -40,8 +40,9 @@ public:
 	 * Adiciona uma nova camada
 	 * @param inUnits Unidades de entrada
 	 * @param outUnits Unidades de saída
+	 * @param isOutput Indica se é uma camada de saída
 	 */
-	void addLayer(uint inUnits, uint outUnits);
+	void addLayer(uint inUnits, uint outUnits, bool isOutput);
 
 	/**
 	 * Treina a rede neural
@@ -60,24 +61,6 @@ public:
 	 * @param test Conjunto de testes
 	 */
 	void test(DeviceExampleSet &test);
-
-	/**
-	 * Linka a saída da última camada como a saída da rede
-	 */
-	void setOutput();
-
-protected:
-
-	/**
-	 * Calcula o erro cometido pela rede
-	 * @param target Saída alvo
-	 */
-	void calculateError(const vec_float target);
-
-	/**
-	 * Erro cometido pela rede neural
-	 */
-	dv_float error;
 
 };
 

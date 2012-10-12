@@ -1,7 +1,7 @@
 #ifndef MLP_H_
 #define MLP_H_
 
-#include "mlp/common/Layer.h"
+#include "mlp/common/OutLayer.h"
 #include "mlp/common/ExampleSet.h"
 #include "mlp/common/Chronometer.h"
 
@@ -27,7 +27,7 @@ public:
 	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	MLP(string name, vector<uint> &units);
+	MLP(string name, v_uint &units);
 
 	/**
 	 * Destrói o MLP
@@ -35,11 +35,17 @@ public:
 	virtual ~MLP();
 
 	/**
+	 * Realiza algumas configurações
+	 */
+	void config();
+
+	/**
 	 * Adiciona uma nova camada
 	 * @param inUnits Unidades de entrada
 	 * @param outUnits Unidades de saída
+	 * @param isOutput Indica se é uma camada de saída
 	 */
-	virtual void addLayer(uint inUnits, uint outUnits) = 0;
+	virtual void addLayer(uint inUnits, uint outUnits, bool isOutput) = 0;
 
 	/**
 	 * Randomiza os pesos das conexões
@@ -102,11 +108,6 @@ public:
 	 */
 	const Layer& getLayer(uint i) const;
 
-	/**
-	 * Linka a saída da última camada como a saída da rede
-	 */
-	void setOutput();
-
 protected:
 
 	/**
@@ -140,22 +141,16 @@ protected:
 	void test(ExampleSet &test);
 
 	/**
-	 * Calcula o erro cometido pela rede
-	 * @param target Saída alvo
-	 */
-	virtual void calculateError(const vec_float target) = 0;
-
-	/**
 	 * Realiza o feedforward
 	 * @param input Dados de entrada
 	 */
-	void feedforward(const vec_float input);
+	void feedforward(const vec_float &input);
 
 	/**
 	 * Realiza o feedback
 	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(float learning);
+	void feedback(const vec_float &target, float learning);
 
 	/**
 	 * Inicializa os índices
@@ -186,7 +181,7 @@ protected:
 	/**
 	 * Vetor de índices para o treinamento
 	 */
-	vector<uint> indexes;
+	v_uint indexes;
 
 	/**
 	 * Camadas
@@ -194,19 +189,14 @@ protected:
 	vector<Layer*> layers;
 
 	/**
-	 * Saída da rede
+	 * Ponteiro para a primeira camada
 	 */
-	vec_float output;
+	Layer* firstLayer;
 
 	/**
-	 * Erro cometido pela rede
+	 * Ponteiro para a última camada
 	 */
-	vec_float rawError;
-
-	/**
-	 * Erro total
-	 */
-	float totalError;
+	OutLayer* lastLayer;
 
 	/**
 	 * Cronômetro
