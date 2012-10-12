@@ -2,7 +2,7 @@
 #define REMOTEEXAMPLESET_H_
 
 #include "mlp/serial/HostExampleSet.h"
-#include "mlp/mpi/RemoteUtils.h"
+#include "mlp/mpi/BalanceInfo.h"
 #include <mpi.h>
 
 using namespace MPI;
@@ -62,14 +62,9 @@ protected:
 	uint hid;
 
 	/**
-	 * Quantidade de neurônios por host
+	 * Informações do balanceamento
 	 */
-	v_int counts;
-
-	/**
-	 * Offset relativo para cada host
-	 */
-	v_int offset;
+	BalanceInfo binfo;
 
 };
 

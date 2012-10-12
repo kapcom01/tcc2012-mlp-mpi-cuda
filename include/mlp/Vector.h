@@ -146,6 +146,17 @@ public:
 	}
 
 	/**
+	 * Seta um offset para o vetor, ou seja, muda seu início
+	 * @param offset Tamanho do offset
+	 */
+	__host__
+	inline void setOffset(uint offset)
+	{
+		vdata += offset;
+		vsize -= offset;
+	}
+
+	/**
 	 * Limpa o vetor localizado na memória da CPU
 	 */
 	__host__

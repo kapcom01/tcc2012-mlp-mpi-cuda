@@ -28,9 +28,14 @@ HostLayer::HostLayer(uint inUnits, uint outUnits)
 void HostLayer::init(uint inUnits, uint outUnits)
 {
 	Layer::init(inUnits, outUnits);
+
 	gradient.resize(outUnits);
 	funcSignal.resize(outUnits);
 	errorSignal.resize(inUnits);
+
+	rawWeights = vec_float(weights, inUnits + 1);
+	rawFuncSignal = vec_float(funcSignal);
+	rawErrorSignal = vec_float(errorSignal);
 }
 
 //===========================================================================//
@@ -53,9 +58,7 @@ void HostLayer::randomize()
 
 void HostLayer::initOperation()
 {
-	rawWeights = vec_float(weights, inUnits + 1);
-	rawFuncSignal = vec_float(funcSignal);
-	rawErrorSignal = vec_float(errorSignal);
+
 }
 
 //===========================================================================//
@@ -79,11 +82,11 @@ void HostLayer::feedforward(const vec_float &input)
 	{
 		// Calcula o sinal funcional
 		for (uint i = 0; i < inUnits; i++)
-			funcSignal[n] += input[i] * rawWeights(n)[i];
-		funcSignal[n] += rawWeights(n)[inUnits];
+			rawFuncSignal[n] += input[i] * rawWeights(n)[i];
+		rawFuncSignal[n] += rawWeights(n)[inUnits];
 
 		// Ativa a saída
-		funcSignal[n] = activate(funcSignal[n]);
+		rawFuncSignal[n] = activate(rawFuncSignal[n]);
 	}
 }
 
