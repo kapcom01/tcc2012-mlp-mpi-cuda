@@ -59,7 +59,7 @@ public:
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	void setOutput(uint i, vec_float output);
+	void setOutput(uint i, vec_float &output);
 
 protected:
 

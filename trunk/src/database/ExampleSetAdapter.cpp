@@ -91,6 +91,9 @@ Size ExampleSetAdapter::selectSize(int relationID, work &work)
 
 void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, work &work)
 {
+	// Seta a quantidade de instâncias
+	set.setSize(size.nInst);
+
 	// Para cada instância
 	for (uint k = 0; k < size.nInst; k++)
 	{
@@ -119,8 +122,7 @@ void ExampleSetAdapter::selectData(ExampleSet &set, Size &size, work &work)
 		}
 	}
 
-	// Seta a quantidade de instâncias
-	set.setSize(size.nInst);
+	set.done();
 }
 
 //===========================================================================//

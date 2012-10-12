@@ -193,11 +193,11 @@ void MLPAdapter::selectMLP(MLP &mlp, work &work)
 		uint inUnits = row["NInputs"].as<uint>();
 		uint outUnits = row["NNeurons"].as<uint>();
 
-		mlp.addLayer(inUnits, outUnits);
+		mlp.addLayer(inUnits, outUnits, row + 1 == layers.end());
 	}
 
 	// Seta a saída do MLP
-	mlp.setOutput();
+	mlp.config();
 }
 
 //===========================================================================//

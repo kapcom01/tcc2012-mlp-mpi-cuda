@@ -14,6 +14,20 @@ float derivate(float y);
 
 //===========================================================================//
 
+DeviceLayer::DeviceLayer()
+{
+
+}
+
+//===========================================================================//
+
+DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
+{
+	init(inUnits, outUnits);
+}
+
+//===========================================================================//
+
 __global__
 void initRandState(vec_rand state, int seed)
 {
@@ -26,10 +40,15 @@ void initRandState(vec_rand state, int seed)
 
 //===========================================================================//
 
-DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
-	: Layer(inUnits, outUnits), devGradient(outUnits), devFuncSignal(outUnits),
-	  devErrorSignal(inUnits), devState(outUnits * (inUnits + 1))
+void DeviceLayer::init(uint inUnits, uint outUnits)
 {
+	Layer::init(inUnits, outUnits);
+
+	devGradient.resize(outUnits);
+	devFuncSignal.resize(outUnits);
+	devErrorSignal.resize(inUnits);
+	devState.resize(outUnits * (inUnits + 1));
+
 	rawGradient = vec_float(devGradient);
 	rawFuncSignal = vec_float(devFuncSignal);
 	rawErrorSignal = vec_float(devErrorSignal);
@@ -127,7 +146,7 @@ void feedforwardActivate(vec_float funcSignal, vec_float weights, uint inUnits)
 
 //===========================================================================//
 
-void DeviceLayer::feedforward(const vec_float input)
+void DeviceLayer::feedforward(const vec_float &input)
 {
 	this->input = input;
 
@@ -168,7 +187,7 @@ void feedbackSum(vec_float errorSignal, vec_float weights, vec_float gradient,
 
 //===========================================================================//
 
-void DeviceLayer::feedback(const vec_float signal, float learning)
+void DeviceLayer::feedback(const vec_float &signal, float learning)
 {
 	// Inicializa o sinal funcional
 	rawErrorSignal.deviceClear();

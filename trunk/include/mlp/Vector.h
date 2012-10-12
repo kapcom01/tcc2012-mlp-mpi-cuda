@@ -21,9 +21,9 @@ public:
 	__host__
 	inline Vector()
 	{
-		this->data = NULL;
-		this->vsize = 0;
-		this->vstep = 1;
+		vdata = NULL;
+		vsize = 0;
+		vstep = 1;
 	}
 
 	/**
@@ -34,9 +34,9 @@ public:
 	__host__
 	inline Vector(host_vector<T> &vector, uint step = 1)
 	{
-		data = &(vector[0]);
+		vdata = &(vector[0]);
 		vsize = vector.size();
-		this->vstep = step;
+		vstep = step;
 	}
 
 	/**
@@ -49,9 +49,9 @@ public:
 	inline Vector(host_vector<T> &vector, uint step, uint index,
 			uint size, uint offset = 0)
 	{
-		this->data = &(vector[index * step + offset]);
-		this->vsize = size;
-		this->vstep = 1;
+		vdata = &(vector[index * step + offset]);
+		vsize = size;
+		vstep = 1;
 	}
 
 	/**
@@ -62,9 +62,9 @@ public:
 	__host__
 	inline Vector(device_vector<T> &vector, uint step = 1)
 	{
-		data = raw_pointer_cast(&(vector[0]));
+		vdata = raw_pointer_cast(&(vector[0]));
 		vsize = vector.size();
-		this->vstep = step;
+		vstep = step;
 	}
 
 	/**
@@ -77,9 +77,9 @@ public:
 	inline Vector(device_vector<T> &vector, uint step, uint index,
 			uint size, uint offset = 0)
 	{
-		this->data = raw_pointer_cast(&(vector[index * step + offset]));
-		this->vsize = size;
-		this->vstep = 1;
+		vdata = raw_pointer_cast(&(vector[index * step + offset]));
+		vsize = size;
+		vstep = 1;
 	}
 
 	/**
@@ -98,9 +98,19 @@ public:
 	__host__
 	inline void operator =(const Vector<T> &vec)
 	{
-		this->data = vec.data;
-		this->vsize = vec.vsize;
-		this->vstep = vec.vstep;
+		vdata = vec.vdata;
+		vsize = vec.vsize;
+		vstep = vec.vstep;
+	}
+
+	/**
+	 * Retorna o vetor de dados
+	 * @return Vetor de dados
+	 */
+	__host__ __device__
+	inline T* data()
+	{
+		return vdata;
 	}
 
 	/**
@@ -121,7 +131,7 @@ public:
 	__host__ __device__
 	inline T* operator ()(uint i)
 	{
-		return &(data[i * vstep]);
+		return &(vdata[i * vstep]);
 	}
 
 	/**
@@ -132,7 +142,7 @@ public:
 	__host__ __device__
 	inline T& operator [](uint i) const
 	{
-		return data[i];
+		return vdata[i];
 	}
 
 	/**
@@ -141,7 +151,7 @@ public:
 	__host__
 	inline void hostClear()
 	{
-		memset(data, 0, vsize * sizeof(T));
+		memset(vdata, 0, vsize * sizeof(T));
 	}
 
 	/**
@@ -150,7 +160,7 @@ public:
 	__host__
 	inline void deviceClear()
 	{
-		cudaMemset(data, 0, vsize * sizeof(T));
+		cudaMemset(vdata, 0, vsize * sizeof(T));
 	}
 
 	/**
@@ -160,7 +170,7 @@ public:
 	__host__
 	inline void hostCopyTo(Vector<T> &vec)
 	{
-		memcpy(data, vec.data, vsize * sizeof(T));
+		memcpy(vdata, vec.vdata, vsize * sizeof(T));
 	}
 
 	/**
@@ -170,16 +180,16 @@ public:
 	__host__
 	inline void deviceCopyTo(Vector<T> &vec)
 	{
-		cudaMemcpy(data, vec.data, vsize * sizeof(T),
+		cudaMemcpy(vdata, vec.vdata, vsize * sizeof(T),
 				cudaMemcpyDeviceToDevice);
 	}
+
+private:
 
 	/**
 	 * Ponteiro para os dados
 	 */
-	T* data;
-
-private:
+	T* vdata;
 
 	/**
 	 * Tamanho do vetor

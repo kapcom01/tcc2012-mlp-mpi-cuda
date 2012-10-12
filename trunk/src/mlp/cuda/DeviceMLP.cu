@@ -8,20 +8,20 @@ namespace ParallelMLP
 DeviceMLP::DeviceMLP(int mlpID)
 	: MLP(mlpID)
 {
-	srand(time(NULL));
+
 }
 
 //===========================================================================//
 
-DeviceMLP::DeviceMLP(string name, vector<uint> &units)
+DeviceMLP::DeviceMLP(string name, v_uint &units)
 	: MLP(name, units)
 {
 	// Adiciona as camadas escondidas e a camada de saída
 	for (uint i = 0; i < units.size() - 1; i++)
-		addLayer(units[i], units[i + 1]);
+		addLayer(units[i], units[i + 1], i == units.size() - 2);
 
 	// Seta a saída e randomiza os pesos
-	setOutput();
+	config();
 	randomize();
 }
 
@@ -34,9 +34,12 @@ DeviceMLP::~DeviceMLP()
 
 //===========================================================================//
 
-void DeviceMLP::addLayer(uint inUnits, uint outUnits)
+void DeviceMLP::addLayer(uint inUnits, uint outUnits, bool isOutput)
 {
-	layers.push_back(new DeviceLayer(inUnits, outUnits));
+	if (isOutput)
+		layers.push_back(new DeviceOutLayer(inUnits, outUnits));
+	else
+		layers.push_back(new DeviceLayer(inUnits, outUnits));
 }
 
 //===========================================================================//
@@ -58,50 +61,6 @@ void DeviceMLP::validate(DeviceExampleSet &validation)
 void DeviceMLP::test(DeviceExampleSet &test)
 {
 	MLP::test(test);
-}
-
-//===========================================================================//
-
-__global__
-void calculateDiff(vec_float error, vec_float target, vec_float output)
-{
-	int n = blockIdx.x;
-
-	error[n] = target[n] - output[n];
-}
-
-//===========================================================================//
-
-struct square : public thrust::unary_function<float, float>
-{
-	__host__ __device__
-	float operator()(float x) const
-	{
-		return x * x;
-	}
-};
-
-//===========================================================================//
-
-void DeviceMLP::calculateError(const vec_float target)
-{
-	// Calcula a diferença da saída alvo com a saída gerada
-	calculateDiff<<<error.size(), 1>>>(rawError, target, output);
-
-	// Calcula o erro total
-	float totalError = thrust::reduce(
-			thrust::make_transform_iterator(error.begin(), square()),
-			thrust::make_transform_iterator(error.end(), square()));
-}
-
-//===========================================================================//
-
-void DeviceMLP::setOutput()
-{
-	MLP::setOutput();
-
-	error.resize(layers.back()->getOutUnits());
-	rawError = vec_float(error);
 }
 
 //===========================================================================//

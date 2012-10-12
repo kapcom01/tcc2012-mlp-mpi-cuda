@@ -123,9 +123,9 @@ public:
 	uint getOutVars() const;
 
 	/**
-	 * Seta a quantidade de variáveis a partir do tamanho dos dados
+	 * Finaliza a inserção de dados
 	 */
-	void setVars();
+	void done();
 
 	/**
 	 * Retorna o tamanho do conjunto de entrada
@@ -171,7 +171,7 @@ public:
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	void setOutput(uint i, vec_float output);
+	void setOutput(uint i, vec_float &output);
 
 	/**
 	 * Retorna o tipo do conjunto de dados
