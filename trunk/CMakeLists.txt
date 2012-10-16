@@ -20,8 +20,5 @@ LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp)
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(pmlp src/MLPMain.cpp)
+ADD_EXECUTABLE(pmlp src/Main.cpp)
 TARGET_LINK_LIBRARIES(pmlp arff database exception mlp)
-
-ADD_EXECUTABLE(data src/DataMain.cpp)
-TARGET_LINK_LIBRARIES(data arff database exception mlp)

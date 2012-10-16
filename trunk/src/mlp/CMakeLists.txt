@@ -10,4 +10,6 @@ ADD_SUBDIRECTORY(serial)
 FILE(WRITE ${CMAKE_BINARY_DIR}/dummy.cpp "")
 
 ADD_LIBRARY(mlp ${CMAKE_BINARY_DIR}/dummy.cpp)
-TARGET_LINK_LIBRARIES(mlp mlp_common mlp_serial mlp_cuda mlp_mpi)
+TARGET_LINK_LIBRARIES(mlp mlp_common mlp_serial mlp_mpi
+	mlp_cuda
+	)
