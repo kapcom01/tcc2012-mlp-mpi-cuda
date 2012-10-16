@@ -4,7 +4,7 @@ namespace ParallelMLP
 {
 
 __host__ __device__
-void adjust(float &x, const Range &from, const Range &to);
+void d_adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
@@ -53,7 +53,7 @@ void normalizeVec(vec_float vec, vec_stat stat, uint offset)
 	int k = blockIdx.x + offset;
 	int i = threadIdx.x;
 
-	adjust(vec(k)[i], stat(i)->from, stat(i)->to);
+	d_adjust(vec(k)[i], stat(i)->from, stat(i)->to);
 }
 
 //===========================================================================//
@@ -87,7 +87,7 @@ void unnormalizeVec(vec_float vec, vec_stat stat, uint offset, uint statOffset)
 	int k = blockIdx.x + offset;
 	int i = threadIdx.x;
 
-	adjust(vec(k)[i], stat(i + statOffset)->to, stat(i + statOffset)->from);
+	d_adjust(vec(k)[i], stat(i + statOffset)->to, stat(i + statOffset)->from);
 }
 
 //===========================================================================//
@@ -146,7 +146,7 @@ void DeviceExampleSet::setOutput(uint i, vec_float &output)
 //===========================================================================//
 
 __host__ __device__
-void adjust(float &x, const Range &from, const Range &to)
+void d_adjust(float &x, const Range &from, const Range &to)
 {
 	x = (to.upper - to.lower) / (from.upper - from.lower)
 			* (x - from.lower) + to.lower;

@@ -4,13 +4,13 @@ namespace ParallelMLP
 {
 
 __device__
-float random(curandState* state);
+float d_random(curandState* state);
 
 __host__ __device__
-float activate(float x);
+float d_activate(float x);
 
 __host__ __device__
-float derivate(float y);
+float d_derivate(float y);
 
 //===========================================================================//
 
@@ -91,7 +91,7 @@ void randomizeWeight(vec_float weights, vec_rand state)
 	int n = blockIdx.x;
 	int i = threadIdx.x;
 
-	weights(n)[i] = random(&state(n)[i]);
+	weights(n)[i] = d_random(&state(n)[i]);
 }
 
 //===========================================================================//
@@ -141,7 +141,7 @@ void feedforwardActivate(vec_float funcSignal, vec_float weights, uint inUnits)
 	int n = blockIdx.x;
 
 	funcSignal[n] += weights(n)[inUnits];
-	funcSignal[n] = activate(funcSignal[n]);
+	funcSignal[n] = d_activate(funcSignal[n]);
 }
 
 //===========================================================================//
@@ -168,7 +168,7 @@ void feedbackDerivate(vec_float funcSignal, vec_float weights,
 {
 	int n = blockIdx.x;
 
-	gradient[n] = derivate(funcSignal[n]) * signal[n];
+	gradient[n] = d_derivate(funcSignal[n]) * signal[n];
 	weights(n)[inUnits] += learning * gradient[n];
 }
 
@@ -204,7 +204,7 @@ void DeviceLayer::feedback(const vec_float &signal, float learning)
 //===========================================================================//
 
 __device__
-float random(curandState* state)
+float d_random(curandState* state)
 {
 	float r = curand(state);
 	return 2 * r - 1;
@@ -213,7 +213,7 @@ float random(curandState* state)
 //===========================================================================//
 
 __host__ __device__
-float activate(float x)
+float d_activate(float x)
 {
 	return tanh(x);
 }
@@ -221,7 +221,7 @@ float activate(float x)
 //===========================================================================//
 
 __host__ __device__
-float derivate(float y)
+float d_derivate(float y)
 {
 	return (1 - y) * (1 + y);
 }
