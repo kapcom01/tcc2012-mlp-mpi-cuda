@@ -44,21 +44,21 @@ void HostMLP::addLayer(uint inUnits, uint outUnits, bool isOutput)
 
 //===========================================================================//
 
-void HostMLP::train(HostExampleSet &training)
+void HostMLP::train(HostExampleSet* training)
 {
 	MLP::train(training);
 }
 
 //===========================================================================//
 
-void HostMLP::validate(HostExampleSet &validation)
+void HostMLP::validate(HostExampleSet* validation)
 {
 	MLP::validate(validation);
 }
 
 //===========================================================================//
 
-void HostMLP::test(HostExampleSet &test)
+void HostMLP::test(HostExampleSet* test)
 {
 	MLP::test(test);
 }

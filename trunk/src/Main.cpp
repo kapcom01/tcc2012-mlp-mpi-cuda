@@ -18,12 +18,16 @@ void parseARFF(int argc, char* argv[]);
 void createMLP(int argc, char* argv[]);
 void trainMLP(int argc, char* argv[]);
 
+string program;
+
 int main(int argc, char* argv[])
 {
 	try
 	{
-		string usage = "Usage mode: " + to_string(argv[0]) + " <parse_arff|"
-				"create_mlp|train_mlp> [options]";
+		program = argv[0];
+
+		string usage = "Usage mode: " + program + " <parse_arff|create_mlp|"
+				"train_mlp> [options]";
 
 		if (argc < 2)
 			throw runtime_error(usage);
@@ -53,8 +57,7 @@ int main(int argc, char* argv[])
 
 void parseARFF(int argc, char* argv[])
 {
-	string usage = "Usage mode: " + to_string(argv[0]) + " parse_arff "
-			"<arff file>";
+	string usage = "Usage mode: " + program + " parse_arff <arff file>";
 
 	if (argc != 3)
 		throw runtime_error(usage);
@@ -68,9 +71,9 @@ void parseARFF(int argc, char* argv[])
 
 void createMLP(int argc, char* argv[])
 {
-	string usage = "Usage mode: " + to_string(argv[0]) + " create_mlp "
-			"<mlp name> <neurons on input layer> "
-			"[neurons on each hidden layer] <neurons on output layer>";
+	string usage = "Usage mode: " + program + " create_mlp <mlp name> "
+			"<neurons on input layer> [neurons on each hidden layer] "
+			"<neurons on output layer>";
 
 	if (argc < 5)
 		throw runtime_error(usage);
@@ -87,9 +90,8 @@ void createMLP(int argc, char* argv[])
 
 void trainMLP(int argc, char* argv[])
 {
-	string usage = "Usage mode: " + to_string(argv[0]) + " train_mlp <serial|"
-			"cuda|mpi> <mlp id> <relation id> <learning rate> <max epochs> "
-			"<tolerance>";
+	string usage = "Usage mode: " + program + " train_mlp <serial|cuda|mpi> "
+			"<mlp id> <relation id> <learning rate> <max epochs> <tolerance>";
 
 	if (argc != 8)
 		throw runtime_error(usage);
@@ -136,13 +138,13 @@ void trainMLP(int argc, char* argv[])
 	{
 		HostMLP* hmlp = (HostMLP*) mlp;
 		HostExampleSet* hset = (HostExampleSet*) exampleSet;
-		hmlp->train(*hset);
+		hmlp->train(hset);
 	}
 	else if (mode == "cuda")
 	{
 		DeviceMLP* dmlp = (DeviceMLP*) mlp;
 		DeviceExampleSet* dset = (DeviceExampleSet*) exampleSet;
-		dmlp->train(*dset);
+		dmlp->train(dset);
 	}
 
 	cout << "MLP trained" << endl;
