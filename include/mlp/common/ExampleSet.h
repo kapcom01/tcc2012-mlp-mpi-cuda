@@ -125,7 +125,7 @@ public:
 	/**
 	 * Finaliza a inserção de dados
 	 */
-	void done();
+	virtual void done();
 
 	/**
 	 * Retorna o tamanho do conjunto de entrada
@@ -144,14 +144,14 @@ public:
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	vec_float getInput(uint i);
+	virtual vec_float getInput(uint i);
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	vec_float getTarget(uint i);
+	virtual vec_float getTarget(uint i);
 
 	/**
 	 * Retorna a k-ésima saída numérica da rede neural
@@ -171,7 +171,7 @@ public:
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	void setOutput(uint i, vec_float &output);
+	virtual void setOutput(uint i, vec_float &output);
 
 	/**
 	 * Retorna o tipo do conjunto de dados

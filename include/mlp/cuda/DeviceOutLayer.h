@@ -31,14 +31,14 @@ public:
 	 * Calcula o erro da rede
 	 * @param target Saída esperada para a rede neural
 	 */
-	void calculateError(const vec_float &target);
+	virtual void calculateError(const vec_float &target);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param target Saída esperada da rede neural
 	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vec_float &target, float learning);
+	virtual void feedback(const vec_float &target, float learning);
 
 protected:
 

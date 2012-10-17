@@ -29,30 +29,30 @@ public:
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	void randomize();
+	virtual void randomize();
 
 	/**
 	 * Inicia uma operação
 	 */
-	void initOperation();
+	virtual void initOperation();
 
 	/**
 	 * Finaliza uma operação
 	 */
-	void endOperation();
+	virtual void endOperation();
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	void feedforward(const vec_float &input);
+	virtual void feedforward(const vec_float &input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	void feedback(const vec_float &signal, float learning);
+	virtual void feedback(const vec_float &signal, float learning);
 
 protected:
 

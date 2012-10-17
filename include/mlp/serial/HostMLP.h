@@ -40,25 +40,25 @@ public:
 	 * @param outUnits Unidades de saída
 	 * @param isOutput Indica se é uma camada de saída
 	 */
-	void addLayer(uint inUnits, uint outUnits, bool isOutput);
+	virtual void addLayer(uint inUnits, uint outUnits, bool isOutput);
 
 	/**
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(HostExampleSet* training);
+	virtual void train(HostExampleSet* training);
 
 	/**
 	 * Valida a rede neural
 	 * @param validation Conjunto de validação
 	 */
-	void validate(HostExampleSet* validation);
+	virtual void validate(HostExampleSet* validation);
 
 	/**
 	 * Testa a rede neural
 	 * @param test Conjunto de testes
 	 */
-	void test(HostExampleSet* test);
+	virtual void test(HostExampleSet* test);
 
 };
 
