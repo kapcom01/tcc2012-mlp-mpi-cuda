@@ -1,5 +1,7 @@
 #include "mlp/cuda/DeviceLayer.h"
 
+#define CUDA_RAND_MAX 4294967295
+
 namespace ParallelMLP
 {
 
@@ -158,19 +160,6 @@ void DeviceLayer::feedforward(const vec_float &input)
 
 	// Ativa as saídas de cada neurônio
 	feedforwardActivate<<<outUnits, 1>>>(rawFuncSignal, rawWeights, inUnits);
-
-	cout << "       |-> Input: ";
-	vec_float aux = input;
-	device_ptr<float> ptr = thrust::device_pointer_cast(aux.data());
-	dv_float in(ptr, ptr + inUnits);
-	for (uint i = 0; i < inUnits; i++)
-		cout << in[i] << " ";
-	cout << endl;
-
-	cout << "       |-> Output: ";
-	for (uint i = 0; i < outUnits; i++)
-		cout << devFuncSignal[i] << " ";
-	cout << endl;
 }
 
 //===========================================================================//
@@ -212,19 +201,6 @@ void DeviceLayer::feedback(const vec_float &signal, float learning)
 	// Realiza a atualização dos pesos e cálculo do sinal de erro
 	feedbackSum<<<outUnits, inUnits>>>(rawErrorSignal, rawWeights, rawGradient,
 			input, learning);
-
-	cout << "       |-> Signal: ";
-	vec_float aux = signal;
-	device_ptr<float> ptr = thrust::device_pointer_cast(aux.data());
-	dv_float sig(ptr, ptr + inUnits);
-	for (uint i = 0; i < outUnits; i++)
-		cout << sig[i] << " ";
-	cout << endl;
-
-	cout << "       |-> Error: ";
-	for (uint i = 0; i < inUnits; i++)
-		cout << devErrorSignal[i] << " ";
-	cout << endl;
 }
 
 //===========================================================================//
@@ -232,7 +208,7 @@ void DeviceLayer::feedback(const vec_float &signal, float learning)
 __device__
 float d_random(curandState* state)
 {
-	float r = curand(state);
+	float r = curand(state) / (float) CUDA_RAND_MAX;
 	return 2 * r - 1;
 }
 

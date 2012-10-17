@@ -192,7 +192,6 @@ int ExampleSet::getNominalOutput(uint k) const
 
 void ExampleSet::setOutput(uint i, vec_float &output)
 {
-	cout << "Hello from ExampleSet::setOutput" << endl;
 	vec_float this_out(this->output, outVars, i, outVars);
 	this_out.hostCopyTo(output);
 }
