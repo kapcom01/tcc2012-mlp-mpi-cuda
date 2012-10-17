@@ -119,7 +119,6 @@ void MLP::train(ExampleSet* training)
 		for (uint i = 0; i < training->getSize(); i++)
 		{
 			uint r = indexes[i];
-			cout << "Input " << r << endl;
 
 			// Realiza o feedforward e salva os valores no conjunto
 			feedforward(training->getInput(r));
