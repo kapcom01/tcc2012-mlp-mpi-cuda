@@ -59,14 +59,6 @@ void DeviceOutLayer::calculateError(const vec_float &target)
 	// Calcula o erro total
 	float inc = thrust::reduce(error2.begin(), error2.end());
 
-	cout << "       |-> Target: ";
-	vec_float aux = target;
-	device_ptr<float> ptr = thrust::device_pointer_cast(aux.data());
-	dv_float sig(ptr, ptr + inUnits);
-	for (uint i = 0; i < outUnits; i++)
-		cout << sig[i] << " ";
-	cout << endl;
-
 	// Incrementa o erro
 	incTotalError(inc, outUnits);
 }
