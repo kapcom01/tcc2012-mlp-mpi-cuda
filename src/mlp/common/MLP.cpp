@@ -119,6 +119,7 @@ void MLP::train(ExampleSet* training)
 		for (uint i = 0; i < training->getSize(); i++)
 		{
 			uint r = indexes[i];
+			cout << "  |-> Input " << r << endl;
 
 			// Realiza o feedforward e salva os valores no conjunto
 			feedforward(training->getInput(r));
@@ -183,24 +184,38 @@ void MLP::test(ExampleSet* test)
 
 void MLP::feedforward(const vec_float &input)
 {
+	cout << "   |-> Feedforward" << endl;
+
+	cout << "     |-> Layer 0" << endl;
+
 	// Propaga a entrada para a primeira camada escondida
 	firstLayer->feedforward(input);
 
 	// Propaga a saída da primeira camada para o restante das camadas
 	for (uint i = 1; i < layers.size(); i++)
+	{
+		cout << "     |-> Layer " << i << endl;
 		layers[i]->feedforward(layers[i - 1]->getFuncSignal());
+	}
 }
 
 //===========================================================================//
 
 void MLP::feedback(const vec_float &target, float learning)
 {
+	cout << "   |-> Feedback" << endl;
+
+	cout << "     |-> Layer " << (layers.size() - 1) << endl;
+
 	// Propaga os erros na camada de saída
 	lastLayer->feedback(target, learning);
 
 	// Propaga o sinal de erro para o restante das camadas
 	for (int i = layers.size() - 2; i >= 0; i--)
+	{
+		cout << "     |-> Layer " << i << endl;
 		layers[i]->feedback(layers[i + 1]->getErrorSignal(), learning);
+	}
 }
 
 //===========================================================================//
