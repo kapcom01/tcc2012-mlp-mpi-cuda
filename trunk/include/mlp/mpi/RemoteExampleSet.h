@@ -37,17 +37,17 @@ public:
 	/**
 	 * Normaliza as entradas e saídas alvo do conjunto de dados
 	 */
-	void normalize();
+	virtual void normalize();
 
 	/**
 	 * Desnormaliza as entradas, saídas alvo e saídas do conjunto de dados
 	 */
-	void unnormalize();
+	virtual void unnormalize();
 
 	/**
 	 * Finaliza a inserção de dados
 	 */
-	void done();
+	virtual void done();
 
 protected:
 

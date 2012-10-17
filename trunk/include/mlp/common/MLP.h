@@ -126,19 +126,19 @@ protected:
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(ExampleSet* training);
+	virtual void train(ExampleSet* training);
 
 	/**
 	 * Valida a rede neural
 	 * @param validation Conjunto de validação
 	 */
-	void validate(ExampleSet* validation);
+	virtual void validate(ExampleSet* validation);
 
 	/**
 	 * Testa a rede neural
 	 * @param test Conjunto de testes
 	 */
-	void test(ExampleSet* test);
+	virtual void test(ExampleSet* test);
 
 	/**
 	 * Realiza o feedforward

@@ -34,32 +34,32 @@ public:
 	/**
 	 * Normaliza as entradas e saídas alvo do conjunto de dados
 	 */
-	void normalize();
+	virtual void normalize();
 
 	/**
 	 * Desnormaliza as entradas, saídas alvo e saídas do conjunto de dados
 	 */
-	void unnormalize();
+	virtual void unnormalize();
 
 	/**
 	 * Retorna a i-ésima entrada do conjunto
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	vec_float getInput(uint i);
+	virtual vec_float getInput(uint i);
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	vec_float getTarget(uint i);
+	virtual vec_float getTarget(uint i);
 
 	/**
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	void setOutput(uint i, vec_float &output);
+	virtual void setOutput(uint i, vec_float &output);
 
 protected:
 
