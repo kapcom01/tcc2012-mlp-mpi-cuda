@@ -114,31 +114,31 @@ protected:
 	 * Inicializa uma operação
 	 * @param set Conjunto de dados
 	 */
-	void initOperation(ExampleSet &set);
+	void initOperation(ExampleSet* set);
 
 	/**
 	 * Finaliza uma operação
 	 * @param set Conjunto de dados
 	 */
-	void endOperation(ExampleSet &set);
+	void endOperation(ExampleSet* set);
 
 	/**
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(ExampleSet &training);
+	void train(ExampleSet* training);
 
 	/**
 	 * Valida a rede neural
 	 * @param validation Conjunto de validação
 	 */
-	void validate(ExampleSet &validation);
+	void validate(ExampleSet* validation);
 
 	/**
 	 * Testa a rede neural
 	 * @param test Conjunto de testes
 	 */
-	void test(ExampleSet &test);
+	void test(ExampleSet* test);
 
 	/**
 	 * Realiza o feedforward

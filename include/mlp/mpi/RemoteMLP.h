@@ -47,19 +47,19 @@ public:
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(RemoteExampleSet &training);
+	void train(RemoteExampleSet* training);
 
 	/**
 	 * Valida a rede neural
 	 * @param validation Conjunto de validação
 	 */
-	void validate(RemoteExampleSet &validation);
+	void validate(RemoteExampleSet* validation);
 
 	/**
 	 * Testa a rede neural
 	 * @param test Conjunto de testes
 	 */
-	void test(RemoteExampleSet &test);
+	void test(RemoteExampleSet* test);
 
 protected:
 
