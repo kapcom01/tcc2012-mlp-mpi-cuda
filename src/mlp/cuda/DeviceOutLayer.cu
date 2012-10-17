@@ -24,7 +24,10 @@ void DeviceOutLayer::init(uint inUnits, uint outUnits)
 	DeviceLayer::init(inUnits, outUnits);
 
 	error.resize(outUnits);
+	error2.resize(outUnits);
+
 	rawError = vec_float(error);
+	rawError2 = vec_float(error2);
 }
 
 //===========================================================================//
@@ -37,35 +40,26 @@ DeviceOutLayer::~DeviceOutLayer()
 //===========================================================================//
 
 __global__
-void calculateDiff(vec_float error, vec_float target, vec_float output)
+void calculateDiff(vec_float error, vec_float error2, vec_float target,
+		vec_float output)
 {
 	int n = blockIdx.x;
 
 	error[n] = target[n] - output[n];
+	error2[n] = error[n] * error[n];
 }
-
-//===========================================================================//
-
-struct square : public thrust::unary_function<float, float>
-{
-	__host__ __device__
-	float operator()(float x) const
-	{
-		return x * x;
-	}
-};
 
 //===========================================================================//
 
 void DeviceOutLayer::calculateError(const vec_float &target)
 {
 	// Calcula a diferença da saída alvo com a saída gerada
-	calculateDiff<<<outUnits, 1>>>(rawError, target, rawFuncSignal);
+	calculateDiff<<<outUnits, 1>>>(rawError, rawError2, target, rawFuncSignal);
 
 	// Calcula o erro total
-	float inc = thrust::reduce(
-			thrust::make_transform_iterator(error.begin(), square()),
-			thrust::make_transform_iterator(error.end(), square()));
+	float inc = thrust::reduce(error2.begin(), error2.end());
+
+	cout << "Error: " << inc << endl;
 
 	// Incrementa o erro
 	incTotalError(inc, outUnits);

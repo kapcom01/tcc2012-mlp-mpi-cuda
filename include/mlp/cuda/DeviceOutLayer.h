@@ -59,6 +59,16 @@ protected:
 	 */
 	dv_float error;
 
+	/**
+	 * Vetor de erros ao quadrado
+	 */
+	dv_float error2;
+
+	/**
+	 * Vetor puro de erros ao quadrado
+	 */
+	vec_float rawError2;
+
 };
 
 }
