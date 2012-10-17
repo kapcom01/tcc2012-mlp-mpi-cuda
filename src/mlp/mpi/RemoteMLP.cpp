@@ -48,21 +48,21 @@ void RemoteMLP::addLayer(uint inUnits, uint outUnits, bool isOutput)
 
 //===========================================================================//
 
-void RemoteMLP::train(RemoteExampleSet &training)
+void RemoteMLP::train(RemoteExampleSet* training)
 {
 	MLP::train(training);
 }
 
 //===========================================================================//
 
-void RemoteMLP::validate(RemoteExampleSet &validation)
+void RemoteMLP::validate(RemoteExampleSet* validation)
 {
 	MLP::validate(validation);
 }
 
 //===========================================================================//
 
-void RemoteMLP::test(RemoteExampleSet &test)
+void RemoteMLP::test(RemoteExampleSet* test)
 {
 	MLP::test(test);
 }

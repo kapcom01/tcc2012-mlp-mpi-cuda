@@ -54,12 +54,12 @@ void MLP::randomize()
 
 //===========================================================================//
 
-void MLP::initOperation(ExampleSet &set)
+void MLP::initOperation(ExampleSet* set)
 {
 	// Verifica a quantidade de entradas e saídas
-	if (set.getInVars() != firstLayer->getInUnits())
+	if (set->getInVars() != firstLayer->getInUnits())
 		throw ParallelMLPException(INVALID_INPUT_VARS);
-	else if (set.getOutVars() != lastLayer->getOutUnits())
+	else if (set->getOutVars() != lastLayer->getOutUnits())
 		throw ParallelMLPException(INVALID_OUTPUT_VARS);
 
 	// Reseta o cronômetro, o erro total e a época
@@ -67,13 +67,13 @@ void MLP::initOperation(ExampleSet &set)
 	epoch = 0;
 
 	// Normaliza o conjunto de dados
-	set.normalize();
+	set->normalize();
 
 	// Se for treinamento, randomiza os pesos e inicializa os índices
-	if (set.isTraining())
+	if (set->isTraining())
 	{
 		randomize();
-		initIndexes(set.getSize());
+		initIndexes(set->getSize());
 	}
 
 	// Avisa as camadas para se prepararem para a operação
@@ -83,32 +83,32 @@ void MLP::initOperation(ExampleSet &set)
 
 //===========================================================================//
 
-void MLP::endOperation(ExampleSet &set)
+void MLP::endOperation(ExampleSet* set)
 {
 	// Avisa as camadas para se finalizarem a operação
 	for (uint i = 0; i < layers.size(); i++)
 		layers[i]->endOperation();
 
 	// Desnormaliza o conjunto de dados
-	set.unnormalize();
+	set->unnormalize();
 
 	// Seta o erro e o tempo de execução da operação
-	set.setError(lastLayer->getTotalError());
-	set.setTime(chrono.getMiliseconds());
-	set.setEpochs(epoch);
+	set->setError(lastLayer->getTotalError());
+	set->setTime(chrono.getMiliseconds());
+	set->setEpochs(epoch);
 
 	cout << "totalError: " << lastLayer->getTotalError() << endl;
 }
 
 //===========================================================================//
 
-void MLP::train(ExampleSet &training)
+void MLP::train(ExampleSet* training)
 {
 	// Inicializa a operação
 	initOperation(training);
 
 	// Épocas
-	for (; epoch < training.getMaxEpochs(); epoch++)
+	for (; epoch < training->getMaxEpochs(); epoch++)
 	{
 		cout << "Epoch " << epoch << endl;
 
@@ -116,20 +116,21 @@ void MLP::train(ExampleSet &training)
 		lastLayer->clearTotalError();
 
 		// Para cada entrada
-		for (uint i = 0; i < training.getSize(); i++)
+		for (uint i = 0; i < training->getSize(); i++)
 		{
 			uint r = indexes[i];
+			cout << "Input " << r << endl;
 
 			// Realiza o feedforward e salva os valores no conjunto
-			feedforward(training.getInput(r));
-			training.setOutput(r, lastLayer->getFuncSignal());
+			feedforward(training->getInput(r));
+			training->setOutput(r, lastLayer->getFuncSignal());
 
 			// Realiza o feedback
-			feedback(training.getTarget(r), training.getLearning());
+			feedback(training->getTarget(r), training->getLearning());
 		}
 
 		// Condição de parada: erro menor do que um valor tolerado
-		if (lastLayer->getTotalError() < training.getTolerance())
+		if (lastLayer->getTotalError() < training->getTolerance())
 			break;
 	}
 
@@ -139,21 +140,21 @@ void MLP::train(ExampleSet &training)
 
 //===========================================================================//
 
-void MLP::validate(ExampleSet &validation)
+void MLP::validate(ExampleSet* validation)
 {
 	// Inicializa a operação
 	initOperation(validation);
 	lastLayer->clearTotalError();
 
 	// Para cada entrada
-	for (uint i = 0; i < validation.getSize(); i++)
+	for (uint i = 0; i < validation->getSize(); i++)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
-		feedforward(validation.getInput(i));
-		validation.setOutput(i, lastLayer->getFuncSignal());
+		feedforward(validation->getInput(i));
+		validation->setOutput(i, lastLayer->getFuncSignal());
 
 		// Calcula o erro da rede
-		lastLayer->calculateError(validation.getTarget(i));
+		lastLayer->calculateError(validation->getTarget(i));
 	}
 
 	// Finaliza a operação
@@ -162,17 +163,17 @@ void MLP::validate(ExampleSet &validation)
 
 //===========================================================================//
 
-void MLP::test(ExampleSet &test)
+void MLP::test(ExampleSet* test)
 {
 	// Inicializa a operação
 	initOperation(test);
 
 	// Para cada entrada
-	for (uint i = 0; i < test.getSize(); i++)
+	for (uint i = 0; i < test->getSize(); i++)
 	{
 		// Realiza o feedforward e salva os valores no conjunto
-		feedforward(test.getInput(i));
-		test.setOutput(i, lastLayer->getFuncSignal());
+		feedforward(test->getInput(i));
+		test->setOutput(i, lastLayer->getFuncSignal());
 	}
 
 	// Finaliza a operação

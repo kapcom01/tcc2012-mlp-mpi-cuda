@@ -44,21 +44,21 @@ void DeviceMLP::addLayer(uint inUnits, uint outUnits, bool isOutput)
 
 //===========================================================================//
 
-void DeviceMLP::train(DeviceExampleSet &training)
+void DeviceMLP::train(DeviceExampleSet* training)
 {
 	MLP::train(training);
 }
 
 //===========================================================================//
 
-void DeviceMLP::validate(DeviceExampleSet &validation)
+void DeviceMLP::validate(DeviceExampleSet* validation)
 {
 	MLP::validate(validation);
 }
 
 //===========================================================================//
 
-void DeviceMLP::test(DeviceExampleSet &test)
+void DeviceMLP::test(DeviceExampleSet* test)
 {
 	MLP::test(test);
 }
