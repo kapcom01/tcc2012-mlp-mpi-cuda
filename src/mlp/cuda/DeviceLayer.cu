@@ -8,18 +8,11 @@ namespace ParallelMLP
 __device__
 float d_random(curandState* state);
 
-__host__ __device__
+__device__
 float d_activate(float x);
 
-__host__ __device__
+__device__
 float d_derivate(float y);
-
-//===========================================================================//
-
-DeviceLayer::DeviceLayer()
-{
-
-}
 
 //===========================================================================//
 
@@ -31,32 +24,38 @@ DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
 //===========================================================================//
 
 __global__
-void initRandState(vec_rand state, int seed)
+void initRandState(curandState* state, int seed, uint connUnits)
 {
-	int n = blockIdx.x;
-	int i = threadIdx.x;
-	int id = n * blockDim.x + i;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	curand_init(seed + id, 0, 0, &state(n)[i]);
+	if (i < connUnits)
+		curand_init(seed + i, 0, 0, &state[i]);
 }
 
 //===========================================================================//
 
 void DeviceLayer::init(uint inUnits, uint outUnits)
 {
-	Layer::init(inUnits, outUnits);
+	this->inUnits = inUnits + 1;
+	this->outUnits = outUnits;
+	this->connUnits = (inUnits + 1) * outUnits;
+	this->connBlocks = connUnits / TPB + 1;
+	this->outBlocks = outUnits / TPB + 1;
 
-	devGradient.resize(outUnits);
-	devFuncSignal.resize(outUnits);
-	devErrorSignal.resize(inUnits);
-	devState.resize(outUnits * (inUnits + 1));
+	weights.resize(connUnits);
+	gradient.resize(outUnits);
+	funcSignal.resize(outUnits + 1);
+	errorSignal.resize(inUnits);
+	state.resize(connUnits);
 
-	rawGradient = vec_float(devGradient);
-	rawFuncSignal = vec_float(devFuncSignal);
-	rawErrorSignal = vec_float(devErrorSignal);
-	rawState = vec_rand(devState, inUnits + 1);
+	rgradient = weights.data().get();
+	rfuncSignal = funcSignal.data().get();
+	rerrorSignal = errorSignal.data().get();
+	rstate = state.data().get();
 
-	initRandState<<<outUnits, inUnits + 1>>>(rawState, rand());
+	funcSignal[outUnits] = 1;
+
+	initRandState<<<connBlocks, TPB>>>(rstate, rand(), connUnits);
 }
 
 //===========================================================================//
@@ -68,139 +67,137 @@ DeviceLayer::~DeviceLayer()
 
 //===========================================================================//
 
-void DeviceLayer::copyToDevice()
-{
-	// Copia os pesos para a GPU
-	devWeights = weights;
-
-	// Atribui o vetor puro
-	rawWeights = vec_float(devWeights, inUnits + 1);
-}
-
-//===========================================================================//
-
-void DeviceLayer::copyToHost()
-{
-	// Copia os pesos para a CPU
-	weights = devWeights;
-}
-
-//===========================================================================//
-
 __global__
-void randomizeWeight(vec_float weights, vec_rand state)
+void randomizeWeight(float* weights, curandState* state, uint connUnits)
 {
-	int n = blockIdx.x;
-	int i = threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	weights(n)[i] = d_random(&state(n)[i]);
+	if (i < connUnits)
+		weights[i] = d_random(&state[i]);
 }
 
 //===========================================================================//
 
 void DeviceLayer::randomize()
 {
-	// Copia para a GPU
-	copyToDevice();
-
-	// Randomiza os pesos
-	randomizeWeight<<<outUnits, inUnits + 1>>>(rawWeights, rawState);
-
-	// Copia para  CPU
-	copyToHost();
-}
-
-//===========================================================================//
-
-void DeviceLayer::initOperation()
-{
-	copyToDevice();
-}
-
-//===========================================================================//
-
-void DeviceLayer::endOperation()
-{
-	copyToHost();
+	randomizeWeight<<<connBlocks, TPB>>>(rweights, rstate, connUnits);
 }
 
 //===========================================================================//
 
 __global__
-void feedforwardSum(vec_float funcSignal, vec_float weights, vec_float input)
+void feedforwardSum(const float* input, float* weights, uint inUnits,
+		uint connUnits, float* funcSignal)
 {
-	int n = blockIdx.x;
-	int i = threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = i % inUnits;
+	int k = i / inUnits;
 
-	atomicAdd(&funcSignal[n], input[i] * weights(n)[i]);
+	if (i < connUnits)
+		funcSignal[k] += weights[i] * input[j];
+		//atomicAdd(&funcSignal[k], weights[i] * input[j]);
 }
 
 //===========================================================================//
 
 __global__
-void feedforwardActivate(vec_float funcSignal, vec_float weights, uint inUnits)
+void feedforwardActivate(float* weights, uint outUnits, float* funcSignal)
 {
-	int n = blockIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	funcSignal[n] += weights(n)[inUnits];
-	funcSignal[n] = d_activate(funcSignal[n]);
+	if (i < outUnits)
+		funcSignal[i] = d_activate(funcSignal[i]);
 }
 
 //===========================================================================//
 
-void DeviceLayer::feedforward(const vec_float &input)
+void DeviceLayer::feedforward(const float* input)
 {
 	this->input = input;
 
 	// Inicializa o sinal funcional
-	rawFuncSignal.deviceClear();
+	cudaMemset(rfuncSignal, 0, outUnits * sizeof(float));
 
 	// Calcula as somas ponderadas das entradas
-	feedforwardSum<<<outUnits, inUnits>>>(rawFuncSignal, rawWeights, input);
+	feedforwardSum<<<connBlocks, TPB>>>(input, rweights, inUnits, connUnits,
+			rfuncSignal);
 
 	// Ativa as saídas de cada neurônio
-	feedforwardActivate<<<outUnits, 1>>>(rawFuncSignal, rawWeights, inUnits);
+	feedforwardActivate<<<outBlocks, TPB>>>(rweights, outUnits, rfuncSignal);
 }
 
 //===========================================================================//
 
 __global__
-void feedbackDerivate(vec_float funcSignal, vec_float weights,
-		vec_float gradient, vec_float signal, uint inUnits, float learning)
+void feedbackDerivate(const float* signal, float* funcSignal, uint outUnits,
+		float* gradient)
 {
-	int n = blockIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	gradient[n] = d_derivate(funcSignal[n]) * signal[n];
-	weights(n)[inUnits] += learning * gradient[n];
+	if (i < outUnits)
+		gradient[i] = d_derivate(funcSignal[i]) * signal[i];
 }
 
 //===========================================================================//
 
 __global__
-void feedbackSum(vec_float errorSignal, vec_float weights, vec_float gradient,
-		vec_float input, float learning)
+void feedbackSum(const float* input, float* gradient, float learning,
+		uint inUnits, uint connUnits, float* weights, float* errorSignal)
 {
-	int n = blockIdx.x;
-	int i = threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = i % inUnits;
+	int k = i / inUnits;
 
-	weights(n)[i] += learning * gradient[n] * input[i];
-	atomicAdd(&errorSignal[i], gradient[n] * weights(n)[i]);
+	if (i < connUnits)
+	{
+		weights[i] += learning * gradient[k] * input[j];
+		errorSignal[j] += gradient[k] * weights[i];
+		//atomicAdd(&errorSignal[j], gradient[k] * weights[i]);
+	}
 }
 
 //===========================================================================//
 
-void DeviceLayer::feedback(const vec_float &signal, float learning)
+void DeviceLayer::feedback(const float* signal, float learning)
 {
 	// Inicializa o sinal funcional
-	rawErrorSignal.deviceClear();
+	cudaMemset(rerrorSignal, 0, (inUnits - 1) * sizeof(float));
 
 	// Calcula o gradiente
-	feedbackDerivate<<<outUnits, 1>>>(rawFuncSignal, rawWeights, rawGradient,
-			signal, inUnits, learning);
+	feedbackDerivate<<<outBlocks, TPB>>>(signal, rfuncSignal, outUnits,
+			rgradient);
 
 	// Realiza a atualização dos pesos e cálculo do sinal de erro
-	feedbackSum<<<outUnits, inUnits>>>(rawErrorSignal, rawWeights, rawGradient,
-			input, learning);
+	feedbackSum<<<connBlocks, TPB>>>(input, rgradient, learning, inUnits,
+			connUnits, rweights, rerrorSignal);
+}
+
+//===========================================================================//
+
+uint DeviceLayer::getInUnits()
+{
+	return inUnits;
+}
+
+//===========================================================================//
+
+uint DeviceLayer::getOutUnits()
+{
+	return outUnits;
+}
+
+//===========================================================================//
+
+float* DeviceLayer::getFuncSignal()
+{
+	return rfuncSignal;
+}
+
+//===========================================================================//
+
+float* DeviceLayer::getErrorSignal()
+{
+	return rerrorSignal;
 }
 
 //===========================================================================//
@@ -214,7 +211,7 @@ float d_random(curandState* state)
 
 //===========================================================================//
 
-__host__ __device__
+__device__
 float d_activate(float x)
 {
 	return tanh(x);
@@ -222,7 +219,7 @@ float d_activate(float x)
 
 //===========================================================================//
 
-__host__ __device__
+__device__
 float d_derivate(float y)
 {
 	return (1 - y) * (1 + y);

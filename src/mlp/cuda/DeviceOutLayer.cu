@@ -5,14 +5,8 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-DeviceOutLayer::DeviceOutLayer()
-{
-
-}
-
-//===========================================================================//
-
 DeviceOutLayer::DeviceOutLayer(uint inUnits, uint outUnits)
+	: DeviceLayer(inUnits, outUnits)
 {
 	init(inUnits, outUnits);
 }
@@ -21,13 +15,11 @@ DeviceOutLayer::DeviceOutLayer(uint inUnits, uint outUnits)
 
 void DeviceOutLayer::init(uint inUnits, uint outUnits)
 {
-	DeviceLayer::init(inUnits, outUnits);
-
 	error.resize(outUnits);
-	error2.resize(outUnits);
+	totalError.resize(1);
 
-	rawError = vec_float(error);
-	rawError2 = vec_float(error2);
+	rerror = error.data().get();
+	rtotalError = error.data().get();
 }
 
 //===========================================================================//
@@ -40,39 +32,61 @@ DeviceOutLayer::~DeviceOutLayer()
 //===========================================================================//
 
 __global__
-void calculateDiff(vec_float error, vec_float error2, vec_float target,
-		vec_float output)
+void calculateDiff(const float* target, float* output, uint outUnits,
+		float* error, float* totalError)
 {
-	int n = blockIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	error[n] = target[n] - output[n];
-	error2[n] = error[n] * error[n];
+	if (i < outUnits)
+	{
+		error[i] = target[i] - output[i];
+		*totalError += error[i] * error[i];
+		//atomicAdd(totalError, error[i] * error[i]);
+	}
 }
 
 //===========================================================================//
 
-void DeviceOutLayer::calculateError(const vec_float &target)
+void DeviceOutLayer::calculateError(const float* target)
 {
+	float aux = totalError[0];
+	totalError[0] = 0;
+
 	// Calcula a diferença da saída alvo com a saída gerada
-	calculateDiff<<<outUnits, 1>>>(rawError, rawError2, target, rawFuncSignal);
+	calculateDiff<<<outBlocks, TPB>>>(target, rfuncSignal, outUnits, rerror,
+			rtotalError);
 
-	// Calcula o erro total
-	float inc = thrust::reduce(error2.begin(), error2.end());
-
-	// Incrementa o erro
-	incTotalError(inc, outUnits);
+	totalError[0] = (aux * samples + totalError[0]) / (samples + outUnits);
+	samples += outUnits;
 }
 
 //===========================================================================//
 
-void DeviceOutLayer::feedback(const vec_float &target, float learning)
+void DeviceOutLayer::feedback(const float* target, float learning)
 {
 	// Calcula o erro e chama o feedback do pai
 	calculateError(target);
-	DeviceLayer::feedback(rawError, learning);
+	DeviceLayer::feedback(rerror, learning);
 }
 
 //===========================================================================//
+
+void DeviceOutLayer::clearTotalError()
+{
+	totalError[0] = 0;
+	samples = 0;
+}
+
+//===========================================================================//
+
+float DeviceOutLayer::getTotalError()
+{
+	return totalError[0];
+}
+
+//===========================================================================//
+
+
 
 }
 

@@ -13,54 +13,76 @@ namespace ParallelMLP
 /**
  * Classe que representa um Multi-Layer Perceptron na GPU
  */
-class DeviceMLP : public MLP
+class DeviceMLP
 {
 
 public:
 
 	/**
-	 * Constrói um MLP que será recuperado
-	 * @param mlpID ID da rede
-	 */
-	DeviceMLP(int mlpID);
-
-	/**
 	 * Constrói um MLP não treinado
-	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	DeviceMLP(string name, v_uint &units);
+	DeviceMLP(v_uint &units);
 
 	/**
 	 * Destrói o MLP
 	 */
 	virtual ~DeviceMLP();
 
-	/**
-	 * Adiciona uma nova camada
-	 * @param inUnits Unidades de entrada
-	 * @param outUnits Unidades de saída
-	 * @param isOutput Indica se é uma camada de saída
-	 */
-	virtual void addLayer(uint inUnits, uint outUnits, bool isOutput);
+	void randomize();
+
+	void initOperation(DeviceExampleSet &training);
+
+	void endOperation(DeviceExampleSet &training);
 
 	/**
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	virtual void train(DeviceExampleSet* training);
+	void train(DeviceExampleSet &training);
+
+private:
 
 	/**
-	 * Valida a rede neural
-	 * @param validation Conjunto de validação
+	 * Realiza o feedforward
+	 * @param input Dados de entrada
 	 */
-	virtual void validate(DeviceExampleSet* validation);
+	void feedforward(const float* input);
 
 	/**
-	 * Testa a rede neural
-	 * @param test Conjunto de testes
+	 * Realiza o feedback
+	 * @param learning Taxa de aprendizado
 	 */
-	virtual void test(DeviceExampleSet* test);
+	void feedback(const float* target, float learning);
+
+	/**
+	 * Inicializa os índices
+	 * @param size Tamanho do vetor
+	 */
+	void initIndexes(uint size);
+
+	/**
+	 * Embaralha os índices utilizando o algoritmo de Fisher-Yates
+	 */
+	void shuffleIndexes();
+
+	/**
+	 * Cronômetro
+	 */
+	Chronometer chrono;
+
+	uint epoch;
+
+	/**
+	 * Vetor de índices para o treinamento
+	 */
+	v_uint indexes;
+
+	vector<DeviceLayer*> layers;
+
+	DeviceLayer* inLayer;
+
+	DeviceOutLayer* outLayer;
 
 };
 
