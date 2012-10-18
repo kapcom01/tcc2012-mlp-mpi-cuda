@@ -60,19 +60,11 @@ protected:
 	 */
 	void init(uint inUnits, uint outUnits);
 
-	/**
-	 * Vetor de erros
-	 */
-	dv_float error;
+	float* error;
 
-	float* rerror;
+	float* sum;
 
-	/**
-	 * Vetor de erros ao quadrado
-	 */
-	dv_float totalError;
-
-	float* rtotalError;
+	float totalError;
 
 	uint samples;
 

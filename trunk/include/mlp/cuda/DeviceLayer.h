@@ -89,44 +89,24 @@ protected:
 	uint outBlocks;
 
 	/**
-	 * Pesos de conexão entre os neurônios e as entradas
-	 */
-	dv_float weights;
-
-	/**
 	 * Vetor puro de pesos e seu tamanho
 	 */
-	float* rweights;
-
-	/**
-	 * Gradiente dos neurônios
-	 */
-	dv_float gradient;
+	float* weights;
 
 	/**
 	 * Vetor puro do gradiente e seu tamanho
 	 */
-	float* rgradient;
-
-	/**
-	 * Sinal funcional
-	 */
-	dv_float funcSignal;
+	float* gradient;
 
 	/**
 	 * Vetor puro do sinal funcional
 	 */
-	float* rfuncSignal;
-
-	/**
-	 * Sinal de erro
-	 */
-	dv_float errorSignal;
+	float* funcSignal;
 
 	/**
 	 * Vetor puro do sinal de erro
 	 */
-	float* rerrorSignal;
+	float* errorSignal;
 
 	/**
 	 * Entrada vinda da camada anterior
@@ -134,14 +114,9 @@ protected:
 	const float* input;
 
 	/**
-	 * Estados para geração de números aleatórios
-	 */
-	dv_rand state;
-
-	/**
 	 * Vetor puro de estados
 	 */
-	curandState* rstate;
+	curandState* state;
 
 };
 
