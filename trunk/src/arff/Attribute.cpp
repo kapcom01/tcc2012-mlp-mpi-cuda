@@ -78,4 +78,11 @@ const Nominal& Attribute::getNominalList() const
 
 //===========================================================================//
 
+uint Attribute::getNominalCard() const
+{
+	return nominal->size();
+}
+
+//===========================================================================//
+
 }
