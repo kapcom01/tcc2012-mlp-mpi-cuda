@@ -14,6 +14,8 @@ class HostExampleSet : public ExampleSet
 
 public:
 
+	HostExampleSet();
+
 	/**
 	 * Constrói um conjunto de dados vazio
 	 * @param relationID ID da relação

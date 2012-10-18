@@ -7,6 +7,13 @@ void adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
+HostExampleSet::HostExampleSet()
+{
+
+}
+
+//===========================================================================//
+
 HostExampleSet::HostExampleSet(int relationID, int mlpID, SetType type)
 	: ExampleSet(relationID, mlpID, type)
 {

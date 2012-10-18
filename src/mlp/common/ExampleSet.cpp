@@ -5,6 +5,25 @@ namespace ParallelMLP
 
 //===========================================================================//
 
+ExampleSet::ExampleSet()
+{
+	relationID = -1;
+	mlpID = -1;
+	type = TRAINING;
+	isNormalized = false;
+	learning = 0.1;
+	tolerance = 0.01;
+	maxEpochs = 100000;
+	error = 0;
+	time = 0;
+	size = 0;
+	inVars = 0;
+	outVars = 0;
+	epochs = 0;
+}
+
+//===========================================================================//
+
 ExampleSet::ExampleSet(int relationID, int mlpID, SetType type)
 {
 	this->relationID = relationID;

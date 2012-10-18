@@ -22,6 +22,8 @@ class ExampleSet
 
 public:
 
+	ExampleSet();
+
 	/**
 	 * Constrói um conjunto de dados vazio
 	 * @param relationID ID da relação

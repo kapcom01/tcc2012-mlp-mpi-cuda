@@ -8,6 +8,13 @@ void d_adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
+DeviceExampleSet::DeviceExampleSet()
+{
+
+}
+
+//===========================================================================//
+
 DeviceExampleSet::DeviceExampleSet(int relationID, int mlpID, SetType type)
 	: ExampleSet(relationID, mlpID, type)
 {

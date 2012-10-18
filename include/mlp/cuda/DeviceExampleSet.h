@@ -18,6 +18,8 @@ class DeviceExampleSet : public ExampleSet
 
 public:
 
+	DeviceExampleSet();
+
 	/**
 	 * Constrói um conjunto de dados vazio
 	 * @param relationID ID da relação

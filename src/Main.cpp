@@ -17,6 +17,7 @@ using namespace ParallelMLP;
 void parseARFF(int argc, char* argv[]);
 void createMLP(int argc, char* argv[]);
 void trainMLP(int argc, char* argv[]);
+void fastTrain(int argc, char* argv[]);
 
 string program;
 
@@ -42,6 +43,9 @@ int main(int argc, char* argv[])
 
 		else if (cmd == "train_mlp")
 			trainMLP(argc, argv);
+
+		else if (cmd == "fast_train")
+			fastTrain(argc, argv);
 
 		else
 			throw runtime_error(usage);
@@ -151,6 +155,118 @@ void trainMLP(int argc, char* argv[])
 
 //		MLPAdapter::update(*mlp, relationID);
 //		ExampleSetAdapter::insert(*exampleSet);
+
+	delete exampleSet;
+	delete mlp;
+}
+
+void transform(Relation &relation, ExampleSet &set)
+{
+	set.setSize(relation.getNInstances());
+
+	for (uint i = 0; i < relation.getNInstances(); i++)
+	{
+		const Instance &ins = relation.getInstance(i);
+
+		for (uint j = 0; j < relation.getNAttributes(); j++)
+		{
+			bool isTarget = (j + 1 == relation.getNAttributes());
+
+			if (relation.getAttribute(j).getType() == NUMERIC)
+				set.addValue(ins[j]->getNumber(), isTarget);
+			else
+				set.addValue(ins[j]->getNominal(), relation.getAttribute(j).getNominalCard(), isTarget);
+		}
+	}
+
+	for (uint j = 0; j < relation.getNAttributes(); j++)
+	{
+		bool isTarget = (j + 1 == relation.getNAttributes());
+
+		if (relation.getAttribute(j).getType() == NUMERIC)
+		{
+			float min = 1000000, max = -1000000;
+
+			for (uint i = 0; i < relation.getNInstances(); i++)
+			{
+				const Instance &ins = relation.getInstance(i);
+
+				if (ins[j]->getNumber() > max)
+					max = ins[j]->getNumber();
+				if (ins[j]->getNumber() < min)
+					min = ins[j]->getNumber();
+			}
+
+			set.addStat(min, max, -1, 1, isTarget);
+		}
+		else
+			set.addStat(-1, 1, relation.getAttribute(j).getNominalCard(), isTarget);
+	}
+
+	set.done();
+
+}
+
+void fastTrain(int argc, char* argv[])
+{
+	string usage = "Usage mode: " + program + " train_mlp <serial|cuda|mpi> "
+			"<neurons on input layer> [neurons on each hidden layer] "
+			"<neurons on output layer> <arff file> <learning rate> "
+			"<max epochs> <tolerance>";
+
+	if (argc < 8)
+		throw runtime_error(usage);
+
+	string mode = argv[2];
+	string input = argv[argc - 4];
+	float learning = atof(argv[argc - 3]);
+	uint maxEpochs = atoi(argv[argc - 2]);
+	float tolerance = atof(argv[argc - 1]);
+	v_uint units;
+
+	for (int i = 3; i < argc - 4; i++)
+		units.push_back(atoi(argv[i]));
+
+	Driver driver(input);
+	Relation* relation = driver.parse();
+
+	ExampleSet* exampleSet;
+	MLP* mlp;
+
+	if (mode == "serial")
+	{
+		exampleSet = new HostExampleSet();
+		mlp = new HostMLP("fast", units);
+	}
+	else if (mode == "cuda")
+	{
+		exampleSet = new DeviceExampleSet();
+		mlp = new DeviceMLP("fast", units);
+	}
+	else
+		throw runtime_error(usage);
+
+	transform(*relation, *exampleSet);
+	exampleSet->setLearning(learning);
+	exampleSet->setMaxEpochs(maxEpochs);
+	exampleSet->setTolerance(tolerance);
+
+	cout << "Training MLP" << endl;
+
+	if (mode == "serial")
+	{
+		HostMLP* hmlp = (HostMLP*) mlp;
+		HostExampleSet* hset = (HostExampleSet*) exampleSet;
+		hmlp->train(hset);
+	}
+	else if (mode == "cuda")
+	{
+		DeviceMLP* dmlp = (DeviceMLP*) mlp;
+		DeviceExampleSet* dset = (DeviceExampleSet*) exampleSet;
+		dmlp->train(dset);
+	}
+
+	cout << "MLP trained" << endl;
 
 	delete exampleSet;
 	delete mlp;

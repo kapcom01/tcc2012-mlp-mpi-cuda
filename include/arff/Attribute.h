@@ -86,6 +86,12 @@ public:
 	 */
 	const Nominal& getNominalList() const;
 
+	/**
+	 * Retorna a cardinalidade do atributo nominal
+	 * @return Cardinalidade do atributo nominal
+	 */
+	uint getNominalCard() const;
+
 private:
 
 	/**
