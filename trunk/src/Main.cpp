@@ -100,64 +100,64 @@ void trainMLP(int argc, char* argv[])
 	if (argc != 8)
 		throw runtime_error(usage);
 
-	string mode = argv[2];
-	uint mlpID = atoi(argv[3]);
-	uint relationID = atoi(argv[4]);
-	float learning = atof(argv[5]);
-	uint maxEpochs = atoi(argv[6]);
-	float tolerance = atof(argv[7]);
-
-	ExampleSet* exampleSet;
-	MLP* mlp;
-
-	if (mode == "serial")
-	{
-		exampleSet = new HostExampleSet(relationID, mlpID, TRAINING);
-		mlp = new HostMLP(mlpID);
-	}
-	else if (mode == "cuda")
-	{
-		exampleSet = new DeviceExampleSet(relationID, mlpID, TRAINING);
-		mlp = new DeviceMLP(mlpID);
-	}
-	else
-		throw runtime_error(usage);
-
-	cout << "Reading example set" << endl;
-
-	ExampleSetAdapter::select(*exampleSet);
-	exampleSet->setLearning(learning);
-	exampleSet->setMaxEpochs(maxEpochs);
-	exampleSet->setTolerance(tolerance);
-
-	cout << "Example set read" << endl;
-	cout << "Reading MLP" << endl;
-
-	MLPAdapter::select(*mlp);
-
-	cout << "MLP read" << endl;
-	cout << "Training MLP" << endl;
-
-	if (mode == "serial")
-	{
-		HostMLP* hmlp = (HostMLP*) mlp;
-		HostExampleSet* hset = (HostExampleSet*) exampleSet;
-		hmlp->train(hset);
-	}
-	else if (mode == "cuda")
-	{
-		DeviceMLP* dmlp = (DeviceMLP*) mlp;
-		DeviceExampleSet* dset = (DeviceExampleSet*) exampleSet;
-		dmlp->train(dset);
-	}
-
-	cout << "MLP trained" << endl;
-
-//		MLPAdapter::update(*mlp, relationID);
-//		ExampleSetAdapter::insert(*exampleSet);
-
-	delete exampleSet;
-	delete mlp;
+//	string mode = argv[2];
+//	uint mlpID = atoi(argv[3]);
+//	uint relationID = atoi(argv[4]);
+//	float learning = atof(argv[5]);
+//	uint maxEpochs = atoi(argv[6]);
+//	float tolerance = atof(argv[7]);
+//
+//	ExampleSet* exampleSet;
+//	MLP* mlp;
+//
+//	if (mode == "serial")
+//	{
+//		exampleSet = new HostExampleSet(relationID, mlpID, TRAINING);
+//		mlp = new HostMLP(mlpID);
+//	}
+//	else if (mode == "cuda")
+//	{
+//		exampleSet = new DeviceExampleSet(relationID, mlpID, TRAINING);
+//		mlp = new DeviceMLP(mlpID);
+//	}
+//	else
+//		throw runtime_error(usage);
+//
+//	cout << "Reading example set" << endl;
+//
+//	ExampleSetAdapter::select(*exampleSet);
+//	exampleSet->setLearning(learning);
+//	exampleSet->setMaxEpochs(maxEpochs);
+//	exampleSet->setTolerance(tolerance);
+//
+//	cout << "Example set read" << endl;
+//	cout << "Reading MLP" << endl;
+//
+//	MLPAdapter::select(*mlp);
+//
+//	cout << "MLP read" << endl;
+//	cout << "Training MLP" << endl;
+//
+//	if (mode == "serial")
+//	{
+//		HostMLP* hmlp = (HostMLP*) mlp;
+//		HostExampleSet* hset = (HostExampleSet*) exampleSet;
+//		hmlp->train(hset);
+//	}
+//	else if (mode == "cuda")
+//	{
+//		DeviceMLP* dmlp = (DeviceMLP*) mlp;
+//		DeviceExampleSet* dset = (DeviceExampleSet*) exampleSet;
+//		dmlp->train(dset);
+//	}
+//
+//	cout << "MLP trained" << endl;
+//
+////		MLPAdapter::update(*mlp, relationID);
+////		ExampleSetAdapter::insert(*exampleSet);
+//
+//	delete exampleSet;
+//	delete mlp;
 }
 
 void transform(Relation &relation, ExampleSet &set)
@@ -171,6 +171,9 @@ void transform(Relation &relation, ExampleSet &set)
 		for (uint j = 0; j < relation.getNAttributes(); j++)
 		{
 			bool isTarget = (j + 1 == relation.getNAttributes());
+
+			if (isTarget)
+				set.addBias();
 
 			if (relation.getAttribute(j).getType() == NUMERIC)
 				set.addValue(ins[j]->getNumber(), isTarget);
@@ -230,44 +233,35 @@ void fastTrain(int argc, char* argv[])
 	Driver driver(input);
 	Relation* relation = driver.parse();
 
-	ExampleSet* exampleSet;
-	MLP* mlp;
-
-	if (mode == "serial")
-	{
-		exampleSet = new HostExampleSet();
-		mlp = new HostMLP("fast", units);
-	}
-	else if (mode == "cuda")
-	{
-		exampleSet = new DeviceExampleSet();
-		mlp = new DeviceMLP("fast", units);
-	}
-	else
-		throw runtime_error(usage);
-
-	transform(*relation, *exampleSet);
-	exampleSet->setLearning(learning);
-	exampleSet->setMaxEpochs(maxEpochs);
-	exampleSet->setTolerance(tolerance);
-
 	cout << "Training MLP" << endl;
 
 	if (mode == "serial")
 	{
-		HostMLP* hmlp = (HostMLP*) mlp;
-		HostExampleSet* hset = (HostExampleSet*) exampleSet;
-		hmlp->train(hset);
+		HostExampleSet set;
+		HostMLP mlp("fast", units);
+
+		transform(*relation, set);
+		set.setLearning(learning);
+		set.setMaxEpochs(maxEpochs);
+		set.setTolerance(tolerance);
+
+		mlp.train(&set);
 	}
 	else if (mode == "cuda")
 	{
-		DeviceMLP* dmlp = (DeviceMLP*) mlp;
-		DeviceExampleSet* dset = (DeviceExampleSet*) exampleSet;
-		dmlp->train(dset);
+		DeviceExampleSet set;
+		DeviceMLP mlp(units);
+
+		transform(*relation, set);
+		set.setLearning(learning);
+		set.setMaxEpochs(maxEpochs);
+		set.setTolerance(tolerance);
+
+		mlp.train(set);
 	}
+	else
+		throw runtime_error(usage);
+
 
 	cout << "MLP trained" << endl;
-
-	delete exampleSet;
-	delete mlp;
 }

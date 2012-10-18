@@ -10,7 +10,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada de saída da rede MLP na GPU
  */
-class DeviceOutLayer : public DeviceLayer, public OutLayer
+class DeviceOutLayer : public DeviceLayer
 {
 
 public:
@@ -31,21 +31,27 @@ public:
 	 * Calcula o erro da rede
 	 * @param target Saída esperada para a rede neural
 	 */
-	virtual void calculateError(const vec_float &target);
+	virtual void calculateError(const float* target);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param target Saída esperada da rede neural
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float &target, float learning);
-
-protected:
+	virtual void feedback(const float* target, float learning);
 
 	/**
-	 * Constrói uma camada vazia
+	 * Limpa o erro quadrático médio
 	 */
-	DeviceOutLayer();
+	void clearTotalError();
+
+	/**
+	 * Retorna o erro quadrático médio
+	 * @return Erro quadrático médio
+	 */
+	float getTotalError();
+
+protected:
 
 	/**
 	 * Inicializa uma camada
@@ -59,15 +65,16 @@ protected:
 	 */
 	dv_float error;
 
+	float* rerror;
+
 	/**
 	 * Vetor de erros ao quadrado
 	 */
-	dv_float error2;
+	dv_float totalError;
 
-	/**
-	 * Vetor puro de erros ao quadrado
-	 */
-	vec_float rawError2;
+	float* rtotalError;
+
+	uint samples;
 
 };
 

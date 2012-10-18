@@ -47,6 +47,8 @@ public:
 	 */
 	virtual void unnormalize() = 0;
 
+	void addBias();
+
 	/**
 	 * Adiciona um valor númerico de entrada ou saída
 	 * @param value Valor numérico de entrada ou saída

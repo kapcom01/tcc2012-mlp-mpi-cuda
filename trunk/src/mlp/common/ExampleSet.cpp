@@ -51,6 +51,13 @@ ExampleSet::~ExampleSet()
 
 //===========================================================================//
 
+void ExampleSet::addBias()
+{
+	addValue(1, false);
+}
+
+//===========================================================================//
+
 void ExampleSet::addValue(float value, bool isTarget)
 {
 	input.push_back(value);

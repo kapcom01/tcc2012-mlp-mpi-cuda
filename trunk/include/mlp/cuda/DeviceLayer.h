@@ -3,13 +3,15 @@
 
 #include "mlp/common/Layer.h"
 
+#define TPB 1024
+
 namespace ParallelMLP
 {
 
 /**
  * Classe que representa uma camada da rede MLP na GPU
  */
-class DeviceLayer : virtual public Layer
+class DeviceLayer
 {
 
 public:
@@ -29,37 +31,30 @@ public:
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	virtual void randomize();
-
-	/**
-	 * Inicia uma operação
-	 */
-	virtual void initOperation();
-
-	/**
-	 * Finaliza uma operação
-	 */
-	virtual void endOperation();
+	void randomize();
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	virtual void feedforward(const vec_float &input);
+	void feedforward(const float* input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float &signal, float learning);
+	virtual void feedback(const float* signal, float learning);
+
+	uint getInUnits();
+
+	uint getOutUnits();
+
+	float* getFuncSignal();
+
+	float* getErrorSignal();
 
 protected:
-
-	/**
-	 * Constrói uma camada vazia
-	 */
-	DeviceLayer();
 
 	/**
 	 * Inicializa uma camada
@@ -69,54 +64,84 @@ protected:
 	void init(uint inUnits, uint outUnits);
 
 	/**
-	 * Copia os dados da memória da CPU para a memória da GPU
+	 * Quantidade de neurônios
 	 */
-	void copyToDevice();
+	uint outUnits;
 
 	/**
-	 * Copia os dados da memória da GPU para a memória da CPU
+	 * Quantidade de entradas
 	 */
-	void copyToHost();
+	uint inUnits;
+
+	/**
+	 * Quantidade de conexões
+	 */
+	uint connUnits;
+
+	/**
+	 * Quantidade de blocos para execução de um kernel em função das conexões
+	 */
+	uint connBlocks;
+
+	/**
+	 * Quantidade de blocos para execução de um kernel em função dos neurônios
+	 */
+	uint outBlocks;
 
 	/**
 	 * Pesos de conexão entre os neurônios e as entradas
 	 */
-	dv_float devWeights;
+	dv_float weights;
 
 	/**
 	 * Vetor puro de pesos e seu tamanho
 	 */
-	vec_float rawWeights;
+	float* rweights;
 
 	/**
 	 * Gradiente dos neurônios
 	 */
-	dv_float devGradient;
+	dv_float gradient;
 
 	/**
 	 * Vetor puro do gradiente e seu tamanho
 	 */
-	vec_float rawGradient;
+	float* rgradient;
 
 	/**
-	 * Sinal funcional dos neurônios
+	 * Sinal funcional
 	 */
-	dv_float devFuncSignal;
+	dv_float funcSignal;
+
+	/**
+	 * Vetor puro do sinal funcional
+	 */
+	float* rfuncSignal;
 
 	/**
 	 * Sinal de erro
 	 */
-	dv_float devErrorSignal;
+	dv_float errorSignal;
+
+	/**
+	 * Vetor puro do sinal de erro
+	 */
+	float* rerrorSignal;
+
+	/**
+	 * Entrada vinda da camada anterior
+	 */
+	const float* input;
 
 	/**
 	 * Estados para geração de números aleatórios
 	 */
-	dv_rand devState;
+	dv_rand state;
 
 	/**
-	 * Vetor puro de estados e seu tamanho
+	 * Vetor puro de estados
 	 */
-	vec_rand rawState;
+	curandState* rstate;
 
 };
 
