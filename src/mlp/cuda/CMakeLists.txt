@@ -5,15 +5,15 @@ PROJECT(ParallelMLP)
 SET(SOURCES
 	DeviceExampleSet.cu
 	DeviceLayer.cu
-	DeviceMLP.cu
+	DeviceMLP.cpp
 	DeviceOutLayer.cu
 )
 
-SET(CMAKE_CXX_FLAGS "-O2 ")
+SET(CMAKE_CXX_FLAGS "-O2")
 SET(CUDA_NVCC_FLAGS "-arch=compute_20")
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 CUDA_ADD_LIBRARY(mlp_cuda ${SOURCES})
-TARGET_LINK_LIBRARIES(mlp_cuda ${CUDA_LIBRARIES})
+TARGET_LINK_LIBRARIES(mlp_cuda mlp_common ${CUDA_LIBRARIES})

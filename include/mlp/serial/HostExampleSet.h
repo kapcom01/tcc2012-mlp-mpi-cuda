@@ -57,24 +57,36 @@ public:
 	uint getSize() const;
 
 	/**
+	 * Retorna todas as entradas
+	 * @return Todas as entradas
+	 */
+	const float* getInput() const;
+
+	/**
 	 * Retorna a i-ésima entrada do conjunto
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	float* getInput(uint i);
+	const float* getInput(uint i) const;
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	float* getTarget(uint i);
+	const float* getTarget(uint i) const;
 
 	/**
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
 	void setOutput(uint i, float* output);
+
+	/**
+	 * Retorna todas as estatísticas
+	 * @return Todas as estatísticas
+	 */
+	const Stat* getStat() const;
 
 	/**
 	 * Retorna a taxa de aprendizado

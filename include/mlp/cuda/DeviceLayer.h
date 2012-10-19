@@ -1,9 +1,7 @@
 #ifndef DEVICELAYER_H_
 #define DEVICELAYER_H_
 
-#include "mlp/common/Layer.h"
-
-#define TPB 1024
+#include "mlp/Types.h"
 
 namespace ParallelMLP
 {
@@ -44,24 +42,33 @@ public:
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const float* signal, float learning);
+	virtual void feedbackward(const float* signal, float learning);
 
+	/**
+	 * Retorna a quantidade de unidades de entrada
+	 * @return Quantidade de unidades de entrada
+	 */
 	uint getInUnits();
 
+	/**
+	 * Retorna a quantidade de unidades de saída
+	 * @return Quantidade de unidades de saída
+	 */
 	uint getOutUnits();
 
+	/**
+	 * Retorna o sinal funcional
+	 * @return Sinal funcional
+	 */
 	float* getFuncSignal();
 
+	/**
+	 * Retorna o sinal de erro
+	 * @return Sinal de erro
+	 */
 	float* getErrorSignal();
 
 protected:
-
-	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
-	 */
-	void init(uint inUnits, uint outUnits);
 
 	/**
 	 * Quantidade de neurônios

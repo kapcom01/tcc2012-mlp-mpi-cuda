@@ -7,18 +7,24 @@ namespace ParallelMLP
 
 DeviceMLP::DeviceMLP(v_uint &units)
 {
+	// Semeia a aleatoriedade
+	srand(time(NULL));
+
 	// Adiciona as camadas escondidas e a camada de saída
 	for (uint i = 0; i < units.size() - 1; i++)
 	{
-		if (i == units.size() - 2)
+		if (i + 1 == units.size() - 1)
 			layers.push_back(new DeviceOutLayer(units[i], units[i + 1]));
 		else
 			layers.push_back(new DeviceLayer(units[i], units[i + 1]));
 	}
 
+	// Seta os ponteiros para a primeira e última camada
 	inLayer = layers.front();
 	outLayer = (DeviceOutLayer*) layers.back();
+	epoch = 0;
 
+	// Randomiza os pesos
 	randomize();
 }
 
@@ -26,7 +32,8 @@ DeviceMLP::DeviceMLP(v_uint &units)
 
 DeviceMLP::~DeviceMLP()
 {
-
+	for (uint i = 0; i < layers.size(); i++)
+		delete layers[i];
 }
 
 //===========================================================================//
@@ -37,30 +44,20 @@ void DeviceMLP::randomize()
 		layers[i]->randomize();
 }
 
-
 //===========================================================================//
 
 void DeviceMLP::initOperation(DeviceExampleSet &set)
 {
 	// Verifica a quantidade de entradas e saídas
 	if (set.getInVars() != inLayer->getInUnits())
-		throw runtime_error("invalid input vars");
+		throw ParallelMLPException(INVALID_INPUT_VARS);
 	else if (set.getOutVars() != outLayer->getOutUnits())
-		throw runtime_error("invalid output vars");
+		throw ParallelMLPException(INVALID_OUTPUT_VARS);
 
-	// Reseta o cronômetro, o erro total e a época
 	chrono.reset();
-	epoch = 0;
-
-	// Normaliza o conjunto de dados
+	indexes.resize(set.getSize());
 	set.normalize();
-
-	// Se for treinamento, randomiza os pesos e inicializa os índices
-	if (set.isTraining())
-	{
-		randomize();
-		initIndexes(set.getSize());
-	}
+	randomize();
 }
 
 //===========================================================================//
@@ -71,7 +68,7 @@ void DeviceMLP::endOperation(DeviceExampleSet &set)
 	set.unnormalize();
 
 	// Seta o erro e o tempo de execução da operação
-	set.setError(outLayer->getTotalError());
+	set.setError(outLayer->getError());
 	set.setTime(chrono.getMiliseconds());
 	set.setEpochs(epoch);
 
@@ -87,28 +84,28 @@ void DeviceMLP::train(DeviceExampleSet &training)
 	initOperation(training);
 
 	// Épocas
-	for (; epoch < training.getMaxEpochs(); epoch++)
+	for (epoch = 0; epoch < training.getMaxEpochs(); epoch++)
 	{
 		cout << "Epoch " << epoch << endl;
 
-		shuffleIndexes();
-		outLayer->clearTotalError();
+		indexes.randomize();
+		outLayer->clearError();
 
 		// Para cada entrada
 		for (uint i = 0; i < training.getSize(); i++)
 		{
-			uint r = indexes[i];
+			uint r = indexes.get(i);
 
 			// Realiza o feedforward e salva os valores no conjunto
-			feedforward(training.getInput(r).data());
-			//training.setOutput(r, outLayer->getFuncSignal());
+			feedforward(training.getInput(r));
+			training.setOutput(r, outLayer->getFuncSignal());
 
 			// Realiza o feedback
-			feedback(training.getTarget(r).data(), training.getLearning());
+			feedbackward(training.getTarget(r), training.getLearning());
 		}
 
 		// Condição de parada: erro menor do que um valor tolerado
-		if (outLayer->getTotalError() < training.getTolerance())
+		if (outLayer->getError() < training.getTolerance())
 			break;
 	}
 
@@ -130,38 +127,16 @@ void DeviceMLP::feedforward(const float* input)
 
 //===========================================================================//
 
-void DeviceMLP::feedback(const float* target, float learning)
+void DeviceMLP::feedbackward(const float* target, float learning)
 {
 	// Propaga os erros na camada de saída
-	outLayer->feedback(target, learning);
+	outLayer->feedbackward(target, learning);
 
 	// Propaga o sinal de erro para o restante das camadas
 	for (int i = layers.size() - 2; i >= 0; i--)
-		layers[i]->feedback(layers[i + 1]->getErrorSignal(), learning);
+		layers[i]->feedbackward(layers[i + 1]->getErrorSignal(), learning);
 }
 
 //===========================================================================//
-
-void DeviceMLP::initIndexes(uint size)
-{
-	indexes.resize(size);
-	for (uint i = 0; i < indexes.size(); i++)
-		indexes[i] = i;
-}
-
-//===========================================================================//
-
-void DeviceMLP::shuffleIndexes()
-{
-	for (uint i = indexes.size() - 1; i > 0; i--)
-	{
-		// Troca o valor da posição i com o de uma posição aleatória
-		uint j = rand() % (i + 1);
-		swap(indexes[i], indexes[j]);
-	}
-}
-
-//===========================================================================//
-
 
 }

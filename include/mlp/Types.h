@@ -4,6 +4,8 @@
 #include "Common.h"
 #include <curand_kernel.h>
 
+#define TPB 1024
+
 namespace ParallelMLP
 {
 

@@ -8,22 +8,18 @@ namespace ParallelMLP
 DeviceOutLayer::DeviceOutLayer(uint inUnits, uint outUnits)
 	: DeviceLayer(inUnits, outUnits)
 {
-	init(inUnits, outUnits);
-}
-
-//===========================================================================//
-
-void DeviceOutLayer::init(uint inUnits, uint outUnits)
-{
 	cudaMalloc(&error, outUnits * sizeof(float));
 	cudaMalloc(&sum, sizeof(float));
+	totalError = 0;
+	samples = 0;
 }
 
 //===========================================================================//
 
 DeviceOutLayer::~DeviceOutLayer()
 {
-
+	cudaFree(error);
+	cudaFree(sum);
 }
 
 //===========================================================================//
@@ -52,25 +48,27 @@ void DeviceOutLayer::calculateError(const float* target)
 	calculateDiff<<<outBlocks, TPB>>>(target, funcSignal, outUnits, error,
 			sum);
 
-	float aux;
-	cudaMemcpy(&aux, &sum, sizeof(float), cudaMemcpyDeviceToHost);
+	// Recupera a soma dos erros
+	float hsum;
+	cudaMemcpy(&hsum, &sum, sizeof(float), cudaMemcpyDeviceToHost);
 
-	totalError = (totalError * samples + aux) / (samples + outUnits);
+	// Calcula o erro quadrático médio
+	totalError = (totalError * samples + hsum) / (samples + outUnits);
 	samples += outUnits;
 }
 
 //===========================================================================//
 
-void DeviceOutLayer::feedback(const float* target, float learning)
+void DeviceOutLayer::feedbackward(const float* target, float learning)
 {
 	// Calcula o erro e chama o feedback do pai
 	calculateError(target);
-	DeviceLayer::feedback(error, learning);
+	DeviceLayer::feedbackward(error, learning);
 }
 
 //===========================================================================//
 
-void DeviceOutLayer::clearTotalError()
+void DeviceOutLayer::clearError()
 {
 	totalError = 0;
 	samples = 0;
@@ -78,7 +76,7 @@ void DeviceOutLayer::clearTotalError()
 
 //===========================================================================//
 
-float DeviceOutLayer::getTotalError()
+float DeviceOutLayer::getError()
 {
 	return totalError;
 }
