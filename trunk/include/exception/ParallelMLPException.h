@@ -25,10 +25,6 @@ enum ErrorType
 	SEM_SAME_NOMINAL_VALUE,		// Valor nominal já declarado
 	SEM_NOMINAL_NOT_DECLARED,	// Valor nominal não declarado
 
-	// Erros de operações em bases de dados
-	COULD_NOT_CONNECT,			// Não foi possível se conectar à base de dados
-	RELATION_NOT_UNIQUE,		// Nome da relação já existe
-
 	// Erros de operações de um MLP
 	INVALID_INPUT_VARS,			// Quantidade de entradas inválida
 	INVALID_OUTPUT_VARS,		// Quantidade de saídas inválida

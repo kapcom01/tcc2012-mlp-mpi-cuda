@@ -16,15 +16,23 @@ Relation::Relation(Driver &cDriver)
 
 Relation::~Relation()
 {
+	// Deleta os atributos
+	for (Attribute* attr : attributes)
+		delete attr;
 
+	// Deleta as instâncias
+	for (Instance* inst : data)
+	{
+		for (Value* val : *inst)
+			delete val;
+		delete inst;
+	}
 }
 
 //===========================================================================//
 
-void Relation::addAttribute(Attribute *attr)
+void Relation::addAttribute(Attribute* attr)
 {
-	AttributePtr ptr(attr);
-
 	// Verifica o tipo do atributo (só aceita numérico ou nominal)
 	if (!attr->isNumeric() && !attr->isNominal())
 		throwError(SEM_TYPE_NOT_ALLOWED);
@@ -47,32 +55,37 @@ void Relation::addAttribute(Attribute *attr)
 	}
 
 	attrMap[attr->getName()] = true;
-	attributes.push_back(ptr);
+
+	if (!attributes.empty())
+		attributes.back()->setLast(false);
+
+	attributes.push_back(attr);
+	attributes.back()->setLast(true);
 }
 
 //===========================================================================//
 
 void Relation::addInstance(const DataList* dlist, bool isSparse)
 {
-	InstancePtr row;
+	Instance* inst;
 
 	// Se não for esparso
 	if (!isSparse)
-		row = InstancePtr(new Instance(dlist->begin(), dlist->end()));
+		inst = new Instance(dlist->begin(), dlist->end());
 
 	// Caso for esparso
 	else
 	{
-		row = InstancePtr(new Instance());
+		inst = new Instance();
 
 		// Para cada valor da lista
 		auto it = dlist->begin();
 		for (uint i = 0; i < attributes.size(); i++)
 		{
 			if (it != dlist->end() && (*it)->getIndex() == i)
-				row->push_back(*it), it++;
+				inst->push_back(*it), it++;
 			else
-				row->push_back(ValuePtr(new Value(EMPTY)));
+				inst->push_back(new Value(EMPTY));
 		}
 
 		// Caso os índices da lista esparsa estivem errados
@@ -81,13 +94,13 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 	}
 
 	// Verifica a quantidade de valores
-	if (row->size() != attributes.size())
+	if (inst->size() != attributes.size())
 		throwError(SEM_WRONG_INSTANCE_TYPE);
 
 	// Verifica os tipos de cada valor
-	for (uint i = 0; i < row->size(); i++)
+	for (uint i = 0; i < inst->size(); i++)
 	{
-		ValuePtr &value = row->at(i);
+		Value* value = inst->at(i);
 
 		if (!value->isEmpty() && value->getType() != attributes[i]->getType())
 			throwError(SEM_WRONG_INSTANCE_TYPE);
@@ -105,7 +118,8 @@ void Relation::addInstance(const DataList* dlist, bool isSparse)
 		}
 	}
 
-	data.push_back(row);
+	inst->back()->setLast(true);
+	data.push_back(inst);
 }
 
 //===========================================================================//
@@ -155,9 +169,23 @@ void Relation::setName(const string *name)
 
 //===========================================================================//
 
+const Attributes& Relation::getAttributes() const
+{
+	return attributes;
+}
+
+//===========================================================================//
+
 const Attribute& Relation::getAttribute(uint i) const
 {
 	return *(attributes[i]);
+}
+
+//===========================================================================//
+
+const Data& Relation::getData() const
+{
+	return data;
 }
 
 //===========================================================================//

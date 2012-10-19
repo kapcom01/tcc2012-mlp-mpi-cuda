@@ -33,7 +33,7 @@ public:
 	 * Realiza o parseamento
 	 * @return Retorna o conjunto de dados contido no arquivo
 	 */
-	Relation* parse();
+	const Relation& parse();
 
 	/**
 	 * Analisador léxico
@@ -61,11 +61,6 @@ public:
 	Parser* parser;
 
 };
-
-/**
- * Ponteiro inteligente para Driver
- */
-typedef shared_ptr<Driver> DriverPtr;
 
 }
 

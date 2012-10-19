@@ -9,6 +9,7 @@ Attribute::Attribute(const string &name, AttributeType type)
 {
 	this->name = name;
 	this->type = type;
+	this->last = false;
 }
 
 //===========================================================================//
@@ -19,6 +20,7 @@ Attribute::Attribute(const string &name, AttributeType type,
 	this->name = name;
 	this->type = type;
 	this->str = new string(format);
+	this->last = false;
 }
 
 //===========================================================================//
@@ -29,6 +31,7 @@ Attribute::Attribute(const string &name, AttributeType type,
 	this->name = name;
 	this->type = type;
 	this->nominal = new Nominal(nominal.begin(), nominal.end());
+	this->last = false;
 }
 
 //===========================================================================//
@@ -67,6 +70,20 @@ string Attribute::getName() const
 AttributeType Attribute::getType() const
 {
 	return type;
+}
+
+//===========================================================================//
+
+bool Attribute::isLast() const
+{
+	return last;
+}
+
+//===========================================================================//
+
+void Attribute::setLast(bool last)
+{
+	this->last = last;
 }
 
 //===========================================================================//

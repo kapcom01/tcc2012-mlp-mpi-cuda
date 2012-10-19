@@ -4,10 +4,11 @@ PROJECT(ParallelMLP)
 
 SET(SOURCES
 	Chronometer.cpp
-	ExampleSet.cpp
-	Layer.cpp
-	MLP.cpp
-	OutLayer.cpp
+	#ExampleSet.cpp
+	Indexes.cpp
+	#Layer.cpp
+	#MLP.cpp
+	#OutLayer.cpp
 )
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})

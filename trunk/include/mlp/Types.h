@@ -2,11 +2,7 @@
 #define TYPES_H_
 
 #include "Common.h"
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
 #include <curand_kernel.h>
-
-using namespace thrust;
 
 namespace ParallelMLP
 {
@@ -44,29 +40,9 @@ struct Stat
 };
 
 /**
- * Vetor de floats na CPU
+ * Vetor de floats
  */
-typedef host_vector<float> hv_float;
-
-/**
- * Vetor de floats na GPU
- */
-typedef device_vector<float> dv_float;
-
-/**
- * Vetor de estatísticas na CPU
- */
-typedef host_vector<Stat> hv_stat;
-
-/**
- * Vetor de estatísticas na GPU
- */
-typedef device_vector<Stat> dv_stat;
-
-/**
- * Vetor de estados para geração de números aleatórios
- */
-typedef device_vector<curandState> dv_rand;
+typedef vector<float> v_float;
 
 /**
  * Vetor de inteiros
@@ -77,6 +53,11 @@ typedef vector<int> v_int;
  * Vetor de inteiros sem sinal
  */
 typedef vector<int> v_uint;
+
+/**
+ * Vetor de estatísticas
+ */
+typedef vector<Stat> v_stat;
 
 }
 

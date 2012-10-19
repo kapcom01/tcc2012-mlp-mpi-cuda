@@ -5,65 +5,61 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-HostOutLayer::HostOutLayer()
-{
-
-}
-
-//===========================================================================//
-
 HostOutLayer::HostOutLayer(uint inUnits, uint outUnits)
+	: HostLayer(inUnits, outUnits)
 {
-	init(inUnits, outUnits);
-}
-
-//===========================================================================//
-
-void HostOutLayer::init(uint inUnits, uint outUnits)
-{
-	this->inUnits = inUnits;
-	this->outUnits = outUnits;
-
-	weights.resize(outUnits * (inUnits + 1));
-
-	gradient.resize(outUnits);
-	funcSignal.resize(outUnits);
-	errorSignal.resize(inUnits);
-
-	rawWeights = vec_float(weights, inUnits + 1);
-	rawFuncSignal = vec_float(funcSignal);
-	rawErrorSignal = vec_float(errorSignal);
-
-	error.resize(outUnits);
-	rawError = vec_float(error);
+	error = new float[outUnits];
+	samples = 0;
+	totalError = 0;
 }
 
 //===========================================================================//
 
 HostOutLayer::~HostOutLayer()
 {
-
+	delete[] error;
 }
 
 //===========================================================================//
 
-void HostOutLayer::calculateError(const vec_float &target)
+void HostOutLayer::calculateError(const float* target)
 {
+	float sum = 0;
+
 	// Calcula o erro cometido pela rede
-	for (uint i = 0; i < error.size(); i++)
+	for (uint i = 0; i < outUnits; i++)
 	{
 		error[i] = target[i] - funcSignal[i];
-		incTotalError(error[i] * error[i]);
+		sum += error[i] * error[i];
 	}
+
+	// Calcula o erro quadrático médio
+	totalError = (totalError * samples + sum) / (samples + outUnits);
+	samples += outUnits;
 }
 
 //===========================================================================//
 
-void HostOutLayer::feedback(const vec_float &target, float learning)
+void HostOutLayer::feedbackward(const float* target, float learning)
 {
-	// Calcula o error e chama a função de feedback do pai
+	// Calcula o error e chama a função de feedbackward do pai
 	calculateError(target);
-	HostLayer::feedback(rawError, learning);
+	HostLayer::feedbackward(error, learning);
+}
+
+//===========================================================================//
+
+void HostOutLayer::clearError()
+{
+	totalError = 0;
+	samples = 0;
+}
+
+//===========================================================================//
+
+float HostOutLayer::getError()
+{
+	return totalError;
 }
 
 //===========================================================================//
