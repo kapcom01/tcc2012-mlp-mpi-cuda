@@ -180,14 +180,14 @@ instances
 instance
 	: value more_values {
 		DataList* row = $2;
-		row->push_front(ValuePtr($1));
+		row->push_front($1);
 		driver.dataset->addInstance(row, false);
 		delete row;
 	}
 	| RIGHT_BRACES INTEGER value more_sparse LEFT_BRACES {
 		DataList* row = $4;
 		$3->setIndex($2);
-		row->push_front(ValuePtr($3));
+		row->push_front($3);
 		driver.dataset->addInstance(row, true);
 		delete row;
 	}
@@ -196,7 +196,7 @@ instance
 more_values
 	: COMMA value more_values {
 		$$ = $3;
-		$$->push_front(ValuePtr($2));
+		$$->push_front($2);
 	}
 	| { $$ = new DataList; }
 	;
@@ -205,7 +205,7 @@ more_sparse
 	: COMMA INTEGER value more_sparse {
 		$$ = $4;
 		$3->setIndex($2);
-		$$->push_front(ValuePtr($3));
+		$$->push_front($3);
 	}
 	| { $$ = new DataList; }
 	;

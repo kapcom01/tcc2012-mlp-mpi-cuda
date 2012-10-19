@@ -35,12 +35,6 @@ map<int, string> ParallelMLPException::messages =
 	{ SEM_NOMINAL_NOT_DECLARED,
 			"nominal value not declared before"	},
 
-	// Erros de operações em bases de dados
-	{ COULD_NOT_CONNECT,
-			"could not connect to database" },
-	{ RELATION_NOT_UNIQUE,
-			"relation name already exists, choose another" },
-
 	// Erros de operações de um MLP
 	{ INVALID_INPUT_VARS,
 			"invalid example set, number of input vars does not match" },

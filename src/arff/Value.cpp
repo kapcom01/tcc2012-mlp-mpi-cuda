@@ -10,6 +10,7 @@ Value::Value(AttributeType type)
 {
 	this->index = -1;
 	this->type = type;
+	this->last = false;
 }
 
 //===========================================================================//
@@ -19,6 +20,7 @@ Value::Value(AttributeType type, float number)
 	this->index = -1;
 	this->type = type;
 	this->number = number;
+	this->last = false;
 }
 
 //===========================================================================//
@@ -29,6 +31,7 @@ Value::Value(AttributeType type, string &str)
 	this->type = type;
 	this->number = number;
 	this->str = new string(str);
+	this->last = false;
 }
 
 //===========================================================================//
@@ -79,6 +82,20 @@ void Value::setIndex(int index)
 AttributeType Value::getType() const
 {
 	return type;
+}
+
+//===========================================================================//
+
+bool Value::isLast() const
+{
+	return last;
+}
+
+//===========================================================================//
+
+void Value::setLast(bool last)
+{
+	this->last = last;
 }
 
 //===========================================================================//

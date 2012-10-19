@@ -76,6 +76,18 @@ public:
 	AttributeType getType() const;
 
 	/**
+	 * Verifica se o atributo é o último da lista
+	 * @return Verdadeiro se for o último; falso caso contrário
+	 */
+	bool isLast() const;
+
+	/**
+	 * Seta se for o último atributo
+	 * @param last Indicador
+	 */
+	void setLast(bool last);
+
+	/**
 	 * Retorna o valor numérico
 	 * @return Valor numérico
 	 */
@@ -98,6 +110,11 @@ private:
 	 * Tipo
 	 */
 	AttributeType type;
+
+	/**
+	 * Indica se é o último atributo
+	 */
+	bool last;
 
 	/**
 	 * Valor
@@ -125,29 +142,19 @@ private:
 };
 
 /**
- * Ponteiro para DataValue
- */
-typedef shared_ptr<Value> ValuePtr;
-
-/**
  * Dados de uma linha
  */
-typedef vector<ValuePtr> Instance;
+typedef vector<Value*> Instance;
 
 /**
  * Dados de uma linha como uma lista
  */
-typedef list<ValuePtr> DataList;
-
-/**
- * Ponteiro para DataRow
- */
-typedef shared_ptr<Instance> InstancePtr;
+typedef list<Value*> DataList;
 
 /**
  * Vários dados
  */
-typedef vector<InstancePtr> Data;
+typedef vector<Instance*> Data;
 
 }
 

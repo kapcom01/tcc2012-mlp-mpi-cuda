@@ -31,7 +31,7 @@ public:
 	 * Adiciona um atributo
 	 * @param attr Atributo
 	 */
-	void addAttribute(Attribute *attr);
+	void addAttribute(Attribute* attr);
 
 	/**
 	 * Adiciona uma instância de dados
@@ -65,11 +65,23 @@ public:
 	void setName(const string *name);
 
 	/**
+	 * Retorna todos os atributos
+	 * @return Todos os atributos
+	 */
+	const Attributes& getAttributes() const;
+
+	/**
 	 * Retorna o i-ésimo atributo
 	 * @param i Índice do atributo
 	 * @return i-ésimo atributo
 	 */
 	const Attribute& getAttribute(uint i) const;
+
+	/**
+	 * Retorna todas as intâncias
+	 * @return Todas as intâncias
+	 */
+	const Data& getData() const;
 
 	/**
 	 * Retorna a i-ésima instância
@@ -120,11 +132,6 @@ private:
 	map<string, bool> attrMap;
 
 };
-
-/**
- * Ponteiro inteligente para Dataset
- */
-typedef shared_ptr<Relation> DataSetPtr;
 
 }
 

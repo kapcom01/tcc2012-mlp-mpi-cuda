@@ -1,7 +1,7 @@
 #ifndef HOSTLAYER_H_
 #define HOSTLAYER_H_
 
-#include "mlp/common/Layer.h"
+#include "mlp/Types.h"
 
 namespace ParallelMLP
 {
@@ -9,7 +9,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada da rede MLP na CPU
  */
-class HostLayer : virtual public Layer
+class HostLayer
 {
 
 public:
@@ -29,64 +29,106 @@ public:
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	virtual void randomize();
-
-	/**
-	 * Inicia uma operação
-	 */
-	virtual void initOperation();
-
-	/**
-	 * Finaliza uma operação
-	 */
-	virtual void endOperation();
+	void randomize();
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	virtual void feedforward(const vec_float &input);
+	void feedforward(const float* input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float &signal, float learning);
+	virtual void feedbackward(const float* signal, float learning);
+
+	/**
+	 * Retorna a quantidade de unidades de entrada
+	 * @return Quantidade de unidades de entrada
+	 */
+	uint getInUnits();
+
+	/**
+	 * Retorna a quantidade de unidades de saída
+	 * @return Quantidade de unidades de saída
+	 */
+	uint getOutUnits();
+
+	/**
+	 * Retorna o sinal funcional
+	 * @return Sinal funcional
+	 */
+	float* getFuncSignal();
+
+	/**
+	 * Retorna o sinal de erro
+	 * @return Sinal de erro
+	 */
+	float* getErrorSignal();
 
 protected:
 
 	/**
-	 * Constrói uma camada vazia
+	 * Retorna um valor aleatório entre -1 e 1
+	 * @return Valor aleatório entre -1 e 1
 	 */
-	HostLayer();
+	float random() const;
 
 	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
+	 * Ativa um valor através da função hiperbólica
+	 * @param x Valor a ser ativado
+	 * @return Valor ativado
 	 */
-	void init(uint inUnits, uint outUnits);
+	float activate(float x) const;
+
+	/**
+	 * Desativa um valor através da derivada da função hiperbólica
+	 * @param y Valor ativado
+	 * @return Valor desativado
+	 */
+	float derivate(float y) const;
+
+	/**
+	 * Quantidade de unidades de entrada
+	 */
+	uint inUnits;
+
+	/**
+	 * Quantidade de unidades de saída
+	 */
+	uint outUnits;
+
+	/**
+	 * Quantidade de unidades de conexões
+	 */
+	uint connUnits;
+
+	/**
+	 * Vetor de entrada
+	 */
+	const float* input;
 
 	/**
 	 * Vetor puro de pesos
 	 */
-	vec_float rawWeights;
+	float* weights;
 
 	/**
 	 * Gradiente dos neurônios
 	 */
-	hv_float gradient;
+	float* gradient;
 
 	/**
 	 * Sinal funcional dos neurônios
 	 */
-	hv_float funcSignal;
+	float* funcSignal;
 
 	/**
 	 * Sinal de erro
 	 */
-	hv_float errorSignal;
+	float* errorSignal;
 
 };
 

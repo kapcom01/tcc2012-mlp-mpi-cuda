@@ -1,7 +1,9 @@
 #ifndef HOSTMLP_H_
 #define HOSTMLP_H_
 
-#include "mlp/common/MLP.h"
+#include "exception/ParallelMLPException.h"
+#include "mlp/common/Indexes.h"
+#include "mlp/common/Chronometer.h"
 #include "mlp/serial/HostOutLayer.h"
 #include "mlp/serial/HostExampleSet.h"
 
@@ -11,23 +13,16 @@ namespace ParallelMLP
 /**
  * Classe que representa um Multi-Layer Perceptron na CPU
  */
-class HostMLP : public MLP
+class HostMLP
 {
 
 public:
 
 	/**
-	 * Constrói um MLP que será recuperado
-	 * @param mlpID ID da rede
-	 */
-	HostMLP(int mlpID);
-
-	/**
 	 * Constrói um MLP não treinado
-	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	HostMLP(string name, v_uint &units);
+	HostMLP(v_uint &units);
 
 	/**
 	 * Destrói o MLP
@@ -35,30 +30,71 @@ public:
 	virtual ~HostMLP();
 
 	/**
-	 * Adiciona uma nova camada
-	 * @param inUnits Unidades de entrada
-	 * @param outUnits Unidades de saída
-	 * @param isOutput Indica se é uma camada de saída
-	 */
-	virtual void addLayer(uint inUnits, uint outUnits, bool isOutput);
-
-	/**
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	virtual void train(HostExampleSet* training);
+	void train(HostExampleSet &training);
+
+protected:
 
 	/**
-	 * Valida a rede neural
-	 * @param validation Conjunto de validação
+	 * Randomiza os pesos das conexões
 	 */
-	virtual void validate(HostExampleSet* validation);
+	void randomize();
 
 	/**
-	 * Testa a rede neural
-	 * @param test Conjunto de testes
+	 * Inicializa uma operação
+	 * @param set Conjunto de dados
 	 */
-	virtual void test(HostExampleSet* test);
+	void initOperation(HostExampleSet &set);
+
+	/**
+	 * Finaliza uma operação
+	 * @param set Conjunto de dados
+	 */
+	void endOperation(HostExampleSet &set);
+
+	/**
+	 * Realiza o feedforward
+	 * @param input Dados de entrada
+	 */
+	void feedforward(const float* input);
+
+	/**
+	 * Realiza o feedback
+	 * @param learning Taxa de aprendizado
+	 */
+	void feedbackward(const float* target, float learning);
+
+	/**
+	 * Cronômetro
+	 */
+	Chronometer chrono;
+
+	/**
+	 * Época atual
+	 */
+	uint epoch;
+
+	/**
+	 * Vetor de índices
+	 */
+	Indexes indexes;
+
+	/**
+	 * Camadas do MLP
+	 */
+	vector<HostLayer*> layers;
+
+	/**
+	 * Primeira camada escondida
+	 */
+	HostLayer* inLayer;
+
+	/**
+	 * Camada de saída
+	 */
+	HostOutLayer* outLayer;
 
 };
 

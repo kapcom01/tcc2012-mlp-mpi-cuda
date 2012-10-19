@@ -35,10 +35,10 @@ Driver::~Driver()
 
 //===========================================================================//
 
-Relation* Driver::parse()
+const Relation& Driver::parse()
 {
 	parser->parse();
-	return dataset;
+	return *dataset;
 }
 
 //===========================================================================//

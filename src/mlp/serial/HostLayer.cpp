@@ -3,119 +3,86 @@
 namespace ParallelMLP
 {
 
-float random();
-
-float activate(float x);
-
-float derivate(float y);
-
-//===========================================================================//
-
-HostLayer::HostLayer()
-{
-
-}
-
 //===========================================================================//
 
 HostLayer::HostLayer(uint inUnits, uint outUnits)
 {
-	init(inUnits, outUnits);
-}
+	this->inUnits = inUnits + 1;
+	this->outUnits = outUnits;
+	this->connUnits = (inUnits + 1) * outUnits;
+	this->input = NULL;
 
-//===========================================================================//
-
-void HostLayer::init(uint inUnits, uint outUnits)
-{
-	Layer::init(inUnits, outUnits);
-
-	gradient.resize(outUnits);
-	funcSignal.resize(outUnits);
-	errorSignal.resize(inUnits);
-
-	rawWeights = vec_float(weights, inUnits + 1);
-	rawFuncSignal = vec_float(funcSignal);
-	rawErrorSignal = vec_float(errorSignal);
+	// Aloca espaço para os vetores
+	weights = new float[connUnits];
+	gradient = new float[outUnits];
+	funcSignal = new float[outUnits];
+	errorSignal = new float[inUnits];
 }
 
 //===========================================================================//
 
 HostLayer::~HostLayer()
 {
-
+	delete[] weights;
+	delete[] gradient;
+	delete[] funcSignal;
+	delete[] errorSignal;
 }
 
 //===========================================================================//
 
 void HostLayer::randomize()
 {
-	for (uint n = 0; n < outUnits; n++)
-		for (uint i = 0; i <= inUnits; i++)
-			weights[n * inUnits + i] = random();
+	for (uint i = 0; i < connUnits; i++)
+		weights[i] = random();
 }
 
 //===========================================================================//
 
-void HostLayer::initOperation()
-{
-
-}
-
-//===========================================================================//
-
-void HostLayer::endOperation()
-{
-
-}
-
-//===========================================================================//
-
-void HostLayer::feedforward(const vec_float &input)
+void HostLayer::feedforward(const float* input)
 {
 	this->input = input;
 
 	// Inicializa o sinal funcional
-	rawFuncSignal.hostClear();
+	memset(funcSignal, 0, outUnits * sizeof(float));
 
-	// Executa a ativação de cada neurônio
-	for (uint n = 0; n < outUnits; n++)
+	// Calcula o sinal funcional
+	for (uint i = 0; i < connUnits; i++)
 	{
-		// Calcula o sinal funcional
-		for (uint i = 0; i < inUnits; i++)
-			rawFuncSignal[n] += input[i] * rawWeights(n)[i];
-		rawFuncSignal[n] += rawWeights(n)[inUnits];
-
-		// Ativa a saída
-		rawFuncSignal[n] = activate(rawFuncSignal[n]);
+		uint j = i % inUnits;
+		uint k = i / inUnits;
+		funcSignal[k] += weights[i] * input[j];
 	}
+
+	// Ativa o sinal funcional
+	for (uint i = 0; i < outUnits; i++)
+		funcSignal[i] = activate(funcSignal[i]);
 }
 
 //===========================================================================//
 
-void HostLayer::feedback(const vec_float &signal, float learning)
+void HostLayer::feedbackward(const float* signal, float learning)
 {
 	// Inicializa o sinal funcional
-	rawErrorSignal.hostClear();
+	memset(errorSignal, 0, inUnits * sizeof(float));
 
-	// Atualiza os pesos de cada neurônio
-	for (uint n = 0; n < outUnits; n++)
+	// Calcula o gradiente
+	for (uint i = 0; i < outUnits; i++)
+		gradient[i] = derivate(funcSignal[i]) * signal[i];
+
+	// Atualiza os pesos e calcula o sinal de erro
+	for (uint i = 0; i < connUnits; i++)
 	{
-		// Calcula o gradiente
-		gradient[n] = derivate(funcSignal[n]) * signal[n];
-
-		// Atualiza o peso e calcula o sinal de erro
-		for (uint i = 0; i < inUnits; i++)
-		{
-			rawWeights(n)[i] += learning * gradient[n] * input[i];
-			errorSignal[i] += gradient[n] * rawWeights(n)[i];
-		}
-		rawWeights(n)[inUnits] += learning * gradient[n];
+		uint j = i % inUnits;
+		uint k = i / inUnits;
+		weights[i] += learning * gradient[k] * input[j];
+		errorSignal[j] += gradient[k] * weights[i];
 	}
 }
 
 //===========================================================================//
 
-float random()
+float HostLayer::random() const
 {
 	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
@@ -123,16 +90,44 @@ float random()
 
 //===========================================================================//
 
-float activate(float x)
+float HostLayer::activate(float x) const
 {
 	return tanh(x);
 }
 
 //===========================================================================//
 
-float derivate(float y)
+float HostLayer::derivate(float y) const
 {
 	return (1 - y) * (1 + y);
+}
+
+//===========================================================================//
+
+uint HostLayer::getInUnits()
+{
+	return inUnits;
+}
+
+//===========================================================================//
+
+uint HostLayer::getOutUnits()
+{
+	return outUnits;
+}
+
+//===========================================================================//
+
+float* HostLayer::getFuncSignal()
+{
+	return funcSignal;
+}
+
+//===========================================================================//
+
+float* HostLayer::getErrorSignal()
+{
+	return errorSignal;
 }
 
 //===========================================================================//
