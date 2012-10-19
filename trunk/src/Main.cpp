@@ -2,14 +2,15 @@
 #include "arff/Relation.h"
 
 #include "mlp/serial/HostMLP.h"
-//#include "mlp/cuda/DeviceMLP.h"
+#include "mlp/cuda/DeviceMLP.h"
 
 using namespace ParallelMLP;
 
 void serialTrain(v_uint units, float learning, uint maxEpochs, float tolerance,
 		const Relation &relation);
 
-//void cudaTrain();
+void cudaTrain(v_uint units, float learning, uint maxEpochs, float tolerance,
+		const Relation &relation);
 
 string program;
 
@@ -45,8 +46,8 @@ int main(int argc, char* argv[])
 		if (cmd == "serial")
 			serialTrain(units, learning, maxEpochs, tolerance, relation);
 
-//		else if (cmd == "cuda")
-//			cudaTrain(units, learning, maxEpochs, tolerance, relation);
+		else if (cmd == "cuda")
+			cudaTrain(units, learning, maxEpochs, tolerance, relation);
 
 		else
 			throw runtime_error(usage);
@@ -71,5 +72,17 @@ void serialTrain(v_uint units, float learning, uint maxEpochs, float tolerance,
 	set.setTolerance(tolerance);
 
 	HostMLP mlp(units);
+	mlp.train(set);
+}
+
+void cudaTrain(v_uint units, float learning, uint maxEpochs, float tolerance,
+		const Relation &relation)
+{
+	DeviceExampleSet set(relation);
+	set.setLearning(learning);
+	set.setMaxEpochs(maxEpochs);
+	set.setTolerance(tolerance);
+
+	DeviceMLP mlp(units);
 	mlp.train(set);
 }

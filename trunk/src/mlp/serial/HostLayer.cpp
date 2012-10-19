@@ -15,8 +15,10 @@ HostLayer::HostLayer(uint inUnits, uint outUnits)
 	// Aloca espaço para os vetores
 	weights = new float[connUnits];
 	gradient = new float[outUnits];
-	funcSignal = new float[outUnits];
+	funcSignal = new float[outUnits + 1];
 	errorSignal = new float[inUnits];
+
+	funcSignal[outUnits] = 1;
 }
 
 //===========================================================================//
@@ -64,7 +66,7 @@ void HostLayer::feedforward(const float* input)
 void HostLayer::feedbackward(const float* signal, float learning)
 {
 	// Inicializa o sinal funcional
-	memset(errorSignal, 0, inUnits * sizeof(float));
+	memset(errorSignal, 0, (inUnits - 1) * sizeof(float));
 
 	// Calcula o gradiente
 	for (uint i = 0; i < outUnits; i++)

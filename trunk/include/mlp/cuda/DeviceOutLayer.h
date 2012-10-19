@@ -1,7 +1,6 @@
 #ifndef DEVICEOUTLAYER_H_
 #define DEVICEOUTLAYER_H_
 
-#include "mlp/common/OutLayer.h"
 #include "mlp/cuda/DeviceLayer.h"
 
 namespace ParallelMLP
@@ -31,41 +30,46 @@ public:
 	 * Calcula o erro da rede
 	 * @param target Saída esperada para a rede neural
 	 */
-	virtual void calculateError(const float* target);
+	void calculateError(const float* target);
 
 	/**
 	 * Realiza a operação de feedforward
-	 * @param target Saída esperada da rede neural
+	 * @param target Saída esperada para a rede neural
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const float* target, float learning);
+	virtual void feedbackward(const float* target, float learning);
 
 	/**
 	 * Limpa o erro quadrático médio
 	 */
-	void clearTotalError();
+	void clearError();
 
 	/**
 	 * Retorna o erro quadrático médio
 	 * @return Erro quadrático médio
 	 */
-	float getTotalError();
+	float getError();
 
 protected:
 
 	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
+	 * Vetor de erros
 	 */
-	void init(uint inUnits, uint outUnits);
-
 	float* error;
 
+	/**
+	 * Soma dos erros
+	 */
 	float* sum;
 
+	/**
+	 * Erro quadrático médio
+	 */
 	float totalError;
 
+	/**
+	 * Quantidade de amostras para o erro
+	 */
 	uint samples;
 
 };

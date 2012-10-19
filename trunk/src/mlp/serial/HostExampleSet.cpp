@@ -28,11 +28,9 @@ HostExampleSet::HostExampleSet(const Relation &relation)
 	// Aloca espaço para as entradas
 	input = new float[size * step];
 	output = new float[size * outVars];
-	stat = new Stat[size * step];
+	stat = new Stat[step];
 
 	setRelation(relation);
-
-	print();
 }
 
 //===========================================================================//
@@ -186,7 +184,7 @@ void HostExampleSet::unnormalize()
 	// Desnormaliza cada saída da rede neural
 	for (uint i = 0; i < size * outVars; i++)
 	{
-		uint j = i % outVars + inVars + 1;
+		uint j = i % outVars + inVars;
 		adjust(output[i], stat[j].to, stat[j].from);
 	}
 
@@ -224,23 +222,38 @@ uint HostExampleSet::getSize() const
 
 //===========================================================================//
 
-float* HostExampleSet::getInput(uint i)
+const float* HostExampleSet::getInput() const
+{
+	return input;
+}
+
+//===========================================================================//
+
+const float* HostExampleSet::getInput(uint i) const
 {
 	return &input[i * step];
 }
 
 //===========================================================================//
 
-float* HostExampleSet::getTarget(uint i)
+const float* HostExampleSet::getTarget(uint i) const
 {
-	return &input[i * step + inVars + 1];
+	return &input[i * step + inVars];
 }
 
 //===========================================================================//
 
 void HostExampleSet::setOutput(uint i, float* output)
 {
-	memcpy(this->output, output, outVars);
+	float* inst = &(this->output[i * outVars]);
+	memcpy(inst, output, outVars * sizeof(float));
+}
+
+//===========================================================================//
+
+const Stat* HostExampleSet::getStat() const
+{
+	return stat;
 }
 
 //===========================================================================//

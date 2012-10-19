@@ -3,64 +3,61 @@
 namespace ParallelMLP
 {
 
-__host__ __device__
-void d_adjust(float &x, const Range &from, const Range &to);
+__device__
+void adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
-DeviceExampleSet::DeviceExampleSet()
+DeviceExampleSet::DeviceExampleSet(const Relation& relation)
 {
+	HostExampleSet set(relation);
 
-}
+	// Recupera os tamanhos
+	size = set.getSize();
+	inVars = set.getInVars();
+	outVars = set.getOutVars();
+	step = inVars + outVars;
+	stepBlocks = (size * step) / TPB + 1;
+	outBlocks = (size * outVars) / TPB + 1;
 
-//===========================================================================//
+	// Aloca espaço no dispositivo
+	cudaMalloc(&input, size * step * sizeof(float));
+	cudaMalloc(&output, size * outVars * sizeof(float));
+	cudaMalloc(&stat, step * sizeof(Stat));
 
-DeviceExampleSet::DeviceExampleSet(int relationID, int mlpID, SetType type)
-	: ExampleSet(relationID, mlpID, type)
-{
-
+	copyToDevice(set);
 }
 
 //===========================================================================//
 
 DeviceExampleSet::~DeviceExampleSet()
 {
-
+	cudaFree(input);
+	cudaFree(output);
+	cudaFree(stat);
 }
 
 //===========================================================================//
 
-void DeviceExampleSet::copyToDevice()
+void DeviceExampleSet::copyToDevice(const HostExampleSet &set)
 {
-	// Copia os dados da memória para a GPU
-	devInput = input;
-	devOutput = output;
-	devStat = stat;
-
-	// Atribui os ponteiros puros
-	rawInput = vec_float(devInput, inVars + outVars);
-	rawOutput = vec_float(devOutput, outVars);
-	rawStat = vec_stat(devStat);
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::copyToHost()
-{
-	// Copia os dados da GPU para a memória
-	input = devInput;
-	output = devOutput;
+	// Copia os dados para o dispositivo
+	cudaMemcpy(input, set.getInput(), size * step * sizeof(float),
+			cudaMemcpyHostToDevice);
+	cudaMemcpy(stat, set.getStat(), step * sizeof(Stat),
+			cudaMemcpyHostToDevice);
 }
 
 //===========================================================================//
 
 __global__
-void normalizeVec(vec_float vec, vec_stat stat, uint offset)
+void normalizeVec(float* vec, Stat* stat, uint size, uint step, uint offset)
 {
-	int k = blockIdx.x + offset;
-	int i = threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = i % step + offset;
 
-	d_adjust(vec(k)[i], stat(i)->from, stat(i)->to);
+	if (i < size * step)
+		adjust(vec[i], stat[j].from, stat[j].to);
 }
 
 //===========================================================================//
@@ -70,18 +67,8 @@ void DeviceExampleSet::normalize()
 	if (isNormalized)
 		return;
 
-	// Copia os dados para o dispositivo
-	copyToDevice();
-
-	for (uint i = 0; i < size; i += MAX_BLOCKS)
-	{
-		uint blocks = (size - i >= MAX_BLOCKS) ? MAX_BLOCKS : (size - i);
-
-		// Normaliza as colunas de dados
-		normalizeVec<<<blocks, inVars + outVars>>>(rawInput, rawStat, i);
-	}
-
-	copyToHost();
+	// Normaliza as entradas
+	normalizeVec<<<stepBlocks, TPB>>>(input, stat, size, step, 0);
 
 	isNormalized = true;
 }
@@ -89,12 +76,13 @@ void DeviceExampleSet::normalize()
 //===========================================================================//
 
 __global__
-void unnormalizeVec(vec_float vec, vec_stat stat, uint offset, uint statOffset)
+void unnormalizeVec(float* vec, Stat* stat, uint size, uint step, uint offset)
 {
-	int k = blockIdx.x + offset;
-	int i = threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = i % step + offset;
 
-	d_adjust(vec(k)[i], stat(i + statOffset)->to, stat(i + statOffset)->from);
+	if (i < size * step)
+		adjust(vec[i], stat[j].to, stat[j].from);
 }
 
 //===========================================================================//
@@ -104,58 +92,150 @@ void DeviceExampleSet::unnormalize()
 	if (!isNormalized)
 		return;
 
-	for (uint i = 0; i < size; i += MAX_BLOCKS)
-	{
-		uint blocks = (size - i >= MAX_BLOCKS) ? MAX_BLOCKS : (size - i);
+	// Desnormaliza as entradas
+	unnormalizeVec<<<stepBlocks, TPB>>>(input, stat, size, step, 0);
 
-		// Normaliza as colunas de dados
-		unnormalizeVec<<<blocks, inVars + outVars>>>(rawInput, rawStat, i, 0);
-
-		// Normaliza as colunas de saída da rede neural
-		unnormalizeVec<<<blocks, outVars>>>(rawOutput, rawStat, i, inVars);
-	}
-
-	// Copia os dados de volta para a memória
-	copyToHost();
+	// Desnormaliza as saídas
+	unnormalizeVec<<<outBlocks, TPB>>>(output, stat, size, outVars, inVars);
 
 	isNormalized = false;
 }
 
 //===========================================================================//
 
-vec_float DeviceExampleSet::getInput(uint i)
-{
-	if (isNormalized)
-		return vec_float(devInput, inVars + outVars, i, inVars);
-	else
-		return ExampleSet::getInput(i);
-}
-
-//===========================================================================//
-
-vec_float DeviceExampleSet::getTarget(uint i)
-{
-	if (isNormalized)
-		return vec_float(devInput, inVars + outVars, i, outVars, inVars);
-	else
-		return ExampleSet::getTarget(i);
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setOutput(uint i, vec_float &output)
-{
-	vec_float this_out(this->devOutput, outVars, i, outVars);
-	this_out.deviceCopyTo(output);
-}
-
-//===========================================================================//
-
-__host__ __device__
-void d_adjust(float &x, const Range &from, const Range &to)
+__device__
+void adjust(float &x, const Range &from, const Range &to)
 {
 	x = (to.upper - to.lower) / (from.upper - from.lower)
 			* (x - from.lower) + to.lower;
+}
+
+//===========================================================================//
+
+uint DeviceExampleSet::getInVars() const
+{
+	return inVars;
+}
+
+//===========================================================================//
+
+uint DeviceExampleSet::getOutVars() const
+{
+	return outVars;
+}
+
+//===========================================================================//
+
+uint DeviceExampleSet::getSize() const
+{
+	return size;
+}
+
+//===========================================================================//
+
+const float* DeviceExampleSet::getInput(uint i) const
+{
+	return &input[i * step];
+}
+
+//===========================================================================//
+
+const float* DeviceExampleSet::getTarget(uint i) const
+{
+	return &input[i * step + inVars];
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setOutput(uint i, float* output)
+{
+	float* inst = &(this->output[i * outVars]);
+	cudaMemcpy(inst, output, outVars * sizeof(float),
+			cudaMemcpyDeviceToDevice);
+}
+
+//===========================================================================//
+
+float DeviceExampleSet::getLearning() const
+{
+	return learning;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setLearning(float learning)
+{
+	this->learning = learning;
+}
+
+//===========================================================================//
+
+float DeviceExampleSet::getTolerance() const
+{
+	return tolerance;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setTolerance(float tolerance)
+{
+	this->tolerance = tolerance;
+}
+
+//===========================================================================//
+
+uint DeviceExampleSet::getMaxEpochs() const
+{
+	return maxEpochs;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setMaxEpochs(uint maxEpochs)
+{
+	this->maxEpochs = maxEpochs;
+}
+
+//===========================================================================//
+
+float DeviceExampleSet::getError() const
+{
+	return error;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setError(float error)
+{
+	this->error = error;
+}
+
+//===========================================================================//
+
+uint DeviceExampleSet::getEpochs() const
+{
+	return epochs;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setEpochs(uint epochs)
+{
+	this->epochs = epochs;
+}
+
+//===========================================================================//
+
+float DeviceExampleSet::getTime() const
+{
+	return time;
+}
+
+//===========================================================================//
+
+void DeviceExampleSet::setTime(float time)
+{
+	this->time = time;
 }
 
 //===========================================================================//
