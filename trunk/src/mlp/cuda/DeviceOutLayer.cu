@@ -6,12 +6,11 @@ namespace ParallelMLP
 //===========================================================================//
 
 DeviceOutLayer::DeviceOutLayer(uint inUnits, uint outUnits)
-	: DeviceLayer(inUnits, outUnits)
+	: Layer(inUnits, outUnits), OutLayer(inUnits, outUnits),
+	  DeviceLayer(inUnits, outUnits)
 {
 	cudaMalloc(&error, outUnits * sizeof(float));
 	cudaMalloc(&sum, sizeof(float));
-	totalError = 0;
-	samples = 0;
 }
 
 //===========================================================================//
@@ -52,9 +51,8 @@ void DeviceOutLayer::calculateError(const float* target)
 	float hsum;
 	cudaMemcpy(&hsum, &sum, sizeof(float), cudaMemcpyDeviceToHost);
 
-	// Calcula o erro quadrático médio
-	totalError = (totalError * samples + hsum) / (samples + outUnits);
-	samples += outUnits;
+	// Incrementa o erro
+	incError(hsum);
 }
 
 //===========================================================================//
@@ -67,23 +65,6 @@ void DeviceOutLayer::feedbackward(const float* target, float learning)
 }
 
 //===========================================================================//
-
-void DeviceOutLayer::clearError()
-{
-	totalError = 0;
-	samples = 0;
-}
-
-//===========================================================================//
-
-float DeviceOutLayer::getError()
-{
-	return totalError;
-}
-
-//===========================================================================//
-
-
 
 }
 

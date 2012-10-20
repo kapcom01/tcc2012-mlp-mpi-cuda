@@ -6,25 +6,8 @@ namespace ParallelMLP
 //===========================================================================//
 
 HostExampleSet::HostExampleSet(const Relation &relation)
+	: ExampleSet(relation)
 {
-	size = relation.getNInstances();
-	inVars = 1;
-	outVars = 0;
-
-	// Calcula a quantidade de variáveis de entrada e saída que existirão
-	for (const Attribute* attr : relation.getAttributes())
-	{
-		uint inc = attr->isNumeric() ? 1 : attr->getNominalCard();
-
-		if (attr->isLast())
-			outVars += inc;
-		else
-			inVars += inc;
-	}
-
-	// Soma das variáveis de entrada, do bias e das variáveis de saída
-	step = inVars + outVars;
-
 	// Aloca espaço para as entradas
 	input = new float[size * step];
 	output = new float[size * outVars];
@@ -46,8 +29,6 @@ HostExampleSet::~HostExampleSet()
 
 void HostExampleSet::setRelation(const Relation& relation)
 {
-	inputIdx = outputIdx = statIdx = 0;
-
 	// Para cada instância
 	for (const Instance* inst : relation.getData())
 	{
@@ -201,143 +182,10 @@ void HostExampleSet::adjust(float &x, const Range &from, const Range &to) const
 
 //===========================================================================//
 
-uint HostExampleSet::getInVars() const
-{
-	return inVars;
-}
-
-//===========================================================================//
-
-uint HostExampleSet::getOutVars() const
-{
-	return outVars;
-}
-
-//===========================================================================//
-
-uint HostExampleSet::getSize() const
-{
-	return size;
-}
-
-//===========================================================================//
-
-const float* HostExampleSet::getInput() const
-{
-	return input;
-}
-
-//===========================================================================//
-
-const float* HostExampleSet::getInput(uint i) const
-{
-	return &input[i * step];
-}
-
-//===========================================================================//
-
-const float* HostExampleSet::getTarget(uint i) const
-{
-	return &input[i * step + inVars];
-}
-
-//===========================================================================//
-
 void HostExampleSet::setOutput(uint i, float* output)
 {
 	float* inst = &(this->output[i * outVars]);
 	memcpy(inst, output, outVars * sizeof(float));
-}
-
-//===========================================================================//
-
-const Stat* HostExampleSet::getStat() const
-{
-	return stat;
-}
-
-//===========================================================================//
-
-float HostExampleSet::getLearning() const
-{
-	return learning;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setLearning(float learning)
-{
-	this->learning = learning;
-}
-
-//===========================================================================//
-
-float HostExampleSet::getTolerance() const
-{
-	return tolerance;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setTolerance(float tolerance)
-{
-	this->tolerance = tolerance;
-}
-
-//===========================================================================//
-
-uint HostExampleSet::getMaxEpochs() const
-{
-	return maxEpochs;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setMaxEpochs(uint maxEpochs)
-{
-	this->maxEpochs = maxEpochs;
-}
-
-//===========================================================================//
-
-float HostExampleSet::getError() const
-{
-	return error;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setError(float error)
-{
-	this->error = error;
-}
-
-//===========================================================================//
-
-uint HostExampleSet::getEpochs() const
-{
-	return epochs;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setEpochs(uint epochs)
-{
-	this->epochs = epochs;
-}
-
-//===========================================================================//
-
-float HostExampleSet::getTime() const
-{
-	return time;
-}
-
-//===========================================================================//
-
-void HostExampleSet::setTime(float time)
-{
-	this->time = time;
 }
 
 //===========================================================================//

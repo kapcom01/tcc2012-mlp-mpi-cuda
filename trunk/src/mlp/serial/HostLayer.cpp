@@ -6,12 +6,8 @@ namespace ParallelMLP
 //===========================================================================//
 
 HostLayer::HostLayer(uint inUnits, uint outUnits)
+	: Layer(inUnits, outUnits)
 {
-	this->inUnits = inUnits + 1;
-	this->outUnits = outUnits;
-	this->connUnits = (inUnits + 1) * outUnits;
-	this->input = NULL;
-
 	// Aloca espaço para os vetores
 	weights = new float[connUnits];
 	gradient = new float[outUnits];
@@ -102,34 +98,6 @@ float HostLayer::activate(float x) const
 float HostLayer::derivate(float y) const
 {
 	return (1 - y) * (1 + y);
-}
-
-//===========================================================================//
-
-uint HostLayer::getInUnits()
-{
-	return inUnits;
-}
-
-//===========================================================================//
-
-uint HostLayer::getOutUnits()
-{
-	return outUnits;
-}
-
-//===========================================================================//
-
-float* HostLayer::getFuncSignal()
-{
-	return funcSignal;
-}
-
-//===========================================================================//
-
-float* HostLayer::getErrorSignal()
-{
-	return errorSignal;
 }
 
 //===========================================================================//

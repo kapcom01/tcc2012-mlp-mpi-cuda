@@ -2,7 +2,9 @@
 #include "arff/Relation.h"
 
 #include "mlp/serial/HostMLP.h"
+#include "mlp/serial/HostExampleSet.h"
 #include "mlp/cuda/DeviceMLP.h"
+#include "mlp/cuda/DeviceExampleSet.h"
 
 using namespace ParallelMLP;
 

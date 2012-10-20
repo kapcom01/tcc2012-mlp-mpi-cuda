@@ -1,6 +1,7 @@
 #ifndef HOSTOUTLAYER_H_
 #define HOSTOUTLAYER_H_
 
+#include "mlp/common/OutLayer.h"
 #include "mlp/serial/HostLayer.h"
 
 namespace ParallelMLP
@@ -9,7 +10,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada de saída da rede MLP na CPU
  */
-class HostOutLayer : public HostLayer
+class HostOutLayer : public OutLayer, public HostLayer
 {
 
 public:
@@ -30,7 +31,7 @@ public:
 	 * Calcula o erro da rede
 	 * @param target Saída esperada para a rede neural
 	 */
-	void calculateError(const float* target);
+	virtual void calculateError(const float* target);
 
 	/**
 	 * Realiza a operação de feedforward
@@ -38,34 +39,6 @@ public:
 	 * @param learning Taxa de aprendizado
 	 */
 	virtual void feedbackward(const float* target, float learning);
-
-	/**
-	 * Limpa o erro quadrático médio
-	 */
-	void clearError();
-
-	/**
-	 * Retorna o erro quadrático médio
-	 * @return Erro quadrático médio
-	 */
-	float getError();
-
-protected:
-
-	/**
-	 * Vetor de erros
-	 */
-	float* error;
-
-	/**
-	 * Erro quadrático médio
-	 */
-	float totalError;
-
-	/**
-	 * Quantidade de amostras para o erro
-	 */
-	uint samples;
 
 };
 

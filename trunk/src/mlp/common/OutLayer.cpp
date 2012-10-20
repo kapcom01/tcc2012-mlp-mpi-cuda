@@ -5,24 +5,11 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-OutLayer::OutLayer()
-{
-	clearTotalError();
-}
-
-//===========================================================================//
-
 OutLayer::OutLayer(uint inUnits, uint outUnits)
+	: Layer(inUnits, outUnits)
 {
-	init(inUnits, outUnits);
-}
-
-//===========================================================================//
-
-void OutLayer::init(uint inUnits, uint outUnits)
-{
-	Layer::init(inUnits, outUnits);
-	clearTotalError();
+	samples = totalError = 0;
+	error = NULL;
 }
 
 //===========================================================================//
@@ -34,7 +21,7 @@ OutLayer::~OutLayer()
 
 //===========================================================================//
 
-void OutLayer::clearTotalError()
+void OutLayer::clearError()
 {
 	totalError = 0;
 	samples = 0;
@@ -42,15 +29,16 @@ void OutLayer::clearTotalError()
 
 //===========================================================================//
 
-void OutLayer::incTotalError(float value, uint weight)
+void OutLayer::incError(float inc)
 {
-	totalError = (samples * totalError + value) / (double) (samples + weight);
-	samples += weight;
+	// Calcula o erro quadrático médio
+	totalError = (totalError * samples + inc) / (float) (samples + outUnits);
+	samples += outUnits;
 }
 
 //===========================================================================//
 
-float OutLayer::getTotalError()
+float OutLayer::getError()
 {
 	return totalError;
 }

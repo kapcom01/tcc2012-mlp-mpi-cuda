@@ -1,7 +1,7 @@
 #ifndef HOSTLAYER_H_
 #define HOSTLAYER_H_
 
-#include "mlp/Types.h"
+#include "mlp/common/Layer.h"
 
 namespace ParallelMLP
 {
@@ -9,7 +9,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada da rede MLP na CPU
  */
-class HostLayer
+class HostLayer : public virtual Layer
 {
 
 public:
@@ -29,13 +29,13 @@ public:
 	/**
 	 * Randomiza os pesos de todas as conexões com a camada anterior
 	 */
-	void randomize();
+	virtual void randomize();
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	void feedforward(const float* input);
+	virtual void feedforward(const float* input);
 
 	/**
 	 * Realiza a operação de feedforward
@@ -43,30 +43,6 @@ public:
 	 * @param learning Taxa de aprendizado
 	 */
 	virtual void feedbackward(const float* signal, float learning);
-
-	/**
-	 * Retorna a quantidade de unidades de entrada
-	 * @return Quantidade de unidades de entrada
-	 */
-	uint getInUnits();
-
-	/**
-	 * Retorna a quantidade de unidades de saída
-	 * @return Quantidade de unidades de saída
-	 */
-	uint getOutUnits();
-
-	/**
-	 * Retorna o sinal funcional
-	 * @return Sinal funcional
-	 */
-	float* getFuncSignal();
-
-	/**
-	 * Retorna o sinal de erro
-	 * @return Sinal de erro
-	 */
-	float* getErrorSignal();
 
 protected:
 
@@ -89,46 +65,6 @@ protected:
 	 * @return Valor desativado
 	 */
 	float derivate(float y) const;
-
-	/**
-	 * Quantidade de unidades de entrada
-	 */
-	uint inUnits;
-
-	/**
-	 * Quantidade de unidades de saída
-	 */
-	uint outUnits;
-
-	/**
-	 * Quantidade de unidades de conexões
-	 */
-	uint connUnits;
-
-	/**
-	 * Vetor de entrada
-	 */
-	const float* input;
-
-	/**
-	 * Vetor puro de pesos
-	 */
-	float* weights;
-
-	/**
-	 * Gradiente dos neurônios
-	 */
-	float* gradient;
-
-	/**
-	 * Sinal funcional dos neurônios
-	 */
-	float* funcSignal;
-
-	/**
-	 * Sinal de erro
-	 */
-	float* errorSignal;
 
 };
 

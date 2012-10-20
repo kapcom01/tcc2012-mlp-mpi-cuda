@@ -1,18 +1,13 @@
 #ifndef EXAMPLESET_H_
 #define EXAMPLESET_H_
 
-#include "mlp/Vector.h"
+#include "arff/Relation.h"
+#include "mlp/Types.h"
+
+#define BIG_M 1000000
 
 namespace ParallelMLP
 {
-
-/**
- * Tipos de conjunto de dados
- */
-enum SetType
-{
-	TRAINING = 1, VALIDATION = 2, TEST = 3
-};
 
 /**
  * Classe que contém um conjunto de dados experimentais
@@ -22,15 +17,11 @@ class ExampleSet
 
 public:
 
-	ExampleSet();
-
 	/**
-	 * Constrói um conjunto de dados vazio
-	 * @param relationID ID da relação
-	 * @param mlpID ID da rede
-	 * @param type Tipo do conjunto de dados
+	 * Constrói um conjunto de dados a partir de uma relação
+	 * @param relation Relação
 	 */
-	ExampleSet(int relationID, int mlpID, SetType type);
+	ExampleSet(const Relation& relation);
 
 	/**
 	 * Destrói o conjunto de dados
@@ -47,73 +38,6 @@ public:
 	 */
 	virtual void unnormalize() = 0;
 
-	void addBias();
-
-	/**
-	 * Adiciona um valor númerico de entrada ou saída
-	 * @param value Valor numérico de entrada ou saída
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addValue(float value, bool isTarget);
-
-	/**
-	 * Adiciona um valor nominal de entrada ou saída
-	 * @param value Valor nominal de entrada ou saída
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addValue(int value, uint card, bool isTarget);
-
-	/**
-	 * Adiciona um valor estatístico numérico de entrada ou saída
-	 * @param min Valor mínimo da amostra
-	 * @param max Valor máximo da amostra
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addStat(float min, float max, float lower, float upper,
-			bool isTarget);
-
-	/**
-	 * Adiciona um valor estatístico nominal de entrada ou saída
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addStat(float lower, float upper, uint card, bool isTarget);
-
-	/**
-	 * Verifica se é um conjunto de treinamento
-	 * @return Verdadeiro se for de treinamento ou falso caso contrário
-	 */
-	bool isTraining() const;
-
-	/**
-	 * Verifica se é um conjunto de validação
-	 * @return Verdadeiro se for de validação ou falso caso contrário
-	 */
-	bool isValidation() const;
-
-	/**
-	 * Verifica se é um conjunto de teste
-	 * @return Verdadeiro se for de teste ou falso caso contrário
-	 */
-	bool isTest() const;
-
-	/**
-	 * Retorna o ID do conjunto de dados
-	 * @return ID do conjunto de dados
-	 */
-	int getID() const;
-
-	/**
-	 * Retrona o ID do MLP que utilizará esse conjunto de dados
-	 * @return ID do MLP que utilizará esse conjunto de dados
-	 */
-	int getMLPID() const;
-
 	/**
 	 * Retorna a quantidade de variáveis de entrada
 	 * @return Quantidade de variáveis de entrada
@@ -127,61 +51,42 @@ public:
 	uint getOutVars() const;
 
 	/**
-	 * Finaliza a inserção de dados
-	 */
-	virtual void done();
-
-	/**
 	 * Retorna o tamanho do conjunto de entrada
 	 * @return Tamanho do conjunto de entrada
 	 */
 	uint getSize() const;
 
 	/**
-	 * Seta a quantidade de instâncias
-	 * @param size Quantidade de instâncias
+	 * Retorna todas as entradas
+	 * @return Todas as entradas
 	 */
-	void setSize(uint size);
+	const float* getInput() const;
 
 	/**
 	 * Retorna a i-ésima entrada do conjunto
 	 * @param i Índice da entrada
 	 * @return Entrada de índice i
 	 */
-	virtual vec_float getInput(uint i);
+	const float* getInput(uint i) const;
 
 	/**
 	 * Retorna a i-ésima saída alvo do conjunto
 	 * @param i Índice da saída alvo
 	 * @return Saída alvo de índice i
 	 */
-	virtual vec_float getTarget(uint i);
-
-	/**
-	 * Retorna a k-ésima saída numérica da rede neural
-	 * @param k Índice da instância
-	 * @return k-ésima saída numérica da rede neural
-	 */
-	float getNumericOutput(uint k) const;
-
-	/**
-	 * Retorna a k-ésima saída nominal da rede neural
-	 * @param k Índice da instância
-	 * @return k-ésima saída nominal da rede neural
-	 */
-	int getNominalOutput(uint k) const;
+	const float* getTarget(uint i) const;
 
 	/**
 	 * Seta os valores da i-ésima saída
 	 * @param output Vetor contendo a i-ésima saída
 	 */
-	virtual void setOutput(uint i, vec_float &output);
+	virtual void setOutput(uint i, float* output) = 0;
 
 	/**
-	 * Retorna o tipo do conjunto de dados
-	 * @return Tipo do conjunto de dados
+	 * Retorna todas as estatísticas
+	 * @return Todas as estatísticas
 	 */
-	int getType() const;
+	const Stat* getStat() const;
 
 	/**
 	 * Retorna a taxa de aprendizado
@@ -255,24 +160,7 @@ public:
 	 */
 	void setTime(float time);
 
-	void print();
-
 protected:
-
-	/**
-	 * ID da relação
-	 */
-	int relationID;
-
-	/**
-	 * ID da rede
-	 */
-	int mlpID;
-
-	/**
-	 * Tipo do conjunto de dados
-	 */
-	SetType type;
 
 	/**
 	 * Taxa de aprendizado
@@ -305,19 +193,39 @@ protected:
 	uint size;
 
 	/**
+	 * Quantidade de variáveis por instância
+	 */
+	uint step;
+
+	/**
 	 * Dados de entrada do treinamento
 	 */
-	hv_float input;
+	float* input;
+
+	/**
+	 * Índice de inserção em input
+	 */
+	uint inputIdx;
 
 	/**
 	 * Dados de saída da rede neural
 	 */
-	hv_float output;
+	float* output;
+
+	/**
+	 * Índice de inserção em output
+	 */
+	uint outputIdx;
 
 	/**
 	 * Estatísticas para cada coluna de dados
 	 */
-	hv_stat stat;
+	Stat* stat;
+
+	/**
+	 * Índice de inserção em stat
+	 */
+	uint statIdx;
 
 	/**
 	 * Erro cometido pela rede
