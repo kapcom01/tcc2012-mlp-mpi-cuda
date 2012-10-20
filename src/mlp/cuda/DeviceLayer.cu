@@ -1,7 +1,5 @@
 #include "mlp/cuda/DeviceLayer.h"
 
-#define CUDA_RAND_MAX 4294967295
-
 namespace ParallelMLP
 {
 
@@ -28,13 +26,10 @@ void initRandState(curandState* state, int seed, uint connUnits)
 //===========================================================================//
 
 DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
+	: Layer(inUnits, outUnits)
 {
-	this->inUnits = inUnits + 1;
-	this->outUnits = outUnits;
-	this->connUnits = (inUnits + 1) * outUnits;
 	this->connBlocks = connUnits / TPB + 1;
 	this->outBlocks = outUnits / TPB + 1;
-	this->input = NULL;
 
 	cudaMalloc(&weights, connUnits * sizeof(float));
 	cudaMalloc(&gradient, outUnits * sizeof(float));
@@ -190,34 +185,6 @@ __device__
 float derivate(float y)
 {
 	return (1 - y) * (1 + y);
-}
-
-//===========================================================================//
-
-uint DeviceLayer::getInUnits()
-{
-	return inUnits;
-}
-
-//===========================================================================//
-
-uint DeviceLayer::getOutUnits()
-{
-	return outUnits;
-}
-
-//===========================================================================//
-
-float* DeviceLayer::getFuncSignal()
-{
-	return funcSignal;
-}
-
-//===========================================================================//
-
-float* DeviceLayer::getErrorSignal()
-{
-	return errorSignal;
 }
 
 //===========================================================================//

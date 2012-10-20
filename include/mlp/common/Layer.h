@@ -1,7 +1,7 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "mlp/Vector.h"
+#include "mlp/Types.h"
 
 namespace ParallelMLP
 {
@@ -32,111 +32,83 @@ public:
 	virtual void randomize() = 0;
 
 	/**
-	 * Inicia uma operação
-	 */
-	virtual void initOperation() = 0;
-
-	/**
-	 * Finaliza uma operação
-	 */
-	virtual void endOperation() = 0;
-
-	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	virtual void feedforward(const vec_float &input) = 0;
+	virtual void feedforward(const float* input) = 0;
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float &signal, float learning) = 0;
+	virtual void feedbackward(const float* signal, float learning) = 0;
 
 	/**
-	 * Retorna a quantidade de entradas
-	 * @param Quantidade de entradas
+	 * Retorna a quantidade de unidades de entrada
+	 * @return Quantidade de unidades de entrada
 	 */
-	uint getInUnits() const;
+	uint getInUnits();
 
 	/**
-	 * Retorna a quantidade de neurônios
-	 * @param Quantidade de neurônios
+	 * Retorna a quantidade de unidades de saída
+	 * @return Quantidade de unidades de saída
 	 */
-	uint getOutUnits() const;
-
-	/**
-	 * Retorna o peso do n-ésimo neurônio com a i-ésima entrada
-	 * @param n Índice do neurônio
-	 * @param i Índice da entrada
-	 * @return Peso do n-ésimo neurônio com a i-ésima entrada
-	 */
-	float getWeight(uint n, uint i) const;
-
-	/**
-	 * Seta o peso do n-ésimo neurônio com a i-ésima entrada
-	 * @param n Índice do neurônio
-	 * @param i Índice da entrada
-	 * @param weight Peso do n-ésimo neurônio com a i-ésima entrada
-	 */
-	void setWeight(uint n, uint i, float weight);
+	uint getOutUnits();
 
 	/**
 	 * Retorna o sinal funcional
 	 * @return Sinal funcional
 	 */
-	vec_float& getFuncSignal();
+	float* getFuncSignal();
 
 	/**
 	 * Retorna o sinal de erro
 	 * @return Sinal de erro
 	 */
-	vec_float& getErrorSignal();
+	float* getErrorSignal();
 
 protected:
 
 	/**
-	 * Constrói uma camada vazia
-	 */
-	Layer();
-
-	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
-	 */
-	void init(uint inUnits, uint outUnits);
-
-	/**
-	 * Número de neurônios na camada anterior
-	 */
-	uint inUnits;
-
-	/**
-	 * Número de neurônios na camada atual
+	 * Quantidade de neurônios
 	 */
 	uint outUnits;
 
 	/**
+	 * Quantidade de entradas
+	 */
+	uint inUnits;
+
+	/**
+	 * Quantidade de conexões
+	 */
+	uint connUnits;
+
+	/**
+	 * Vetor puro de pesos e seu tamanho
+	 */
+	float* weights;
+
+	/**
+	 * Vetor puro do gradiente e seu tamanho
+	 */
+	float* gradient;
+
+	/**
+	 * Vetor puro do sinal funcional
+	 */
+	float* funcSignal;
+
+	/**
+	 * Vetor puro do sinal de erro
+	 */
+	float* errorSignal;
+
+	/**
 	 * Entrada vinda da camada anterior
 	 */
-	vec_float input;
-
-	/**
-	 * Pesos de conexão entre os neurônios e as entradas
-	 */
-	hv_float weights;
-
-	/**
-	 * Vetor puro do sinal funcional e seu tamanho
-	 */
-	vec_float rawFuncSignal;
-
-	/**
-	 * Vetor puro do sinal de erro e seu tamanho
-	 */
-	vec_float rawErrorSignal;
+	const float* input;
 
 };
 

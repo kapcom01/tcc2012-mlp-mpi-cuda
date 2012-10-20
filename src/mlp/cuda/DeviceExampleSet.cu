@@ -9,14 +9,11 @@ void adjust(float &x, const Range &from, const Range &to);
 //===========================================================================//
 
 DeviceExampleSet::DeviceExampleSet(const Relation& relation)
+	: ExampleSet(relation)
 {
 	HostExampleSet set(relation);
 
-	// Recupera os tamanhos
-	size = set.getSize();
-	inVars = set.getInVars();
-	outVars = set.getOutVars();
-	step = inVars + outVars;
+	// Calcula os tamanhos dos blocos
 	stepBlocks = (size * step) / TPB + 1;
 	outBlocks = (size * outVars) / TPB + 1;
 
@@ -112,130 +109,11 @@ void adjust(float &x, const Range &from, const Range &to)
 
 //===========================================================================//
 
-uint DeviceExampleSet::getInVars() const
-{
-	return inVars;
-}
-
-//===========================================================================//
-
-uint DeviceExampleSet::getOutVars() const
-{
-	return outVars;
-}
-
-//===========================================================================//
-
-uint DeviceExampleSet::getSize() const
-{
-	return size;
-}
-
-//===========================================================================//
-
-const float* DeviceExampleSet::getInput(uint i) const
-{
-	return &input[i * step];
-}
-
-//===========================================================================//
-
-const float* DeviceExampleSet::getTarget(uint i) const
-{
-	return &input[i * step + inVars];
-}
-
-//===========================================================================//
-
 void DeviceExampleSet::setOutput(uint i, float* output)
 {
 	float* inst = &(this->output[i * outVars]);
 	cudaMemcpy(inst, output, outVars * sizeof(float),
 			cudaMemcpyDeviceToDevice);
-}
-
-//===========================================================================//
-
-float DeviceExampleSet::getLearning() const
-{
-	return learning;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setLearning(float learning)
-{
-	this->learning = learning;
-}
-
-//===========================================================================//
-
-float DeviceExampleSet::getTolerance() const
-{
-	return tolerance;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setTolerance(float tolerance)
-{
-	this->tolerance = tolerance;
-}
-
-//===========================================================================//
-
-uint DeviceExampleSet::getMaxEpochs() const
-{
-	return maxEpochs;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setMaxEpochs(uint maxEpochs)
-{
-	this->maxEpochs = maxEpochs;
-}
-
-//===========================================================================//
-
-float DeviceExampleSet::getError() const
-{
-	return error;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setError(float error)
-{
-	this->error = error;
-}
-
-//===========================================================================//
-
-uint DeviceExampleSet::getEpochs() const
-{
-	return epochs;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setEpochs(uint epochs)
-{
-	this->epochs = epochs;
-}
-
-//===========================================================================//
-
-float DeviceExampleSet::getTime() const
-{
-	return time;
-}
-
-//===========================================================================//
-
-void DeviceExampleSet::setTime(float time)
-{
-	this->time = time;
 }
 
 //===========================================================================//

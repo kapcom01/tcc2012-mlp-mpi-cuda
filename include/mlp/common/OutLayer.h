@@ -9,7 +9,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada de saída da rede MLP
  */
-class OutLayer : virtual public Layer
+class OutLayer : public virtual Layer
 {
 
 public:
@@ -30,52 +30,39 @@ public:
 	 * Calcula o erro da rede
 	 * @param target Saída esperada para a rede neural
 	 */
-	virtual void calculateError(const vec_float &target) = 0;
+	virtual void calculateError(const float* target) = 0;
 
 	/**
 	 * Limpa o erro quadrático médio
 	 */
-	void clearTotalError();
-
-	/**
-	 * Incrementa o erro quadrático médio
-	 * @param value Valor do incremento
-	 * @param weight Peso do incremento
-	 */
-	void incTotalError(float value, uint weight = 1);
+	void clearError();
 
 	/**
 	 * Retorna o erro quadrático médio
 	 * @return Erro quadrático médio
 	 */
-	float getTotalError();
+	float getError();
 
 protected:
 
 	/**
-	 * Constrói uma camada vazia
+	 * Incrementa o erro em um certo valor
+	 * @param inc Valor do incremento
 	 */
-	OutLayer();
+	void incError(float inc);
 
 	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
+	 * Vetor de erros
 	 */
-	void init(uint inUnits, uint outUnits);
+	float* error;
 
 	/**
-	 * Erro cometido pela rede
-	 */
-	vec_float rawError;
-
-	/**
-	 * Erro quadrático médio cometido pela rede
+	 * Erro quadrático médio
 	 */
 	float totalError;
 
 	/**
-	 * Quantidade de amostras para o erro total
+	 * Quantidade de amostras para o erro
 	 */
 	uint samples;
 
