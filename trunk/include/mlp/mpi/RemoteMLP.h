@@ -4,13 +4,12 @@
 #include "mlp/common/MLP.h"
 #include "mlp/mpi/RemoteLayer.h"
 #include "mlp/mpi/RemoteOutLayer.h"
-#include "mlp/mpi/RemoteExampleSet.h"
 
 namespace ParallelMLP
 {
 
 /**
- * Classe que representa um Multi-Layer Perceptron na CPU
+ * Classe que representa um Multi-Layer Perceptron em várias CPUs
  */
 class RemoteMLP : public MLP
 {
@@ -18,53 +17,20 @@ class RemoteMLP : public MLP
 public:
 
 	/**
-	 * Constrói um MLP que será recuperado
-	 * @param mlpID ID da rede
-	 */
-	RemoteMLP(int mlpID);
-
-	/**
 	 * Constrói um MLP não treinado
-	 * @param name Nome da rede
 	 * @param units Vetor contendo a quantidade de neurônios por camada
 	 */
-	RemoteMLP(string name, v_uint &units);
+	RemoteMLP(v_uint &units);
 
 	/**
 	 * Destrói o MLP
 	 */
 	virtual ~RemoteMLP();
 
-	/**
-	 * Adiciona uma nova camada
-	 * @param inUnits Unidades de entrada
-	 * @param outUnits Unidades de saída
-	 * @param isOutput Indica se é camada de saída
-	 */
-	virtual void addLayer(uint inUnits, uint outUnits, bool isOutput);
-
-	/**
-	 * Treina a rede neural
-	 * @param training Conjunto de treinamento
-	 */
-	virtual void train(RemoteExampleSet* training);
-
-	/**
-	 * Valida a rede neural
-	 * @param validation Conjunto de validação
-	 */
-	virtual void validate(RemoteExampleSet* validation);
-
-	/**
-	 * Testa a rede neural
-	 * @param test Conjunto de testes
-	 */
-	virtual void test(RemoteExampleSet* test);
-
 protected:
 
 	/**
-	 * ID do host atual
+	 * ID do host
 	 */
 	uint hid;
 

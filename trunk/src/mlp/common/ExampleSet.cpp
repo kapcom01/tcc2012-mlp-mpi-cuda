@@ -26,7 +26,6 @@ ExampleSet::ExampleSet(const Relation &relation)
 	// Inicializa as variáveis
 	input = output = NULL;
 	stat = NULL;
-	inputIdx = outputIdx = statIdx = 0;
 	maxEpochs = epochs = 0;
 	error = time = learning = tolerance = 0;
 	isNormalized = false;

@@ -5,79 +5,117 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-RemoteLayer::RemoteLayer()
-{
-	hid = -1;
-}
-
-//===========================================================================//
-
 RemoteLayer::RemoteLayer(uint inUnits, uint outUnits, uint hid, uint hosts)
-{
-	init(inUnits, outUnits, hid, hosts);
-}
-
-//===========================================================================//
-
-void RemoteLayer::init(uint inUnits, uint outUnits, uint hid, uint hosts)
+	: Layer(inUnits, outUnits)
 {
 	this->hid = hid;
 
 	// Realiza cálculos para determinar o balanceamento
 	binfo.resize(hosts);
 	binfo.balance(outUnits);
+	toutUnits = binfo.getCount(hid);
+	tconnUnits = (inUnits + 1) * toutUnits;
+	offset = binfo.getOffset(hid);
 
-	HostLayer::init(inUnits, outUnits);
+	// Aloca os vetores
+	weights = new float[tconnUnits];
+	gradient = new float[toutUnits];
+	tfuncSignal = new float[toutUnits];
+	funcSignal = new float[outUnits + 1];
+	errorSignal = new float[inUnits];
 
-	// Aumenta o tamanho do sinal funcional
-	funcSignal.resize(outUnits);
-	rawFuncSignal = vec_float(funcSignal);
+	tfuncSignal[outUnits] = 1;
 }
 
 //===========================================================================//
 
 RemoteLayer::~RemoteLayer()
 {
-
+	delete[] weights;
+	delete[] gradient;
+	delete[] funcSignal;
+	delete[] tfuncSignal;
+	delete[] errorSignal;
 }
 
 //===========================================================================//
 
-void RemoteLayer::feedforward(const vec_float &input)
+void RemoteLayer::randomize()
 {
-	uint offset = binfo.getOffset(hid);
+	for (uint i = 0; i < tconnUnits; i++)
+		weights[i] = random();
+}
 
-	// Seta o offset para realizar os cálculos corretamente
-	rawFuncSignal.setOffset(offset);
+//===========================================================================//
 
-	HostLayer::feedforward(input);
+void RemoteLayer::feedforward(const float* input)
+{
+	this->input = input;
 
-	// Retira o offset
-	rawFuncSignal.setOffset(-offset);
+	// Inicializa o sinal funcional
+	memset(tfuncSignal, 0, toutUnits * sizeof(float));
+
+	// Calcula o sinal funcional
+	for (uint i = 0; i < tconnUnits; i++)
+	{
+		uint j = i % inUnits;
+		uint k = i / inUnits;
+		tfuncSignal[k] += weights[i] * input[j];
+	}
+
+	// Ativa o sinal funcional
+	for (uint i = 0; i < toutUnits; i++)
+		tfuncSignal[i] = activate(tfuncSignal[i]);
 
 	// Recebe os dados de todos os sinais funcionais
-	COMM_WORLD.Allgatherv(rawFuncSignal(offset), binfo.getCount(hid), FLOAT,
-			rawFuncSignal(0), binfo.getCounts(), binfo.getOffsets(), FLOAT);
+	COMM_WORLD.Allgatherv(tfuncSignal, toutUnits, FLOAT, funcSignal,
+			binfo.getCounts(), binfo.getOffsets(), FLOAT);
 }
 
 //===========================================================================//
 
-void RemoteLayer::feedback(const vec_float &signal, float learning)
+void RemoteLayer::feedbackward(const float* signal, float learning)
 {
-	uint offset = binfo.getOffset(hid);
-	vec_float csignal = signal;
+	// Inicializa o sinal funcional
+	memset(errorSignal, 0, (inUnits - 1) * sizeof(float));
 
-	// Seta o offset para realizar os cálculos corretamente
-	csignal.setOffset(offset);
+	// Calcula o gradiente
+	for (uint i = 0; i < toutUnits; i++)
+		gradient[i] = derivate(funcSignal[i]) * signal[i + offset];
 
-	HostLayer::feedback(csignal, learning);
-
-	// Retira o offset
-	csignal.setOffset(-offset);
+	// Atualiza os pesos e calcula o sinal de erro
+	for (uint i = 0; i < tconnUnits; i++)
+	{
+		uint j = i % inUnits;
+		uint k = i / inUnits;
+		weights[i] += learning * gradient[k] * input[j];
+		errorSignal[j] += gradient[k] * weights[i];
+	}
 
 	// Recebe os dados de todos os sinais de erro
-	COMM_WORLD.Allreduce(rawErrorSignal(0), rawErrorSignal(0), inUnits, FLOAT,
-			SUM);
+	COMM_WORLD.Allreduce(errorSignal, errorSignal, inUnits - 1, FLOAT, SUM);
+}
+
+//===========================================================================//
+
+float RemoteLayer::random() const
+{
+	float r = rand() / (float) RAND_MAX;
+	return 2 * r - 1;
+}
+
+//===========================================================================//
+
+float RemoteLayer::activate(float x) const
+{
+	return tanh(x);
+}
+
+//===========================================================================//
+
+float RemoteLayer::derivate(float y) const
+{
+	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//

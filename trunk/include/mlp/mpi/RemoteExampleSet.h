@@ -13,21 +13,17 @@ namespace ParallelMLP
 /**
  * Classe que contém um conjunto de dados experimentais
  */
-class RemoteExampleSet : public HostExampleSet
+class RemoteExampleSet : public ExampleSet
 {
 
 public:
 
 	/**
-	 * Constrói um conjunto de dados vazio
-	 * @param relationID ID da relação
-	 * @param mlpID ID da rede
-	 * @param type Tipo do conjunto de dados
+	 * Constrói um conjunto de dados a partir de uma relação
+	 * @param relation Relação
 	 * @param hid ID do host
-	 * @param hosts Quantidade de hosts
 	 */
-	RemoteExampleSet(int relationID, int mlpID, SetType type, uint hid,
-			uint hosts);
+	RemoteExampleSet(const Relation &relation, uint hid);
 
 	/**
 	 * Destrói o conjunto de dados
@@ -45,26 +41,30 @@ public:
 	virtual void unnormalize();
 
 	/**
-	 * Finaliza a inserção de dados
+	 * Seta os valores da i-ésima saída
+	 * @param output Vetor contendo a i-ésima saída
 	 */
-	virtual void done();
+	virtual void setOutput(uint i, float* output);
 
 protected:
 
 	/**
-	 * Altera o tamanho dos vetores
+	 * Copia os dados experimentais para o mestre
 	 */
-	void resize();
+	void copyToMaster(const HostExampleSet &set);
+
+	/**
+	 * Ajusta um valor de um range para outro
+	 * @param x Valor a ser ajustado
+	 * @param from Range inicial de x
+	 * @param to Range final de x
+	 */
+	void adjust(float &x, const Range &from, const Range &to) const;
 
 	/**
 	 * ID do host
 	 */
 	uint hid;
-
-	/**
-	 * Informações do balanceamento
-	 */
-	BalanceInfo binfo;
 
 };
 
