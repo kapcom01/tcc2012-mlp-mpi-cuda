@@ -1,7 +1,7 @@
 #ifndef REMOTELAYER_H_
 #define REMOTELAYER_H_
 
-#include "mlp/serial/HostLayer.h"
+#include "mlp/common/Layer.h"
 #include "mlp/mpi/BalanceInfo.h"
 #include <mpi.h>
 
@@ -13,7 +13,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada da rede MLP em diversas CPUs
  */
-class RemoteLayer : public HostLayer
+class RemoteLayer : public Layer
 {
 
 public:
@@ -33,33 +33,44 @@ public:
 	virtual ~RemoteLayer();
 
 	/**
+	 * Randomiza os pesos de todas as conexões com a camada anterior
+	 */
+	virtual void randomize();
+
+	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
-	virtual void feedforward(const vec_float &input);
+	virtual void feedforward(const float* input);
 
 	/**
 	 * Realiza a operação de feedforward
 	 * @param signal Sinal de erro vindo da camada posterior
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedback(const vec_float &signal, float learning);
+	virtual void feedbackward(const float* signal, float learning);
 
 protected:
 
 	/**
-	 * Constrói uma camada vazia
+	 * Retorna um valor aleatório entre -1 e 1
+	 * @return Valor aleatório entre -1 e 1
 	 */
-	RemoteLayer();
+	float random() const;
 
 	/**
-	 * Inicializa uma camada
-	 * @param inUnits Número de neurônios na camada anterior
-	 * @param outUnits Número de neurônios na camada atual
-	 * @param hid ID do host
-	 * @param hosts Quantidade de hosts
+	 * Ativa um valor através da função hiperbólica
+	 * @param x Valor a ser ativado
+	 * @return Valor ativado
 	 */
-	void init(uint inUnits, uint outUnits, uint hid, uint hosts);
+	float activate(float x) const;
+
+	/**
+	 * Desativa um valor através da derivada da função hiperbólica
+	 * @param y Valor ativado
+	 * @return Valor desativado
+	 */
+	float derivate(float y) const;
 
 	/**
 	 * ID do host
@@ -70,6 +81,26 @@ protected:
 	 * Informações do balanceamento
 	 */
 	BalanceInfo binfo;
+
+	/**
+	 * Quantidade de neurônios gerenciados por este nó
+	 */
+	uint toutUnits;
+
+	/**
+	 * Quantidade de conexões gerenciadas por este nó
+	 */
+	uint tconnUnits;
+
+	/**
+	 * Offset deste nó
+	 */
+	uint offset;
+
+	/**
+	 * Sinal funcional gerenciado por este nó
+	 */
+	float* tfuncSignal;
 
 };
 

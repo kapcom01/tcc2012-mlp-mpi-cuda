@@ -203,29 +203,14 @@ protected:
 	float* input;
 
 	/**
-	 * Índice de inserção em input
-	 */
-	uint inputIdx;
-
-	/**
 	 * Dados de saída da rede neural
 	 */
 	float* output;
 
 	/**
-	 * Índice de inserção em output
-	 */
-	uint outputIdx;
-
-	/**
 	 * Estatísticas para cada coluna de dados
 	 */
 	Stat* stat;
-
-	/**
-	 * Índice de inserção em stat
-	 */
-	uint statIdx;
 
 	/**
 	 * Erro cometido pela rede

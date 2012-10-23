@@ -5,12 +5,22 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-RemoteExampleSet::RemoteExampleSet(int relationID, int mlpID, SetType type,
-		uint hid, uint hosts)
-	: HostExampleSet(relationID, mlpID, type)
+RemoteExampleSet::RemoteExampleSet(const Relation& relation, uint hid)
+	: ExampleSet(relation)
 {
 	this->hid = hid;
-	binfo.resize(hosts);
+
+	// Aloca os vetores
+	input = new float[size * step];
+	output = new float[size * outVars];
+	stat = new Stat[step];
+
+	// Os dados são armazenados apenas no mestre
+	if (hid == 0)
+	{
+		HostExampleSet set(relation);
+		copyToMaster(set);
+	}
 }
 
 //===========================================================================//
@@ -22,52 +32,83 @@ RemoteExampleSet::~RemoteExampleSet()
 
 //===========================================================================//
 
-void RemoteExampleSet::resize()
+void RemoteExampleSet::copyToMaster(const HostExampleSet &set)
 {
-	input.resize(size * (inVars + outVars));
-
-	if (hid == 0)
-		output.resize(size * outVars);
-	else
-		output.resize(size * binfo.getCount(hid));
+	memcpy(input, set.getInput(), size * step * sizeof(float));
+	memcpy(stat, set.getStat(), step * sizeof(Stat));
 }
 
 //===========================================================================//
 
 void RemoteExampleSet::normalize()
 {
+	if (isNormalized)
+		return;
+
 	// Normalização é feita apenas no mestre
 	if (hid == 0)
-		HostExampleSet::normalize();
+	{
+		// Normaliza cada entrada
+		for (uint i = 0; i < size * step; i++)
+		{
+			uint j = i % step;
+			adjust(input[i], stat[j].from, stat[j].to);
+		}
+	}
 
-	// Transmite a quantidade de variáveis e instâncias
-	COMM_WORLD.Bcast(&inVars, 1, INT, 0);
-	COMM_WORLD.Bcast(&outVars, 1, INT, 0);
-	COMM_WORLD.Bcast(&size, 1, INT, 0);
+	// Envia os dados normalizados para todos os nós
+	COMM_WORLD.Bcast(input, size * step, FLOAT, 0);
 
-	// Altera o tamanho dos vetores nos escravos
-	if (hid != 0)
-		resize();
-
-	// Transmite os dados
-	COMM_WORLD.Bcast(&input[0], input.size(), FLOAT, 0);
+	isNormalized = true;
 }
 
 //===========================================================================//
 
 void RemoteExampleSet::unnormalize()
 {
+	if (!isNormalized)
+		return;
+
 	// Desnormalização é feita apenas no mestre
 	if (hid == 0)
-		HostExampleSet::unnormalize();
+	{
+		// Desnormaliza cada entrada
+		for (uint i = 0; i < size * step; i++)
+		{
+			uint j = i % step;
+			adjust(input[i], stat[j].to, stat[j].from);
+		}
+
+		// Desnormaliza cada saída da rede neural
+		for (uint i = 0; i < size * outVars; i++)
+		{
+			uint j = i % outVars + inVars;
+			adjust(output[i], stat[j].to, stat[j].from);
+		}
+	}
+
+	isNormalized = false;
 }
 
 //===========================================================================//
 
-void RemoteExampleSet::done()
+void RemoteExampleSet::adjust(float &x, const Range &from, const Range &to)
+		const
 {
-	HostExampleSet::done();
-	binfo.balance(outVars);
+	x = (to.upper - to.lower) / (from.upper - from.lower)
+			* (x - from.lower) + to.lower;
+}
+
+//===========================================================================//
+
+void RemoteExampleSet::setOutput(uint i, float* output)
+{
+	// Insere a saída apenas no mestre
+	if (hid == 0)
+	{
+		float* inst = &(this->output[i * outVars]);
+		memcpy(inst, output, outVars * sizeof(float));
+	}
 }
 
 //===========================================================================//

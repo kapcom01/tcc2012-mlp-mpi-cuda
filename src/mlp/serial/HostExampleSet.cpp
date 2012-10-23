@@ -29,6 +29,8 @@ HostExampleSet::~HostExampleSet()
 
 void HostExampleSet::setRelation(const Relation& relation)
 {
+	inputIdx = outputIdx = statIdx = 0;
+
 	// Para cada instância
 	for (const Instance* inst : relation.getData())
 	{
@@ -174,7 +176,8 @@ void HostExampleSet::unnormalize()
 
 //===========================================================================//
 
-void HostExampleSet::adjust(float &x, const Range &from, const Range &to) const
+void HostExampleSet::adjust(float &x, const Range &from, const Range &to)
+		const
 {
 	x = (to.upper - to.lower) / (from.upper - from.lower)
 			* (x - from.lower) + to.lower;

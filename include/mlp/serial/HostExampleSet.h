@@ -97,6 +97,22 @@ protected:
 	 */
 	void adjust(float &x, const Range &from, const Range &to) const;
 
+	/**
+	 * Índice de inserção em input
+	 */
+	uint inputIdx;
+
+	/**
+	 * Índice de inserção em output
+	 */
+	uint outputIdx;
+
+	/**
+	 * Índice de inserção em stat
+	 */
+	uint statIdx;
+
+
 };
 
 }

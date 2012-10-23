@@ -1,7 +1,7 @@
 #ifndef BALANCEINFO_H_
 #define BALANCEINFO_H_
 
-#include "mlp/Vector.h"
+#include "mlp/Types.h"
 
 namespace ParallelMLP
 {
