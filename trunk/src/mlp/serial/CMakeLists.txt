@@ -9,8 +9,5 @@ SET(SOURCES
 	HostOutLayer.cpp
 )
 
-LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp/common)
-
-INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 ADD_LIBRARY(mlp_serial ${SOURCES})
 TARGET_LINK_LIBRARIES(mlp_serial mlp_common)

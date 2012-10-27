@@ -5,10 +5,10 @@ namespace ParallelMLP
 
 //===========================================================================//
 
-RemoteExampleSet::RemoteExampleSet(const Relation& relation, uint hid)
+RemoteExampleSet::RemoteExampleSet(const Relation& relation)
 	: ExampleSet(relation)
 {
-	this->hid = hid;
+	hid = COMM_WORLD.Get_rank();
 
 	// Aloca os vetores
 	input = new float[size * step];

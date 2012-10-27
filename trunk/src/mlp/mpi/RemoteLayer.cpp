@@ -24,7 +24,7 @@ RemoteLayer::RemoteLayer(uint inUnits, uint outUnits, uint hid, uint hosts)
 	funcSignal = new float[outUnits + 1];
 	errorSignal = new float[inUnits];
 
-	tfuncSignal[outUnits] = 1;
+	funcSignal[outUnits] = 1;
 }
 
 //===========================================================================//

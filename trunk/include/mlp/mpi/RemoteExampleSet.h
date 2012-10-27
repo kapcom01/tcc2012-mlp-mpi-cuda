@@ -23,7 +23,7 @@ public:
 	 * @param relation Relação
 	 * @param hid ID do host
 	 */
-	RemoteExampleSet(const Relation &relation, uint hid);
+	RemoteExampleSet(const Relation &relation);
 
 	/**
 	 * Destrói o conjunto de dados
