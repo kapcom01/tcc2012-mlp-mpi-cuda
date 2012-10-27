@@ -10,6 +10,8 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		Init(argc, argv);
+
 		string program = argv[0];
 
 		string usage = "Usage mode: " + program + " <neurons on input layer> "
@@ -42,6 +44,8 @@ int main(int argc, char* argv[])
 		mlp.train(set);
 
 		cout << "MLP trained" << endl;
+
+		Finalize();
 	}
 	catch (exception &ex)
 	{
