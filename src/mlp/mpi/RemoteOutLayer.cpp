@@ -16,6 +16,7 @@ RemoteOutLayer::RemoteOutLayer(uint inUnits, uint outUnits, uint hid,
 	gradient = new float[outUnits];
 	funcSignal = new float[outUnits + 1];
 	errorSignal = new float[inUnits];
+	error = new float[outUnits];
 
 	funcSignal[outUnits] = 1;
 }
@@ -28,6 +29,7 @@ RemoteOutLayer::~RemoteOutLayer()
 	delete[] gradient;
 	delete[] funcSignal;
 	delete[] errorSignal;
+	delete[] error;
 }
 
 //===========================================================================//
@@ -69,17 +71,20 @@ void RemoteOutLayer::feedforward(const float* input)
 
 void RemoteOutLayer::calculateError(const float* target)
 {
-	float sum = 0;
-
-	// Calcula o erro cometido pela rede
-	for (uint i = 0; i < outUnits; i++)
+	if (hid == 0)
 	{
-		error[i] = target[i] - funcSignal[i];
-		sum += error[i] * error[i];
-	}
+		float sum = 0;
 
-	// Incrementa o erro
-	incError(sum);
+		// Calcula o erro cometido pela rede
+		for (uint i = 0; i < outUnits; i++)
+		{
+			error[i] = target[i] - funcSignal[i];
+			sum += error[i] * error[i];
+		}
+
+		// Incrementa o erro
+		incError(sum);
+	}
 }
 
 //===========================================================================//
