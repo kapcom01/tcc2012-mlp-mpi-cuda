@@ -36,6 +36,18 @@ public:
 protected:
 
 	/**
+	 * Realiza o feedforward
+	 * @param input Dados de entrada
+	 */
+	virtual void feedforward(const float* input);
+
+	/**
+	 * Realiza o feedback
+	 * @param learning Taxa de aprendizado
+	 */
+	virtual void feedbackward(const float* target, float learning);
+
+	/**
 	 * ID do host
 	 */
 	uint hid;

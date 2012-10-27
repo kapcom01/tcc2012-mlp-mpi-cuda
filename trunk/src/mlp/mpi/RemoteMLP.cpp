@@ -43,8 +43,7 @@ void RemoteMLP::train(ExampleSet &training)
 	// Épocas
 	for (epoch = 0; epoch < training.getMaxEpochs(); epoch++)
 	{
-		if (hid == 0)
-			cout << "Epoch " << epoch << endl;
+		cout << hid << ": Epoch " << epoch << endl;
 
 		indexes.randomize();
 		outLayer->clearError();
@@ -54,8 +53,7 @@ void RemoteMLP::train(ExampleSet &training)
 		{
 			uint r = indexes.get(i);
 
-			if (hid == 0)
-				cout << "Input " << r << endl;
+			cout << hid << ": Input " << r << endl;
 
 			// Realiza o feedforward e salva os valores no conjunto
 			feedforward(training.getInput(r));
@@ -72,6 +70,40 @@ void RemoteMLP::train(ExampleSet &training)
 
 	// Finaliza a operação
 	endOperation(training);
+}
+
+//===========================================================================//
+
+void RemoteMLP::feedforward(const float* input)
+{
+	// Propaga a entrada para a primeira camada escondida
+	inLayer->feedforward(input);
+
+	cout << hid << ": FF Layer 1" << endl;
+
+	// Propaga a saída da primeira camada para o restante das camadas
+	for (uint i = 1; i < layers.size(); i++)
+	{
+		layers[i]->feedforward(layers[i - 1]->getFuncSignal());
+		cout << hid << ": FF Layer " << (i+1) << endl;
+	}
+}
+
+//===========================================================================//
+
+void RemoteMLP::feedbackward(const float* target, float learning)
+{
+	// Propaga os erros na camada de saída
+	outLayer->feedbackward(target, learning);
+
+	cout << hid << ": FB Layer " << layers.size() << endl;
+
+	// Propaga o sinal de erro para o restante das camadas
+	for (int i = layers.size() - 2; i >= 0; i--)
+	{
+		layers[i]->feedbackward(layers[i + 1]->getErrorSignal(), learning);
+		cout << hid << ": FB Layer " << (i+1) << endl;
+	}
 }
 
 //===========================================================================//
