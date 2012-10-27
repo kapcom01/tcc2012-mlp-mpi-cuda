@@ -35,6 +35,12 @@ public:
 
 	/**
 	 * Realiza a operação de feedforward
+	 * @param input Sinal funcional vindo da camada anterior
+	 */
+	virtual void feedforward(const float* input);
+
+	/**
+	 * Realiza a operação de feedforward
 	 * @param target Saída esperada para a rede neural
 	 * @param learning Taxa de aprendizado
 	 */

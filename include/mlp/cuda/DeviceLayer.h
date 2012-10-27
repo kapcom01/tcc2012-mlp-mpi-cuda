@@ -2,6 +2,7 @@
 #define DEVICELAYER_H_
 
 #include "mlp/common/Layer.h"
+#include "mlp/cuda/CUDATypes.h"
 
 namespace ParallelMLP
 {

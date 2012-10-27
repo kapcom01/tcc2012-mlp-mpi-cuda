@@ -38,6 +38,13 @@ void HostOutLayer::calculateError(const float* target)
 
 //===========================================================================//
 
+void HostOutLayer::feedforward(const float* input)
+{
+	return HostLayer::feedforward(input);
+}
+
+//===========================================================================//
+
 void HostOutLayer::feedbackward(const float* target, float learning)
 {
 	// Calcula o error e chama a função de feedbackward do pai

@@ -2,6 +2,7 @@
 #define DEVICEEXAMPLESET_H_
 
 #include "mlp/serial/HostExampleSet.h"
+#include "mlp/cuda/CUDATypes.h"
 
 namespace ParallelMLP
 {

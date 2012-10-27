@@ -1,7 +1,7 @@
 #ifndef REMOTEOUTLAYER_H_
 #define REMOTEOUTLAYER_H_
 
-#include "mlp/serial/HostOutLayer.h"
+#include "mlp/common/OutLayer.h"
 #include <mpi.h>
 
 using namespace MPI;
@@ -12,7 +12,7 @@ namespace ParallelMLP
 /**
  * Classe que representa uma camada de saída da rede MLP em várias CPUs
  */
-class RemoteOutLayer : public HostOutLayer
+class RemoteOutLayer : public OutLayer
 {
 
 public:
@@ -32,10 +32,21 @@ public:
 	virtual ~RemoteOutLayer();
 
 	/**
+	 * Randomiza os pesos de todas as conexões com a camada anterior
+	 */
+	virtual void randomize();
+
+	/**
 	 * Realiza a operação de feedforward
 	 * @param input Sinal funcional vindo da camada anterior
 	 */
 	virtual void feedforward(const float* input);
+
+	/**
+	 * Calcula o erro da rede
+	 * @param target Saída esperada para a rede neural
+	 */
+	virtual void calculateError(const float* target);
 
 	/**
 	 * Realiza a operação de feedforward
@@ -45,6 +56,26 @@ public:
 	virtual void feedbackward(const float* target, float learning);
 
 protected:
+
+	/**
+	 * Retorna um valor aleatório entre -1 e 1
+	 * @return Valor aleatório entre -1 e 1
+	 */
+	float random() const;
+
+	/**
+	 * Ativa um valor através da função hiperbólica
+	 * @param x Valor a ser ativado
+	 * @return Valor ativado
+	 */
+	float activate(float x) const;
+
+	/**
+	 * Desativa um valor através da derivada da função hiperbólica
+	 * @param y Valor ativado
+	 * @return Valor desativado
+	 */
+	float derivate(float y) const;
 
 	/**
 	 * ID do host

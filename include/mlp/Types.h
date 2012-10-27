@@ -2,10 +2,8 @@
 #define TYPES_H_
 
 #include "Common.h"
-#include <curand_kernel.h>
-
-#define TPB 1024
-#define CUDA_RAND_MAX 4294967295
+#include <cstring>
+#include <cmath>
 
 namespace ParallelMLP
 {
