@@ -27,6 +27,12 @@ public:
 	 */
 	virtual ~RemoteMLP();
 
+	/**
+	 * Treina a rede neural
+	 * @param training Conjunto de treinamento
+	 */
+	virtual void train(ExampleSet &training);
+
 protected:
 
 	/**

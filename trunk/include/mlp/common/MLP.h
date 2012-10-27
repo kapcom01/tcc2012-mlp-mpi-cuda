@@ -33,7 +33,7 @@ public:
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	void train(ExampleSet &training);
+	virtual void train(ExampleSet &training);
 
 protected:
 
