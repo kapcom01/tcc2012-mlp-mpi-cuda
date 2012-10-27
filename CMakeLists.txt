@@ -16,13 +16,17 @@ LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/arff)
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/exception)
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/mlp)
 
-INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS} ${MPI_CXX_INCLUDE_PATH})
-
 ADD_EXECUTABLE(pmlp_serial src/SerialMain.cpp)
 TARGET_LINK_LIBRARIES(pmlp_serial arff exception mlp_serial)
 
-ADD_EXECUTABLE(pmlp_cuda src/CUDAMain.cpp)
-TARGET_LINK_LIBRARIES(pmlp_cuda arff exception mlp_cuda)
+IF(CUDA_FOUND)
+    INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+    ADD_EXECUTABLE(pmlp_cuda src/CUDAMain.cpp)
+    TARGET_LINK_LIBRARIES(pmlp_cuda arff exception mlp_cuda)
+ENDIF(CUDA_FOUND)
 
-ADD_EXECUTABLE(pmlp_mpi src/MPIMain.cpp)
-TARGET_LINK_LIBRARIES(pmlp_mpi arff exception mlp_mpi)
+IF(MPI_FOUND)
+    INCLUDE_DIRECTORIES(${MPI_CXX_INCLUDE_PATH})
+    ADD_EXECUTABLE(pmlp_mpi src/MPIMain.cpp)
+    TARGET_LINK_LIBRARIES(pmlp_mpi arff exception mlp_mpi)
+ENDIF(MPI_FOUND)
