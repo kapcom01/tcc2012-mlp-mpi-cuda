@@ -69,9 +69,6 @@ void MLP::endOperation(ExampleSet &set)
 	set.setError(outLayer->getError());
 	set.setTime(chrono.getMiliseconds());
 	set.setEpochs(epoch);
-
-	cout << "totalError: " << set.getError() << endl;
-	cout << "time: " << set.getTime() << endl;
 }
 
 //===========================================================================//
@@ -84,8 +81,6 @@ void MLP::train(ExampleSet &training)
 	// Épocas
 	for (epoch = 0; epoch < training.getMaxEpochs(); epoch++)
 	{
-		cout << "Epoch " << epoch << endl;
-
 		indexes.randomize();
 		outLayer->clearError();
 

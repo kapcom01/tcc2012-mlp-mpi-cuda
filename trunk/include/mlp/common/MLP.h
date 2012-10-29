@@ -33,7 +33,7 @@ public:
 	 * Treina a rede neural
 	 * @param training Conjunto de treinamento
 	 */
-	virtual void train(ExampleSet &training);
+	void train(ExampleSet &training);
 
 protected:
 
@@ -63,13 +63,13 @@ protected:
 	 * Realiza o feedforward
 	 * @param input Dados de entrada
 	 */
-	virtual void feedforward(const float* input);
+	void feedforward(const float* input);
 
 	/**
 	 * Realiza o feedback
 	 * @param learning Taxa de aprendizado
 	 */
-	virtual void feedbackward(const float* target, float learning);
+	void feedbackward(const float* target, float learning);
 
 	/**
 	 * Cronômetro
