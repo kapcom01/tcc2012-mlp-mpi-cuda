@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
 		Init(argc, argv);
 
 		string program = argv[0];
+		int hid = COMM_WORLD.Get_rank();
 
 		string usage = "Usage mode: " + program + " <neurons on input layer> "
 				"[neurons on each hidden layer] <neurons on output layer> "
@@ -30,10 +31,14 @@ int main(int argc, char* argv[])
 		for (int i = 1; i < argc - 4; i++)
 			units.push_back(atoi(argv[i]));
 
+		if (hid == 0)
+			cout << "Parsing file..." << endl;
+
 		Driver driver(input);
 		const Relation &relation = driver.parse();
 
-		cout << "Training MLP" << endl;
+		if (hid == 0)
+			cout << "Training MLP..." << endl;
 
 		RemoteExampleSet set(relation);
 		set.setLearning(learning);
@@ -43,7 +48,13 @@ int main(int argc, char* argv[])
 		RemoteMLP mlp(units);
 		mlp.train(set);
 
-		cout << "MLP trained" << endl;
+		if (hid == 0)
+		{
+			cout << "Done! Results:" << endl;
+			cout << " |-> Error: " << set.getError() << endl;
+			cout << " |-> Time: " << set.getTime() << endl;
+			cout << " |-> Epochs: " << set.getEpochs() << endl;
+		}
 
 		Finalize();
 	}

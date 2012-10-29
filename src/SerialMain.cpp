@@ -28,10 +28,12 @@ int main(int argc, char* argv[])
 		for (int i = 1; i < argc - 4; i++)
 			units.push_back(atoi(argv[i]));
 
+		cout << "Parsing file..." << endl;
+
 		Driver driver(input);
 		const Relation &relation = driver.parse();
 
-		cout << "Training MLP" << endl;
+		cout << "Training MLP..." << endl;
 
 		HostExampleSet set(relation);
 		set.setLearning(learning);
@@ -41,7 +43,10 @@ int main(int argc, char* argv[])
 		HostMLP mlp(units);
 		mlp.train(set);
 
-		cout << "MLP trained" << endl;
+		cout << "Done! Results:" << endl;
+		cout << " |-> Error: " << set.getError() << endl;
+		cout << " |-> Time: " << set.getTime() << endl;
+		cout << " |-> Epochs: " << set.getEpochs() << endl;
 	}
 	catch (exception &ex)
 	{
