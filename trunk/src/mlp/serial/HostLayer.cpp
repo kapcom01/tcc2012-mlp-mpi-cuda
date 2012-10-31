@@ -74,7 +74,9 @@ void HostLayer::feedbackward(const float* signal, float learning)
 		uint j = i % inUnits;
 		uint k = i / inUnits;
 		weights[i] += learning * gradient[k] * input[j];
-		errorSignal[j] += gradient[k] * weights[i];
+
+		if (j < inUnits - 1)
+			errorSignal[j] += gradient[k] * weights[i];
 	}
 }
 
