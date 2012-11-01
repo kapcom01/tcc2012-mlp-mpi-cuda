@@ -46,9 +46,6 @@ void MLP::randomize()
 
 void MLP::initOperation(ExampleSet &set)
 {
-	cout << set.getInVars() << endl;
-	cout << inLayer->getInUnits() << endl;
-
 	// Verifica a quantidade de entradas e saídas
 	if (set.getInVars() != inLayer->getInUnits())
 		throw ParallelMLPException(INVALID_INPUT_VARS);
