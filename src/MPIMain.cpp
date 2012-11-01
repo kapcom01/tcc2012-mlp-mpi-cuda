@@ -12,6 +12,7 @@ void train(ExampleSet &set, v_uint units, float learning, uint maxEpochs,
 		float tolerance);
 
 string program;
+uint hid;
 
 int main(int argc, char* argv[])
 {
@@ -19,6 +20,8 @@ int main(int argc, char* argv[])
 
 	try
 	{
+		hid = COMM_WORLD.Get_rank();
+
 		program = argv[0];
 		string usage = "Usage mode: " + program + " <fast|normal>";
 
@@ -36,7 +39,8 @@ int main(int argc, char* argv[])
 	}
 	catch (exception &ex)
 	{
-		cerr << ex.what() << endl;
+		if (hid == 0)
+			cerr << ex.what() << endl;
 		return EXIT_FAILURE;
 	}
 
@@ -93,7 +97,8 @@ void normalTrain(int argc, char* argv[])
 void train(ExampleSet &set, v_uint units, float learning, uint maxEpochs,
 		float tolerance)
 {
-	cout << "Training MLP..." << endl;
+	if (hid == 0)
+		cout << "Training MLP..." << endl;
 
 	set.setLearning(learning);
 	set.setMaxEpochs(maxEpochs);
@@ -102,9 +107,12 @@ void train(ExampleSet &set, v_uint units, float learning, uint maxEpochs,
 	RemoteMLP mlp(units);
 	mlp.train(set);
 
-	cout << "Done! Results:" << endl;
-	cout << " |-> Error: " << set.getError() << endl;
-	cout << " |-> Time: " << set.getTime() << endl;
-	cout << " |-> Epochs: " << set.getEpochs() << endl;
+	if (hid == 0)
+	{
+		cout << "Done! Results:" << endl;
+		cout << " |-> Error: " << set.getError() << endl;
+		cout << " |-> Time: " << set.getTime() << endl;
+		cout << " |-> Epochs: " << set.getEpochs() << endl;
+	}
 }
 
