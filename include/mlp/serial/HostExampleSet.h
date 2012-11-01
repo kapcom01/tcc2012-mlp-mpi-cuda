@@ -15,6 +15,14 @@ class HostExampleSet : public ExampleSet
 public:
 
 	/**
+	 * Constrói um conjunto de dados com dados aleatórios
+	 * @param size Quantidade de instâncias
+	 * @param inVars Quantidade de variáveis de entrada
+	 * @param outVars Quantidade de variáveis de entrada
+	 */
+	HostExampleSet(uint size, uint inVars, uint outVars);
+
+	/**
 	 * Constrói um conjunto de dados a partir de uma relação
 	 * @param relation Relação
 	 */
@@ -44,6 +52,27 @@ public:
 protected:
 
 	/**
+	 * Inicializa o conjunto de dados
+	 */
+	void init();
+
+	/**
+	 * Randomiza os dados
+	 */
+	void randomize();
+
+	/**
+	 * Seta os dados a partir de uma relação
+	 * @param relation Relação
+	 */
+	void setRelation(const Relation& relation);
+
+	/**
+	 * Adiciona as estatísticas dos dados
+	 */
+	void addStatistics();
+
+	/**
 	 * Adiciona um valor bias
 	 */
 	void addBias();
@@ -64,32 +93,6 @@ protected:
 	void addValue(int value, uint card, bool isTarget);
 
 	/**
-	 * Adiciona um valor estatístico numérico de entrada ou saída
-	 * @param min Valor mínimo da amostra
-	 * @param max Valor máximo da amostra
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addStat(float min, float max, float lower, float upper,
-			bool isTarget);
-
-	/**
-	 * Adiciona um valor estatístico nominal de entrada ou saída
-	 * @param lower Menor valor depois de normalizado
-	 * @param upper Maior valor depois de normalizado
-	 * @param card Cardinalidade do atributo nominal
-	 * @param isTarget Indica se o valor é de saída
-	 */
-	void addStat(float lower, float upper, uint card, bool isTarget);
-
-	/**
-	 * Seta os dados a partir de uma relação
-	 * @param relation Relação
-	 */
-	void setRelation(const Relation& relation);
-
-	/**
 	 * Ajusta um valor de um range para outro
 	 * @param x Valor a ser ajustado
 	 * @param from Range inicial de x
@@ -106,12 +109,6 @@ protected:
 	 * Índice de inserção em output
 	 */
 	uint outputIdx;
-
-	/**
-	 * Índice de inserção em stat
-	 */
-	uint statIdx;
-
 
 };
 

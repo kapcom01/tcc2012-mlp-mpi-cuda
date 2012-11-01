@@ -5,14 +5,19 @@ namespace ParallelMLP
 
 //===========================================================================//
 
+HostExampleSet::HostExampleSet(uint size, uint inVars, uint outVars)
+	: ExampleSet(size, inVars, outVars)
+{
+	init();
+	randomize();
+}
+
+//===========================================================================//
+
 HostExampleSet::HostExampleSet(const Relation &relation)
 	: ExampleSet(relation)
 {
-	// Aloca espaço para as entradas
-	input = new float[size * step];
-	output = new float[size * outVars];
-	stat = new Stat[step];
-
+	init();
 	setRelation(relation);
 }
 
@@ -27,9 +32,31 @@ HostExampleSet::~HostExampleSet()
 
 //===========================================================================//
 
+void HostExampleSet::init()
+{
+	// Aloca espaço para as entradas
+	input = new float[size * step];
+	output = new float[size * outVars];
+	stat = new Stat[step];
+}
+
+//===========================================================================//
+
+void HostExampleSet::randomize()
+{
+	// Seta valores aleatórios (1 para os valores de bias)
+	for (uint i = 0; i < size * step; i++)
+		input[i] = (i % size == step - 1) ? 1 : rand() % 100;
+
+	// Adiciona estatísticas
+	addStatistics();
+}
+
+//===========================================================================//
+
 void HostExampleSet::setRelation(const Relation& relation)
 {
-	inputIdx = outputIdx = statIdx = 0;
+	inputIdx = outputIdx = 0;
 
 	// Para cada instância
 	for (const Instance* inst : relation.getData())
@@ -55,38 +82,31 @@ void HostExampleSet::setRelation(const Relation& relation)
 		}
 	}
 
-	uint i = 0;
+	// Adiciona estatísticas
+	addStatistics();
+}
 
-	// Para cada atributo
-	for (const Attribute* attr : relation.getAttributes())
+//===========================================================================//
+
+void HostExampleSet::addStatistics()
+{
+	for (uint i = 0; i < step; i++)
 	{
-		// Adiciona estatística para o bias
-		if (attr->isLast())
-			addStat(-1, 1, -1, 1, false);
+		float min = BIG_M, max = -BIG_M;
 
-		// Se for numérico
-		if (attr->getType() == NUMERIC)
+		// Recupera o menor e maior valor
+		for (uint j = 0; j < size; j++)
 		{
-			float min = BIG_M, max = -BIG_M;
-
-			// Para cada instância
-			for (const Instance* inst : relation.getData())
-			{
-				float val = inst->at(i)->getNumber();
-
-				if (val > max)
-					max = val;
-				if (val < min)
-					min = val;
-			}
-
-			addStat(min, max, -1, 1, attr->isLast());
+			float val = input[j * step + i];
+			min = (val < min) ? val : min;
+			max = (val > max) ? val : max;
 		}
-		// Se for nominal
-		else
-			addStat(-1, 1, attr->getNominalCard(), attr->isLast());
 
-		i++;
+		// Estatísticas para o bias
+		if (i == step - 1)
+			stat[i] = { {-1, 1}, {-1, 1} };
+		else
+			stat[i] = { {min, max}, {-1, 1} };
 	}
 }
 
@@ -114,23 +134,6 @@ void HostExampleSet::addValue(int value, uint card, bool isTarget)
 			addValue(1, isTarget);
 		else
 			addValue(0, isTarget);
-}
-
-//===========================================================================//
-
-void HostExampleSet::addStat(float min, float max, float lower, float upper,
-		bool isTarget)
-{
-	stat[statIdx++] = { {min, max}, {lower, upper} };
-}
-
-//===========================================================================//
-
-void HostExampleSet::addStat(float lower, float upper, uint card, bool isTarget)
-{
-	// Adiciona uma variável para cada possível valor
-	for (uint i = 0; i < card; i++)
-		addStat(0, 1, lower, upper, isTarget);
 }
 
 //===========================================================================//

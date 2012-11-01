@@ -8,20 +8,19 @@ void adjust(float &x, const Range &from, const Range &to);
 
 //===========================================================================//
 
+DeviceExampleSet::DeviceExampleSet(uint size, uint inVars, uint outVars)
+	: ExampleSet(size, inVars, outVars)
+{
+	HostExampleSet set(size, inVars, outVars);
+	copyToDevice(set);
+}
+
+//===========================================================================//
+
 DeviceExampleSet::DeviceExampleSet(const Relation& relation)
 	: ExampleSet(relation)
 {
 	HostExampleSet set(relation);
-
-	// Calcula os tamanhos dos blocos
-	stepBlocks = (size * step) / TPB + 1;
-	outBlocks = (size * outVars) / TPB + 1;
-
-	// Aloca espaço no dispositivo
-	cudaMalloc(&input, size * step * sizeof(float));
-	cudaMalloc(&output, size * outVars * sizeof(float));
-	cudaMalloc(&stat, step * sizeof(Stat));
-
 	copyToDevice(set);
 }
 
@@ -38,6 +37,15 @@ DeviceExampleSet::~DeviceExampleSet()
 
 void DeviceExampleSet::copyToDevice(const HostExampleSet &set)
 {
+	// Calcula os tamanhos dos blocos
+	stepBlocks = (size * step) / TPB + 1;
+	outBlocks = (size * outVars) / TPB + 1;
+
+	// Aloca espaço no dispositivo
+	cudaMalloc(&input, size * step * sizeof(float));
+	cudaMalloc(&output, size * outVars * sizeof(float));
+	cudaMalloc(&stat, step * sizeof(Stat));
+
 	// Copia os dados para o dispositivo
 	cudaMemcpy(input, set.getInput(), size * step * sizeof(float),
 			cudaMemcpyHostToDevice);
