@@ -18,6 +18,14 @@ class ExampleSet
 public:
 
 	/**
+	 * Constrói um conjunto de dados com dados aleatórios
+	 * @param size Quantidade de instâncias
+	 * @param inVars Quantidade de variáveis de entrada
+	 * @param outVars Quantidade de variáveis de entrada
+	 */
+	ExampleSet(uint size, uint inVars, uint outVars);
+
+	/**
 	 * Constrói um conjunto de dados a partir de uma relação
 	 * @param relation Relação
 	 */
@@ -161,6 +169,14 @@ public:
 	void setTime(float time);
 
 protected:
+
+	/**
+	 * Seta a quantidade dos elementos
+	 * @param size Quantidade de instâncias
+	 * @param inVars Quantidade de variáveis de entrada
+	 * @param outVars Quantidade de variáveis de entrada
+	 */
+	void set(uint size, uint inVars, uint outVars);
 
 	/**
 	 * Taxa de aprendizado

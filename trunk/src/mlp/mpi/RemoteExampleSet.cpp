@@ -5,22 +5,20 @@ namespace ParallelMLP
 
 //===========================================================================//
 
+RemoteExampleSet::RemoteExampleSet(uint size, uint inVars, uint outVars)
+	: ExampleSet(size, inVars, outVars)
+{
+	HostExampleSet set(size, inVars, outVars);
+	copyToMaster(set);
+}
+
+//===========================================================================//
+
 RemoteExampleSet::RemoteExampleSet(const Relation& relation)
 	: ExampleSet(relation)
 {
-	hid = COMM_WORLD.Get_rank();
-
-	// Aloca os vetores
-	input = new float[size * step];
-	output = new float[size * outVars];
-	stat = new Stat[step];
-
-	// Os dados são armazenados apenas no mestre
-	if (hid == 0)
-	{
-		HostExampleSet set(relation);
-		copyToMaster(set);
-	}
+	HostExampleSet set(relation);
+	copyToMaster(set);
 }
 
 //===========================================================================//
@@ -34,6 +32,13 @@ RemoteExampleSet::~RemoteExampleSet()
 
 void RemoteExampleSet::copyToMaster(const HostExampleSet &set)
 {
+	hid = COMM_WORLD.Get_rank();
+
+	// Aloca os vetores
+	input = new float[size * step];
+	output = new float[size * outVars];
+	stat = new Stat[step];
+
 	memcpy(input, set.getInput(), size * step * sizeof(float));
 	memcpy(stat, set.getStat(), step * sizeof(Stat));
 }
@@ -45,19 +50,12 @@ void RemoteExampleSet::normalize()
 	if (isNormalized)
 		return;
 
-	// Normalização é feita apenas no mestre
-	if (hid == 0)
+	// Normaliza cada entrada
+	for (uint i = 0; i < size * step; i++)
 	{
-		// Normaliza cada entrada
-		for (uint i = 0; i < size * step; i++)
-		{
-			uint j = i % step;
-			adjust(input[i], stat[j].from, stat[j].to);
-		}
+		uint j = i % step;
+		adjust(input[i], stat[j].from, stat[j].to);
 	}
-
-	// Envia os dados normalizados para todos os nós
-	COMM_WORLD.Bcast(input, size * step, FLOAT, 0);
 
 	isNormalized = true;
 }
@@ -69,16 +67,16 @@ void RemoteExampleSet::unnormalize()
 	if (!isNormalized)
 		return;
 
-	// Desnormalização é feita apenas no mestre
+	// Desnormaliza cada entrada
+	for (uint i = 0; i < size * step; i++)
+	{
+		uint j = i % step;
+		adjust(input[i], stat[j].to, stat[j].from);
+	}
+
+	// Desnormalização da saída é feita apenas no mestre
 	if (hid == 0)
 	{
-		// Desnormaliza cada entrada
-		for (uint i = 0; i < size * step; i++)
-		{
-			uint j = i % step;
-			adjust(input[i], stat[j].to, stat[j].from);
-		}
-
 		// Desnormaliza cada saída da rede neural
 		for (uint i = 0; i < size * outVars; i++)
 		{

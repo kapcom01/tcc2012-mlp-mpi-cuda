@@ -5,6 +5,13 @@ namespace ParallelMLP
 
 //===========================================================================//
 
+ExampleSet::ExampleSet(uint size, uint inVars, uint outVars)
+{
+	set(size, inVars + 1, outVars);
+}
+
+//===========================================================================//
+
 ExampleSet::ExampleSet(const Relation &relation)
 {
 	size = relation.getNInstances(), inVars = 1, outVars = 0;
@@ -20,6 +27,24 @@ ExampleSet::ExampleSet(const Relation &relation)
 			inVars += inc;
 	}
 
+	set(size, inVars, outVars);
+}
+
+//===========================================================================//
+
+ExampleSet::~ExampleSet()
+{
+
+}
+
+//===========================================================================//
+
+void ExampleSet::set(uint size, uint inVars, uint outVars)
+{
+	this->size = size;
+	this->inVars = inVars;
+	this->outVars = outVars;
+
 	// Soma das variáveis de entrada, do bias e das variáveis de saída
 	step = inVars + outVars;
 
@@ -29,13 +54,6 @@ ExampleSet::ExampleSet(const Relation &relation)
 	maxEpochs = epochs = 0;
 	error = time = learning = tolerance = 0;
 	isNormalized = false;
-}
-
-//===========================================================================//
-
-ExampleSet::~ExampleSet()
-{
-
 }
 
 //===========================================================================//
