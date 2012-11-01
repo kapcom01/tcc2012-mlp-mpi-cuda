@@ -15,6 +15,8 @@ string program;
 
 int main(int argc, char* argv[])
 {
+	Init(argc, argv);
+
 	try
 	{
 		program = argv[0];
@@ -37,6 +39,8 @@ int main(int argc, char* argv[])
 		cerr << ex.what() << endl;
 		return EXIT_FAILURE;
 	}
+
+	Finalize();
 
 	return EXIT_SUCCESS;
 }
