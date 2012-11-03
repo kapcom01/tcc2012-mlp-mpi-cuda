@@ -54,7 +54,7 @@ void HostLayer::feedforward(const float* input)
 
 	// Ativa o sinal funcional
 	for (uint i = 0; i < outUnits; i++)
-		funcSignal[i] = activate(funcSignal[i]);
+		funcSignal[i] = ACTIVATE(funcSignal[i]);
 }
 
 //===========================================================================//
@@ -66,7 +66,7 @@ void HostLayer::feedbackward(const float* signal, float learning)
 
 	// Calcula o gradiente
 	for (uint i = 0; i < outUnits; i++)
-		gradient[i] = derivate(funcSignal[i]) * signal[i];
+		gradient[i] = DERIVATE(funcSignal[i]) * signal[i];
 
 	// Atualiza os pesos e calcula o sinal de erro
 	for (uint i = 0; i < connUnits; i++)
@@ -86,20 +86,6 @@ float HostLayer::random() const
 {
 	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
-}
-
-//===========================================================================//
-
-float HostLayer::activate(float x) const
-{
-	return tanh(x);
-}
-
-//===========================================================================//
-
-float HostLayer::derivate(float y) const
-{
-	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//
