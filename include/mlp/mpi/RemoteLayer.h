@@ -59,20 +59,6 @@ protected:
 	float random() const;
 
 	/**
-	 * Ativa um valor através da função hiperbólica
-	 * @param x Valor a ser ativado
-	 * @return Valor ativado
-	 */
-	float activate(float x) const;
-
-	/**
-	 * Desativa um valor através da derivada da função hiperbólica
-	 * @param y Valor ativado
-	 * @return Valor desativado
-	 */
-	float derivate(float y) const;
-
-	/**
 	 * ID do host
 	 */
 	uint hid;

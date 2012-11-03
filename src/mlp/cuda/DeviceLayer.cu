@@ -6,12 +6,6 @@ namespace ParallelMLP
 __device__
 float random(curandState* state);
 
-__device__
-float activate(float x);
-
-__device__
-float derivate(float y);
-
 //===========================================================================//
 
 __global__
@@ -96,7 +90,7 @@ void feedforwardActivate(float* weights, uint outUnits, float* funcSignal)
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < outUnits)
-		funcSignal[i] = activate(funcSignal[i]);
+		funcSignal[i] = ACTIVATE(funcSignal[i]);
 }
 
 //===========================================================================//
@@ -125,7 +119,7 @@ void feedbackwardDerivate(const float* signal, float* funcSignal,
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < outUnits)
-		gradient[i] = derivate(funcSignal[i]) * signal[i];
+		gradient[i] = DERIVATE(funcSignal[i]) * signal[i];
 }
 
 //===========================================================================//
@@ -169,22 +163,6 @@ float random(curandState* state)
 {
 	float r = curand(state) / (float) CUDA_RAND_MAX;
 	return 2 * r - 1;
-}
-
-//===========================================================================//
-
-__device__
-float activate(float x)
-{
-	return tanh(x);
-}
-
-//===========================================================================//
-
-__device__
-float derivate(float y)
-{
-	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//

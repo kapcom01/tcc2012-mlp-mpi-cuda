@@ -65,7 +65,7 @@ void RemoteLayer::feedforward(const float* input)
 
 	// Ativa o sinal funcional
 	for (uint i = 0; i < toutUnits; i++)
-		tfuncSignal[i] = activate(tfuncSignal[i]);
+		tfuncSignal[i] = ACTIVATE(tfuncSignal[i]);
 
 	// Recebe os dados de todos os sinais funcionais
 	COMM_WORLD.Allgatherv(tfuncSignal, toutUnits, FLOAT, funcSignal,
@@ -81,7 +81,7 @@ void RemoteLayer::feedbackward(const float* signal, float learning)
 
 	// Calcula o gradiente
 	for (uint i = 0; i < toutUnits; i++)
-		gradient[i] = derivate(funcSignal[i]) * signal[i + offset];
+		gradient[i] = DERIVATE(funcSignal[i]) * signal[i + offset];
 
 	// Atualiza os pesos e calcula o sinal de erro
 	for (uint i = 0; i < tconnUnits; i++)
@@ -102,20 +102,6 @@ float RemoteLayer::random() const
 {
 	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
-}
-
-//===========================================================================//
-
-float RemoteLayer::activate(float x) const
-{
-	return tanh(x);
-}
-
-//===========================================================================//
-
-float RemoteLayer::derivate(float y) const
-{
-	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//

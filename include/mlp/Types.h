@@ -5,6 +5,9 @@
 #include <cstring>
 #include <cmath>
 
+#define ACTIVATE(X) tanh(X)
+#define DERIVATE(Y) (1 - Y) * (1 + Y)
+
 namespace ParallelMLP
 {
 
