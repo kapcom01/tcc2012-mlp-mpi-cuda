@@ -60,7 +60,7 @@ protected:
 	/**
 	 * Vetor puro de estados
 	 */
-	curandState* state;
+	curandGenerator_t gen;
 
 };
 

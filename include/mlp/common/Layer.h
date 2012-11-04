@@ -91,6 +91,11 @@ protected:
 	float* weights;
 
 	/**
+	 * Vetor de bias
+	 */
+	float* bias;
+
+	/**
 	 * Vetor puro do gradiente e seu tamanho
 	 */
 	float* gradient;

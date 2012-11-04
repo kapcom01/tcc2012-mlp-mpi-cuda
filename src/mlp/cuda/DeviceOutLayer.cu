@@ -33,7 +33,6 @@ void calculateDiff(const float* target, float* output, uint outUnits,
 	{
 		error[i] = target[i] - output[i];
 		*sum += error[i] * error[i];
-		//atomicAdd(totalError, error[i] * error[i]);
 	}
 }
 

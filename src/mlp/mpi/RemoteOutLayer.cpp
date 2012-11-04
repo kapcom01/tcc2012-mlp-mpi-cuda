@@ -12,24 +12,32 @@ RemoteOutLayer::RemoteOutLayer(uint inUnits, uint outUnits, uint hid,
 	this->hid = hid;
 
 	// Aloca os vetores
-	weights = new float[connUnits];
-	gradient = new float[outUnits];
-	funcSignal = new float[outUnits + 1];
-	errorSignal = new float[inUnits];
-	error = new float[outUnits];
+	if (hid == 0)
+	{
+		weights = new float[connUnits];
+		bias = new float[outUnits];
+		gradient = new float[outUnits];
+		funcSignal = new float[outUnits];
+		error = new float[outUnits];
+	}
 
-	funcSignal[outUnits] = 1;
+	errorSignal = new float[inUnits];
 }
 
 //===========================================================================//
 
 RemoteOutLayer::~RemoteOutLayer()
 {
-	delete[] weights;
-	delete[] gradient;
-	delete[] funcSignal;
+	if (hid == 0)
+	{
+		delete[] weights;
+		delete[] bias;
+		delete[] gradient;
+		delete[] funcSignal;
+		delete[] error;
+	}
+
 	delete[] errorSignal;
-	delete[] error;
 }
 
 //===========================================================================//
@@ -37,8 +45,13 @@ RemoteOutLayer::~RemoteOutLayer()
 void RemoteOutLayer::randomize()
 {
 	if (hid == 0)
+	{
 		for (uint i = 0; i < connUnits; i++)
 			weights[i] = random();
+
+		for (uint i = 0; i < outUnits; i++)
+			bias[i] = random();
+	}
 }
 
 //===========================================================================//
@@ -63,7 +76,7 @@ void RemoteOutLayer::feedforward(const float* input)
 
 		// Ativa o sinal funcional
 		for (uint i = 0; i < outUnits; i++)
-			funcSignal[i] = activate(funcSignal[i]);
+			funcSignal[i] = ACTIVATE(bias[i] + funcSignal[i]);
 	}
 }
 
@@ -97,11 +110,14 @@ void RemoteOutLayer::feedbackward(const float* target, float learning)
 		calculateError(target);
 
 		// Inicializa o sinal funcional
-		memset(errorSignal, 0, (inUnits - 1) * sizeof(float));
+		memset(errorSignal, 0, inUnits * sizeof(float));
 
 		// Calcula o gradiente
 		for (uint i = 0; i < outUnits; i++)
-			gradient[i] = derivate(funcSignal[i]) * target[i];
+		{
+			gradient[i] = DERIVATE(funcSignal[i]) * target[i];
+			bias[i] += gradient[i];
+		}
 
 		// Atualiza os pesos e calcula o sinal de erro
 		for (uint i = 0; i < connUnits; i++)
@@ -115,7 +131,7 @@ void RemoteOutLayer::feedbackward(const float* target, float learning)
 
 	// Envia o sinal de erro do mestre para os escravos
 	COMM_WORLD.Bcast(&totalError, 1, FLOAT, 0);
-	COMM_WORLD.Bcast(errorSignal, inUnits - 1, FLOAT, 0);
+	COMM_WORLD.Bcast(errorSignal, inUnits, FLOAT, 0);
 }
 
 //===========================================================================//
@@ -124,20 +140,6 @@ float RemoteOutLayer::random() const
 {
 	float r = rand() / (float) RAND_MAX;
 	return 2 * r - 1;
-}
-
-//===========================================================================//
-
-float RemoteOutLayer::activate(float x) const
-{
-	return tanh(x);
-}
-
-//===========================================================================//
-
-float RemoteOutLayer::derivate(float y) const
-{
-	return (1 - y) * (1 + y);
 }
 
 //===========================================================================//

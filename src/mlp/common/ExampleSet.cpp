@@ -7,14 +7,14 @@ namespace ParallelMLP
 
 ExampleSet::ExampleSet(uint size, uint inVars, uint outVars)
 {
-	set(size, inVars + 1, outVars);
+	set(size, inVars, outVars);
 }
 
 //===========================================================================//
 
 ExampleSet::ExampleSet(const Relation &relation)
 {
-	size = relation.getNInstances(), inVars = 1, outVars = 0;
+	size = relation.getNInstances(), inVars = 0, outVars = 0;
 
 	// Calcula a quantidade de variáveis de entrada e saída que existirão
 	for (const Attribute* attr : relation.getAttributes())
