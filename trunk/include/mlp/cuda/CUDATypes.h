@@ -2,9 +2,31 @@
 #define CUDATYPES_H_
 
 #include "mlp/Types.h"
-#include <curand_kernel.h>
+#include <curand.h>
+#include <cublas_v2.h>
 
 #define TPB 256
-#define CUDA_RAND_MAX 4294967295
+
+namespace ParallelMLP
+{
+
+/**
+ * Classe de utilidades para CUDA
+ */
+class DeviceUtil
+{
+
+public:
+
+	/**
+	 * Manuseador da biblioteca CUBLAS
+	 */
+	static cublasHandle_t cublas;
+
+};
+
+}
+
+
 
 #endif

@@ -3,20 +3,6 @@
 namespace ParallelMLP
 {
 
-__device__
-float random(curandState* state);
-
-//===========================================================================//
-
-__global__
-void initRandState(curandState* state, int seed, uint connUnits)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < connUnits)
-		curand_init(seed + i, 0, 0, &state[i]);
-}
-
 //===========================================================================//
 
 DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
@@ -26,16 +12,14 @@ DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
 	this->outBlocks = outUnits / TPB + 1;
 
 	cudaMalloc(&weights, connUnits * sizeof(float));
+	cudaMalloc(&bias, outUnits * sizeof(float));
 	cudaMalloc(&gradient, outUnits * sizeof(float));
-	cudaMalloc(&funcSignal, (outUnits + 1) * sizeof(float));
+	cudaMalloc(&funcSignal, outUnits * sizeof(float));
 	cudaMalloc(&errorSignal, inUnits * sizeof(float));
-	cudaMalloc(&state, connUnits * sizeof(curandState));
 
-	float one = 1;
-	cudaMemcpy(&funcSignal[outUnits], &one, sizeof(float),
-			cudaMemcpyHostToDevice);
-
-	initRandState<<<connBlocks, TPB>>>(state, rand(), connUnits);
+	// Cria um gerador de números aleatórios e seta a semente
+	curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+	curandSetPseudoRandomGeneratorSeed(gen, rand());
 }
 
 //===========================================================================//
@@ -43,28 +27,43 @@ DeviceLayer::DeviceLayer(uint inUnits, uint outUnits)
 DeviceLayer::~DeviceLayer()
 {
 	cudaFree(weights);
+	cudaFree(bias);
 	cudaFree(gradient);
 	cudaFree(funcSignal);
 	cudaFree(errorSignal);
-	cudaFree(state);
-}
-
-//===========================================================================//
-
-__global__
-void randomizeWeight(float* weights, curandState* state, uint connUnits)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < connUnits)
-		weights[i] = random(&state[i]);
 }
 
 //===========================================================================//
 
 void DeviceLayer::randomize()
 {
-	randomizeWeight<<<connBlocks, TPB>>>(weights, state, connUnits);
+	float* negone;
+	float* randv;
+	const float alpha = 1;
+
+	// Cria um vetor com -1
+	negone = new float[connUnits];
+	for (uint i = 0; i < connUnits; i++)
+		negone[i] = -1;
+
+	// Aloca espaço para vetor de números aleatórios
+	cudaMalloc(&randv, connUnits * sizeof(float));
+
+	// Copia os -1 para o vetor de pesos e para o vetor de bias
+	cudaMemcpy(weights, negone, connUnits * sizeof(float),
+			cudaMemcpyHostToDevice);
+	cudaMemcpy(bias, negone, outUnits * sizeof(float),
+			cudaMemcpyHostToDevice);
+
+	// Gera números de 0 a 1, os transforma para -1 e 1
+	curandGenerateUniform(gen, randv, connUnits);
+	cublasSaxpy(DeviceUtil::cublas, connUnits, &alpha, randv, 1, weights, 1);
+
+	curandGenerateUniform(gen, randv, outUnits);
+	cublasSaxpy(DeviceUtil::cublas, outUnits, &alpha, randv, 1, bias, 1);
+
+	cudaFree(randv);
+	delete[] negone;
 }
 
 //===========================================================================//
@@ -79,18 +78,18 @@ void feedforwardSum(const float* input, float* weights, uint inUnits,
 
 	if (i < connUnits)
 		funcSignal[k] += weights[i] * input[j];
-		//atomicAdd(&funcSignal[k], weights[i] * input[j]);
 }
 
 //===========================================================================//
 
 __global__
-void feedforwardActivate(float* weights, uint outUnits, float* funcSignal)
+void feedforwardActivate(float* weights, float* bias, uint outUnits,
+		float* funcSignal)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < outUnits)
-		funcSignal[i] = ACTIVATE(funcSignal[i]);
+		funcSignal[i] = ACTIVATE(bias[i] + funcSignal[i]);
 }
 
 //===========================================================================//
@@ -107,19 +106,23 @@ void DeviceLayer::feedforward(const float* input)
 			funcSignal);
 
 	// Ativa as saídas de cada neurônio
-	feedforwardActivate<<<outBlocks, TPB>>>(weights, outUnits, funcSignal);
+	feedforwardActivate<<<outBlocks, TPB>>>(weights, bias, outUnits,
+			funcSignal);
 }
 
 //===========================================================================//
 
 __global__
 void feedbackwardDerivate(const float* signal, float* funcSignal,
-		uint outUnits, float* gradient)
+		uint outUnits, float* gradient, float* bias)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < outUnits)
+	{
 		gradient[i] = DERIVATE(funcSignal[i]) * signal[i];
+		bias[i] += gradient[i];
+	}
 }
 
 //===========================================================================//
@@ -136,7 +139,6 @@ void feedbackwardSum(const float* input, float* gradient, float learning,
 	{
 		weights[i] += learning * gradient[k] * input[j];
 		errorSignal[j] += gradient[k] * weights[i];
-		//atomicAdd(&errorSignal[j], gradient[k] * weights[i]);
 	}
 }
 
@@ -149,20 +151,11 @@ void DeviceLayer::feedbackward(const float* signal, float learning)
 
 	// Calcula o gradiente
 	feedbackwardDerivate<<<outBlocks, TPB>>>(signal, funcSignal, outUnits,
-			gradient);
+			gradient, bias);
 
 	// Realiza a atualização dos pesos e cálculo do sinal de erro
 	feedbackwardSum<<<connBlocks, TPB>>>(input, gradient, learning, inUnits,
 			connUnits, weights, errorSignal);
-}
-
-//===========================================================================//
-
-__device__
-float random(curandState* state)
-{
-	float r = curand(state) / (float) CUDA_RAND_MAX;
-	return 2 * r - 1;
 }
 
 //===========================================================================//

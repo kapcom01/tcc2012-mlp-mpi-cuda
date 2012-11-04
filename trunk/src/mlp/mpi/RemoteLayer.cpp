@@ -13,18 +13,18 @@ RemoteLayer::RemoteLayer(uint inUnits, uint outUnits, uint hid, uint hosts)
 	// Realiza cálculos para determinar o balanceamento
 	binfo.resize(hosts);
 	binfo.balance(outUnits);
+
 	toutUnits = binfo.getCount(hid);
-	tconnUnits = (inUnits + 1) * toutUnits;
+	tconnUnits = inUnits * toutUnits;
 	offset = binfo.getOffset(hid);
 
 	// Aloca os vetores
 	weights = new float[tconnUnits];
+	bias = new float[toutUnits];
 	gradient = new float[toutUnits];
 	tfuncSignal = new float[toutUnits];
-	funcSignal = new float[outUnits + 1];
+	funcSignal = new float[outUnits];
 	errorSignal = new float[inUnits];
-
-	funcSignal[outUnits] = 1;
 }
 
 //===========================================================================//
@@ -32,6 +32,7 @@ RemoteLayer::RemoteLayer(uint inUnits, uint outUnits, uint hid, uint hosts)
 RemoteLayer::~RemoteLayer()
 {
 	delete[] weights;
+	delete[] bias;
 	delete[] gradient;
 	delete[] funcSignal;
 	delete[] tfuncSignal;
@@ -44,6 +45,9 @@ void RemoteLayer::randomize()
 {
 	for (uint i = 0; i < tconnUnits; i++)
 		weights[i] = random();
+
+	for (uint i = 0; i < toutUnits; i++)
+		bias[i] = random();
 }
 
 //===========================================================================//
@@ -65,7 +69,7 @@ void RemoteLayer::feedforward(const float* input)
 
 	// Ativa o sinal funcional
 	for (uint i = 0; i < toutUnits; i++)
-		tfuncSignal[i] = ACTIVATE(tfuncSignal[i]);
+		tfuncSignal[i] = ACTIVATE(bias[i] + tfuncSignal[i]);
 
 	// Recebe os dados de todos os sinais funcionais
 	COMM_WORLD.Allgatherv(tfuncSignal, toutUnits, FLOAT, funcSignal,
@@ -77,11 +81,14 @@ void RemoteLayer::feedforward(const float* input)
 void RemoteLayer::feedbackward(const float* signal, float learning)
 {
 	// Inicializa o sinal funcional
-	memset(errorSignal, 0, (inUnits - 1) * sizeof(float));
+	memset(errorSignal, 0, inUnits * sizeof(float));
 
 	// Calcula o gradiente
 	for (uint i = 0; i < toutUnits; i++)
+	{
 		gradient[i] = DERIVATE(funcSignal[i]) * signal[i + offset];
+		bias[i] += gradient[i];
+	}
 
 	// Atualiza os pesos e calcula o sinal de erro
 	for (uint i = 0; i < tconnUnits; i++)
@@ -93,7 +100,7 @@ void RemoteLayer::feedbackward(const float* signal, float learning)
 	}
 
 	// Recebe os dados de todos os sinais de erro
-	COMM_WORLD.Allreduce(errorSignal, errorSignal, inUnits - 1, FLOAT, SUM);
+	COMM_WORLD.Allreduce(errorSignal, errorSignal, inUnits, FLOAT, SUM);
 }
 
 //===========================================================================//

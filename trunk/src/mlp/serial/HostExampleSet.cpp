@@ -46,7 +46,7 @@ void HostExampleSet::randomize()
 {
 	// Seta valores aleatórios (1 para os valores de bias)
 	for (uint i = 0; i < size * step; i++)
-		input[i] = (i % size == step - 1) ? 1 : rand() % 100;
+		input[i] = rand() % 100;
 
 	// Adiciona estatísticas
 	addStatistics();
@@ -66,10 +66,6 @@ void HostExampleSet::setRelation(const Relation& relation)
 		// Para cada valor da instância
 		for (const Value* val : *inst)
 		{
-			// Adiciona a variável bias antes da variável de saída
-			if (val->isLast())
-				addBias();
-
 			// Se for numérico
 			if (val->getType() == NUMERIC)
 				addValue(val->getNumber(), val->isLast());
@@ -102,19 +98,8 @@ void HostExampleSet::addStatistics()
 			max = (val > max) ? val : max;
 		}
 
-		// Estatísticas para o bias
-		if (i == step - 1)
-			stat[i] = { {-1, 1}, {-1, 1} };
-		else
-			stat[i] = { {min, max}, {-1, 1} };
+		stat[i] = { {min, max}, {-1, 1} };
 	}
-}
-
-//===========================================================================//
-
-void HostExampleSet::addBias()
-{
-	addValue(1, false);
 }
 
 //===========================================================================//

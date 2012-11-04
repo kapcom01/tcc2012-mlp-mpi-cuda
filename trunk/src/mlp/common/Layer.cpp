@@ -7,11 +7,11 @@ namespace ParallelMLP
 
 Layer::Layer(uint inUnits, uint outUnits)
 {
-	this->inUnits = inUnits + 1;
+	this->inUnits = inUnits;
 	this->outUnits = outUnits;
-	this->connUnits = (inUnits + 1) * outUnits;
+	this->connUnits = inUnits * outUnits;
 
-	funcSignal = errorSignal = gradient = weights = NULL;
+	funcSignal = errorSignal = gradient = weights = bias = NULL;
 	input = NULL;
 }
 

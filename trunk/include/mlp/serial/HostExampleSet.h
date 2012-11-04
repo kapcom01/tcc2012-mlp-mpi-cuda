@@ -73,11 +73,6 @@ protected:
 	void addStatistics();
 
 	/**
-	 * Adiciona um valor bias
-	 */
-	void addBias();
-
-	/**
 	 * Adiciona um valor númerico de entrada ou saída
 	 * @param value Valor numérico de entrada ou saída
 	 * @param isTarget Indica se o valor é de saída
