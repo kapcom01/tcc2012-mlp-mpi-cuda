@@ -58,9 +58,9 @@ protected:
 	uint outBlocks;
 
 	/**
-	 * Vetor puro de estados
+	 * Vetor de estados
 	 */
-	curandGenerator_t gen;
+	curandState* state;
 
 };
 

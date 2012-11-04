@@ -15,9 +15,6 @@ string program;
 
 int main(int argc, char* argv[])
 {
-	cublasCreate(&DeviceUtil::cublas);
-	cublasSetPointerMode(DeviceUtil::cublas, CUBLAS_POINTER_MODE_DEVICE);
-
 	try
 	{
 		program = argv[0];
@@ -40,8 +37,6 @@ int main(int argc, char* argv[])
 		cerr << ex.what() << endl;
 		return EXIT_FAILURE;
 	}
-
-	cublasDestroy(DeviceUtil::cublas);
 
 	return EXIT_SUCCESS;
 }
