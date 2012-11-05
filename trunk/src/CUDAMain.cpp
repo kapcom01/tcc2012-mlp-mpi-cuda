@@ -45,19 +45,20 @@ void fastTrain(int argc, char* argv[])
 {
 	string usage = "Usage mode: " + program + " fast "
 			"<neurons on input layer> [neurons on each hidden layer] "
-			"<neurons on output layer> <number of instances> ";
+			"<neurons on output layer> <number of instances> <max epochs>";
 
-	if (argc < 5)
+	if (argc < 6)
 		throw runtime_error(usage);
 
-	uint size = atoi(argv[argc - 1]);
+	uint size = atoi(argv[argc - 2]);
+	uint maxEpochs = atoi(argv[argc - 1]);
 
 	v_uint units;
-	for (int i = 2; i < argc - 1; i++)
+	for (int i = 2; i < argc - 2; i++)
 		units.push_back(atoi(argv[i]));
 
 	DeviceExampleSet set(size, units.front(), units.back());
-	train(set, units, 0.5, 100, 0.01);
+	train(set, units, 0.5, maxEpochs, 0.01);
 }
 
 void normalTrain(int argc, char* argv[])
