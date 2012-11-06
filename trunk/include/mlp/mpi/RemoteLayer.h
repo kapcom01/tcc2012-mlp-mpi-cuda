@@ -88,6 +88,11 @@ protected:
 	 */
 	float* tfuncSignal;
 
+	/**
+	 * Sinal de erro gerenciado por este nó
+	 */
+	float* terrorSignal;
+
 };
 
 }

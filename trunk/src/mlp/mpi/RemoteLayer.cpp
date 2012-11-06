@@ -24,6 +24,7 @@ RemoteLayer::RemoteLayer(uint inUnits, uint outUnits, uint hid, uint hosts)
 	gradient = new float[toutUnits];
 	tfuncSignal = new float[toutUnits];
 	funcSignal = new float[outUnits];
+	terrorSignal = new float[inUnits];
 	errorSignal = new float[inUnits];
 }
 
@@ -37,6 +38,7 @@ RemoteLayer::~RemoteLayer()
 	delete[] funcSignal;
 	delete[] tfuncSignal;
 	delete[] errorSignal;
+	delete[] terrorSignal;
 }
 
 //===========================================================================//
@@ -81,7 +83,7 @@ void RemoteLayer::feedforward(const float* input)
 void RemoteLayer::feedbackward(const float* signal, float learning)
 {
 	// Inicializa o sinal funcional
-	memset(errorSignal, 0, inUnits * sizeof(float));
+	memset(terrorSignal, 0, inUnits * sizeof(float));
 
 	// Calcula o gradiente
 	for (uint i = 0; i < toutUnits; i++)
@@ -96,11 +98,11 @@ void RemoteLayer::feedbackward(const float* signal, float learning)
 		uint j = i % inUnits;
 		uint k = i / inUnits;
 		weights[i] += learning * gradient[k] * input[j];
-		errorSignal[j] += gradient[k] * weights[i];
+		terrorSignal[j] += gradient[k] * weights[i];
 	}
 
 	// Recebe os dados de todos os sinais de erro
-	COMM_WORLD.Allreduce(errorSignal, errorSignal, inUnits, FLOAT, SUM);
+	COMM_WORLD.Allreduce(terrorSignal, errorSignal, inUnits, FLOAT, SUM);
 }
 
 //===========================================================================//
